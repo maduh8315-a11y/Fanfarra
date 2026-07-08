@@ -39,6 +39,10 @@ async function advanceAwardsPhase() {
   const categories = catalogSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
   if (categories.length === 0) return console.log("[awards] sem categorias, ignorando.");
 
+  console.log("[debug] phase lido:", JSON.stringify(config.phase));
+  console.log("[debug] recomendacaoDeadline lido:", config.recomendacaoDeadline, "| tipo:", typeof config.recomendacaoDeadline);
+  console.log("[debug] categorias encontradas:", categories.length);
+
   if (config.phase === "recomendacao") {
     if (!config.recomendacaoDeadline || now < config.recomendacaoDeadline) return;
     await freezeNominationsAndAdvance(categories, config);
