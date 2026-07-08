@@ -1,0 +1,221 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(0.08 0.03 0);
+  --foreground: oklch(0.95 0.03 350);
+  --card: oklch(0.13 0.06 355);
+  --card-foreground: oklch(0.95 0.03 350);
+  --popover: oklch(0.13 0.06 355);
+  --popover-foreground: oklch(0.95 0.03 350);
+  --primary: oklch(0.65 0.27 0);
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.2 0.1 0);
+  --secondary-foreground: oklch(0.78 0.16 355);
+  --muted: oklch(0.16 0.07 355);
+  --muted-foreground: oklch(0.62 0.12 355);
+  --accent: oklch(0.22 0.13 5);
+  --accent-foreground: oklch(0.78 0.16 355);
+  --destructive: oklch(0.5 0.22 20);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.28 0.12 355);
+  --input: oklch(0.13 0.06 355);
+  --ring: oklch(0.65 0.27 0);
+  --chart-1: oklch(0.65 0.27 0);
+  --chart-2: oklch(0.78 0.16 355);
+  --chart-3: oklch(0.5 0.22 20);
+  --chart-4: oklch(0.4 0.18 5);
+  --chart-5: oklch(0.6 0.22 355);
+  --fan-bg: #0D0008;
+  --fan-bg-2: #1A0010;
+  --fan-bg-3: #100008;
+  --fan-pink: #FF0066;
+  --fan-pink-light: #FF4D94;
+  --fan-red: #cc0022;
+  --fan-red-dark: #3d0010;
+  --fan-rose-mid: #4D0025;
+  --fan-text: #ffe6f0;
+  --fan-text-2: #CC6699;
+  --fan-text-3: #f2d9e6;
+  --fan-border: #2E0018;
+  --fan-tag: #33000f;
+  --fan-active-chip: #3D0020;
+  --sidebar: var(--fan-bg-3);
+  --sidebar-foreground: #f2d9e6;
+  --sidebar-primary: var(--fan-pink);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--fan-bg-2);
+  --sidebar-accent-foreground: #ffe6f0;
+  --sidebar-border: var(--fan-border);
+  --sidebar-ring: var(--fan-pink);
+  /* Safe areas para Android/iOS */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+
+[data-theme="lunar"] {
+  --fan-bg: #05040d;
+  --fan-bg-2: #100a24;
+  --fan-bg-3: #0a0618;
+  --fan-pink: #7c5cff;
+  --fan-pink-light: #a78bfa;
+  --fan-red: #4c1d95;
+  --fan-red-dark: #1e1240;
+  --fan-rose-mid: #3d2d70;
+  --fan-text: #ede9fe;
+  --fan-text-2: #a78bfa;
+  --fan-text-3: #ddd6fe;
+  --fan-border: #241a4d;
+  --fan-tag: #1a1240;
+  --fan-active-chip: #2e2166;
+}
+
+[data-theme="aurora"] {
+  --fan-bg: #04120d;
+  --fan-bg-2: #0d2419;
+  --fan-bg-3: #081a12;
+  --fan-pink: #10b981;
+  --fan-pink-light: #34d399;
+  --fan-red: #b45309;
+  --fan-red-dark: #422006;
+  --fan-rose-mid: #164e3f;
+  --fan-text: #ecfdf5;
+  --fan-text-2: #6ee7b7;
+  --fan-text-3: #d1fae5;
+  --fan-border: #134e3a;
+  --fan-tag: #0c2a1e;
+  --fan-active-chip: #145c46;
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+    /* Remove highlight azul ao tocar em elementos no mobile */
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+    overscroll-behavior: none;
+  }
+
+  button,
+  a,
+  [role="button"] {
+    touch-action: manipulation;
+    cursor: pointer;
+  }
+
+  /* Permite seleção apenas em inputs e textos de conteúdo */
+  input,
+  textarea,
+  [contenteditable] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  body {
+    background-color: var(--fan-bg);
+    color: var(--fan-text-2);
+    font-family: "Inter", system-ui, sans-serif;
+    padding-top: var(--sat);
+    padding-left: var(--sal);
+    padding-right: var(--sar);
+  }
+
+  /* Scroll suave e sem barra visível */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  * {
+    scrollbar-width: none;
+  }
+}
+
+@utility fan-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  border: 0.5px solid var(--fan-rose-mid);
+  color: var(--fan-text-2);
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  background: transparent;
+  transition:
+    background-color 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+@utility fan-chip-active {
+  background: var(--fan-active-chip);
+  border-color: var(--fan-pink);
+  color: var(--fan-pink-light);
+}
+@utility fan-card {
+  background: var(--fan-bg-2);
+  border: 0.5px solid var(--fan-rose-mid);
+  border-radius: 10px;
+}
+@utility fan-btn-primary {
+  background: var(--fan-pink);
+  color: white;
+  border-radius: 9999px;
+  font-weight: 700;
+  padding: 10px 18px;
+  transition: filter 0.15s;
+}

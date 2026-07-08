@@ -1,0 +1,81 @@
+// Este arquivo é a cópia de referência das regras do Firestore.
+// Fonte da verdade: Firebase Console → Firestore Database → Regras.
+// Sempre que mudar uma regra por lá, atualize este arquivo também
+// (e vice-versa), pra manter os dois em sincronia.
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /works/{workId} {
+      allow read: if request.auth != null &&
+        (resource.data.uid == request.auth.uid || resource.data.isPublicRec == true);
+      allow create: if request.auth != null &&
+        request.resource.data.uid == request.auth.uid;
+      allow update, delete: if request.auth != null &&
+        resource.data.uid == request.auth.uid;
+    }
+
+    match /bookcases/{bookcaseId} {
+      allow read: if request.auth != null &&
+        (resource.data.uid == request.auth.uid || resource.data.isPublic == true);
+      allow create: if request.auth != null &&
+        request.resource.data.uid == request.auth.uid;
+      allow update, delete: if request.auth != null &&
+        resource.data.uid == request.auth.uid;
+    }
+
+    match /award_votes/{uid} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if request.auth != null && request.auth.uid == uid;
+    }
+
+    match /communityRecs/{recId} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null &&
+        request.resource.data.uid == request.auth.uid;
+      allow delete: if request.auth != null &&
+        request.auth.uid == resource.data.uid;
+    }
+
+    match /notifications/{notifId} {
+      allow read: if request.auth != null &&
+        resource.data.uid == request.auth.uid;
+      allow create: if request.auth != null &&
+        request.resource.data.uid == request.auth.uid;
+      allow update, delete: if request.auth != null &&
+        resource.data.uid == request.auth.uid;
+    }
+
+    match /settings/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    match /profiles/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    match /challenges_catalog/{challengeId} {
+      allow read: if request.auth != null;
+      allow write: if false; // gerido só pelo Console do Firebase
+    }
+
+    match /user_challenges/{docId} {
+      allow read: if request.auth != null &&
+        resource.data.uid == request.auth.uid;
+      allow create: if request.auth != null &&
+        request.resource.data.uid == request.auth.uid;
+      allow update: if request.auth != null &&
+        resource.data.uid == request.auth.uid;
+    }
+
+    match /awards_catalog/{categoryId} {
+      allow read: if request.auth != null;
+      allow write: if false; // gerido só pelo Console do Firebase
+    }
+
+    match /awards_config/{docId} {
+      allow read: if request.auth != null;
+      allow write: if false; // gerido só pelo Console do Firebase
+    }
+  }
+}
