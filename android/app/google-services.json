@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "514080981795",
+    "project_id": "fanfarra-6e54b",
+    "storage_bucket": "fanfarra-6e54b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:514080981795:android:6fd191877758c270194296",
+        "android_client_info": {
+          "package_name": "com.fanfarra.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "514080981795-ln0pe7400qqkr7qut75ika8mp2cpn5ur.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCENDTlwwCJ1e2P_oysb7mvX48UJdA_Sw8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "514080981795-ln0pe7400qqkr7qut75ika8mp2cpn5ur.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -8,7 +8,7 @@ import {
   Zap,
   Palette,
   BellRing,
-  Star,
+  Medal,
   Wrench,
   Sparkles,
 } from "lucide-react";
@@ -39,7 +39,7 @@ const FEATURES = [
   { icon: Zap, title: "Sem anúncios", desc: "Experiência limpa e sem interrupções" },
   { icon: Palette, title: "Temas exclusivos", desc: "Personalize a aparência do app com temas PRO" },
   { icon: BellRing, title: "Notificações prioritárias", desc: "Alertas avançados de lançamentos e atualizações" },
-  { icon: Star, title: "Badge PRO no perfil", desc: "Mostre que você é um fã de verdade" },
+  { icon: Medal, title: "Badge PRO no perfil", desc: "Mostre que você é um fã de verdade" },
 ];
 
 function ProPage() {
@@ -96,7 +96,7 @@ function ProPage() {
         >
           ✦ FANFARRA PRO
         </span>
-        <h2 className="text-[22px] font-extrabold" style={{ color: "#FFE6F0" }}>
+        <h2 className="text-[22px] font-extrabold" style={{ color: "var(--fan-text)" }}>
           {isPro ? "Você já é PRO! ✦" : "Leve seu fandom ao próximo nível"}
         </h2>
         <p className="text-[13px] mt-2" style={{ color: "var(--fan-text-2)" }}>
@@ -137,7 +137,7 @@ function ProPage() {
                   <Icon size={18} color="var(--fan-pink-light)" />
                 </div>
                 <div className="flex-1 min-w-0 pr-10">
-                  <div className="text-[14px] font-bold" style={{ color: "#FFE6F0" }}>
+                  <div className="text-[14px] font-bold" style={{ color: "var(--fan-text)" }}>
                     {f.title}
                   </div>
                   <div className="text-[12px] mt-0.5" style={{ color: "var(--fan-text-2)" }}>
@@ -162,7 +162,7 @@ function ProPage() {
             className="p-4 rounded-[14px] flex flex-col items-center text-center"
             style={{ background: "var(--fan-bg-2)", border: "2px solid var(--fan-pink)" }}
           >
-            <div className="text-[13px] font-bold" style={{ color: "#FFE6F0" }}>
+            <div className="text-[13px] font-bold" style={{ color: "var(--fan-text)" }}>
               Sua assinatura está ativa
             </div>
             <button
@@ -186,7 +186,7 @@ function ProPage() {
                 <div className="text-[11px] font-bold uppercase tracking-wide" style={{ color: "var(--fan-text-2)" }}>
                   Mensal
                 </div>
-                <div className="mt-2 text-[18px] font-extrabold" style={{ color: "#FFE6F0" }}>
+                <div className="mt-2 text-[18px] font-extrabold" style={{ color: "var(--fan-text)" }}>
                   R$ 8,90
                   <span className="text-[11px] font-normal" style={{ color: "var(--fan-text-2)" }}>
                     /mês
@@ -214,7 +214,7 @@ function ProPage() {
                 <div className="text-[11px] font-bold uppercase tracking-wide" style={{ color: "var(--fan-pink-light)" }}>
                   Anual
                 </div>
-                <div className="mt-2 text-[18px] font-extrabold" style={{ color: "#FFE6F0" }}>
+                <div className="mt-2 text-[18px] font-extrabold" style={{ color: "var(--fan-text)" }}>
                   R$ 69,90
                   <span className="text-[11px] font-normal" style={{ color: "var(--fan-text-2)" }}>
                     /ano

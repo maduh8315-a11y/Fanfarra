@@ -1,3 +1,5 @@
+import { MediaIcon } from "@/components/fanfarra/MediaIcon";
+import { Sparkles } from "lucide-react";
 import type { WrappedData } from "./types";
 
 export default function Slide2Type({ data }: { data: WrappedData }) {
@@ -26,8 +28,12 @@ export default function Slide2Type({ data }: { data: WrappedData }) {
         />
       ))}
       <div className="wrapped-content">
-        <div style={{ fontSize: "clamp(5rem, 14vw, 9rem)", lineHeight: 1 }}>
-          {data.favoriteType.icon}
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          {data.favoriteType.type ? (
+            <MediaIcon type={data.favoriteType.type} size={120} color="var(--fan-pink)" />
+          ) : (
+            <Sparkles size={120} color="var(--fan-pink)" />
+          )}
         </div>
         <p style={{ color: "var(--fan-pink-light)", marginTop: "1rem", fontSize: "1.1rem" }}>
           Seu tipo favorito foi

@@ -1,13 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState, useRef } from "react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import { Filter, Plus, BookMarked, Layers } from "lucide-react";
+import { Filter, Plus, BookMarked, LayoutGrid } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { ClientOnly } from "@/components/fanfarra/ClientOnly";
 import { TypeChips, type TypeFilter } from "@/components/fanfarra/Chips";
 import { useWorks } from "@/lib/fanfarra/store";
 import { useBookcases, addBookcase } from "@/lib/fanfarra/bookcaseStore";
-import { STATUSES, type Status } from "@/lib/fanfarra/types";
+import {
+  STATUSES,
+  MEDIA_MODES,
+  MODE_OF_TYPE,
+  MODE_STATUSES,
+  MODE_ICONS,
+  MODE_LABELS,
+  type Status,
+  type MediaMode,
+} from "@/lib/fanfarra/types";
 import { MediaIcon } from "@/components/fanfarra/MediaIcon";
 import {
   FilterSheet,
@@ -22,13 +31,18 @@ export const Route = createFileRoute("/library")({
   component: LibraryPage,
 });
 
-const STATUS_TABS = ["Todos", ...STATUSES] as const;
-type StatusTab = (typeof STATUS_TABS)[number];
+const MODE_TABS = ["Todos", ...MEDIA_MODES] as const;
+type ModeTab = (typeof MODE_TABS)[number];
 
 function LibraryPage() {
   const works = useWorks();
   const bookcases = useBookcases();
-  const [tab, setTab] = useState<StatusTab>("Todos");
+  const [mode, setMode] = useState<ModeTab>("Todos");
+  const [tab, setTab] = useState<Status | "Todos">("Todos");
+
+  const statusTabsForMode = useMemo(() => {
+    return mode === "Todos" ? (["Todos", ...STATUSES] as const) : (["Todos", ...MODE_STATUSES[mode]] as const);
+  }, [mode]);
   const [type, setType] = useState<TypeFilter>("Todos");
   const [filters, setFilters] = useState<LibraryFilters>(DEFAULT_FILTERS);
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -36,12 +50,13 @@ function LibraryPage() {
 
   const filtered = useMemo(() => {
     const base = works.filter((w) => {
-      if (tab !== "Todos" && w.status !== (tab as Status)) return false;
+      if (mode !== "Todos" && MODE_OF_TYPE[w.type] !== mode) return false;
+      if (tab !== "Todos" && w.status !== tab) return false;
       if (type !== "Todos" && w.type !== type) return false;
       return true;
     });
     return applyFilters(base, filters);
-  }, [works, tab, type, filters]);
+  }, [works, mode, tab, type, filters]);
 
   const listRef = useRef<HTMLDivElement>(null);
 
@@ -78,14 +93,39 @@ function LibraryPage() {
         </button>
       </header>
 
-      {/* Status tabs */}
+     {/* ── Nível 1: MODO de consumo — separação definitiva Ler/Assistir/Jogar/Ouvir ── */}
+      <div className="flex gap-2 overflow-x-auto px-4 pb-3" style={{ scrollbarWidth: "none" }}>
+        {MODE_TABS.map((m) => {
+          const active = mode === m;
+          return (
+            <button
+              key={m}
+              onPointerDown={() => {
+                setMode(m);
+                setTab("Todos");
+              }}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[12px] font-bold whitespace-nowrap transition"
+              style={{
+                background: active ? "var(--fan-pink)" : "var(--fan-bg-2)",
+                color: active ? "white" : "var(--fan-text-2)",
+                border: active ? "none" : "1px solid var(--fan-border)",
+              }}
+            >
+              {m !== "Todos" && <span aria-hidden>{MODE_ICONS[m]}</span>}
+              {m === "Todos" ? "Todos" : MODE_LABELS[m]}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── Nível 2: sub-abas de status, filtradas pelo modo selecionado acima ── */}
       <div className="flex gap-4 overflow-x-auto px-4 pb-2" style={{ scrollbarWidth: "none" }}>
-        {STATUS_TABS.map((s) => {
+        {statusTabsForMode.map((s) => {
           const active = tab === s;
           return (
             <button
               key={s}
-              onPointerDown={() => setTab(s)}
+              onPointerDown={() => setTab(s as Status | "Todos")}
               className="text-[12px] pb-2 whitespace-nowrap relative"
               style={{ color: active ? "var(--fan-pink-light)" : "var(--fan-text-2)", fontWeight: active ? 700 : 500 }}
             >
@@ -118,7 +158,7 @@ function LibraryPage() {
           className="flex-1 flex items-center justify-center gap-2 rounded-[12px] py-3 text-[12px] font-bold"
           style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)", color: "var(--fan-text-2)" }}
         >
-          <Layers size={15} color="var(--fan-text-2)" />
+          <LayoutGrid size={15} color="var(--fan-text-2)" />
           Ver estantes
           {bookcases.length > 0 && (
             <span

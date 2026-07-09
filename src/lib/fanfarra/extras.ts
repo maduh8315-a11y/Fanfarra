@@ -1,4 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
+import { Medal, BookMarked, Library, CircleCheck, Flame, Vote, Trophy, Target, Star, Gift, type LucideIcon } from "lucide-react";
 import { onAuthStateChanged } from "firebase/auth";
 import {
   collection,
@@ -36,6 +37,7 @@ export interface Settings {
   animations: boolean;
   libraryColumns: 2 | 3;
   theme: "default" | "lunar" | "aurora";
+  mode: "dark" | "light";
 }
 
 const SETTINGS_COLLECTION = "settings";
@@ -53,6 +55,7 @@ const DEFAULT_SETTINGS: Settings = {
   animations: true,
   libraryColumns: 2,
   theme: "default",
+  mode: "dark",
 };
 let settingsCache: Settings = DEFAULT_SETTINGS;
 let settingsUnsub: (() => void) | null = null;
@@ -389,52 +392,22 @@ export async function tickStreak() {
 // ===== Badges =====
 export interface Badge {
   id: string;
-  icon: string;
+  Icon: LucideIcon;
   name: string;
   description: string;
 }
 export const ALL_BADGES: Badge[] = [
-  { id: "first", icon: "🏅", name: "Primeira obra", description: "Adicione sua primeira obra" },
-  { id: "ten", icon: "📚", name: "10 obras", description: "Tenha 10 obras na biblioteca" },
-  { id: "fifty", icon: "📚", name: "50 obras", description: "Tenha 50 obras na biblioteca" },
-  {
-    id: "first_done",
-    icon: "✅",
-    name: "Primeira concluída",
-    description: "Conclua sua primeira obra",
-  },
-  {
-    id: "streak7",
-    icon: "🔥",
-    name: "7 dias de streak",
-    description: "Use o app por 7 dias seguidos",
-  },
-  {
-    id: "streak30",
-    icon: "🔥",
-    name: "30 dias de streak",
-    description: "Use o app por 30 dias seguidos",
-  },
-  {
-    id: "awards",
-    icon: "🗳️",
-    name: "Votou no Awards",
-    description: "Participe do Fanfarra Awards",
-  },
-  {
-    id: "winner",
-    icon: "🏆",
-    name: "Vencedor Awards",
-    description: "Indicou um vencedor no Awards",
-  },
-  { id: "challenge", icon: "🎯", name: "Desafio Fandom", description: "Conclua um Desafio Fandom" },
-  {
-    id: "rated20",
-    icon: "⭐",
-    name: "Avaliou 20 obras",
-    description: "Avalie 20 obras diferentes",
-  },
-  { id: "pro", icon: "🎁", name: "Assinante PRO", description: "Apoie o app como assinante PRO" },
+  { id: "first", Icon: Medal, name: "Primeira obra", description: "Adicione sua primeira obra" },
+  { id: "ten", Icon: BookMarked, name: "10 obras", description: "Tenha 10 obras na biblioteca" },
+  { id: "fifty", Icon: Library, name: "50 obras", description: "Tenha 50 obras na biblioteca" },
+  { id: "first_done", Icon: CircleCheck, name: "Primeira concluída", description: "Conclua sua primeira obra" },
+  { id: "streak7", Icon: Flame, name: "7 dias de streak", description: "Use o app por 7 dias seguidos" },
+  { id: "streak30", Icon: Flame, name: "30 dias de streak", description: "Use o app por 30 dias seguidos" },
+  { id: "awards", Icon: Vote, name: "Votou no Awards", description: "Participe do Fanfarra Awards" },
+  { id: "winner", Icon: Trophy, name: "Vencedor Awards", description: "Indicou um vencedor no Awards" },
+  { id: "challenge", Icon: Target, name: "Desafio Fandom", description: "Conclua um Desafio Fandom" },
+  { id: "rated20", Icon: Star, name: "Avaliou 20 obras", description: "Avalie 20 obras diferentes" },
+  { id: "pro", Icon: Gift, name: "Assinante PRO", description: "Apoie o app como assinante PRO" },
 ];
 
 type BadgeStats = {
@@ -485,7 +458,7 @@ export function syncEarnedBadges(stats: BadgeStats): void {
     if (badge) {
       pushNotification({
         icon: "award",
-        text: `Você ganhou o selo "${badge.name}"! ${badge.icon}`,
+        text: `Você ganhou o selo "${badge.name}"!`,
       });
     }
   });

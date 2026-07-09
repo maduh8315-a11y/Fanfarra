@@ -161,7 +161,7 @@ function ProfilePage() {
                     border: `1px solid ${earned ? "var(--fan-pink)" : "var(--fan-border)"}`,
                   }}
                 >
-                  {b.icon}
+                  <b.Icon size={20} />
                 </div>
                 <span className="text-[9px] text-center" style={{ color: "var(--fan-text-2)" }}>
                   {b.name}
@@ -183,7 +183,7 @@ function ProfilePage() {
             className="w-full max-w-sm rounded-2xl p-5 text-center"
             style={{ background: "var(--fan-bg-2)", border: "0.5px solid var(--fan-pink)" }}
           >
-            <div className="text-4xl mb-2">{selectedBadge.icon}</div>
+            <div className="text-4xl mb-2"><selectedBadge.Icon size={36} /></div>
             <h3 className="text-base font-bold" style={{ color: "var(--fan-text)" }}>
               {selectedBadge.name}
             </h3>

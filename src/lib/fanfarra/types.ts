@@ -41,6 +41,51 @@ export const STATUSES = [
 
 export type Status = (typeof STATUSES)[number];
 
+// ===== Modo de consumo — agrupa os tipos por "como" você consome =====
+export const MEDIA_MODES = ["Ler", "Assistir", "Jogar", "Ouvir"] as const;
+export type MediaMode = (typeof MEDIA_MODES)[number];
+
+export const MODE_ICONS: Record<MediaMode, string> = {
+  Ler: "📖",
+  Assistir: "🎬",
+  Jogar: "🎮",
+  Ouvir: "🎧",
+};
+
+export const MODE_LABELS: Record<MediaMode, string> = {
+  Ler: "Leitura",
+  Assistir: "Assistir",
+  Jogar: "Jogos",
+  Ouvir: "Áudio",
+};
+
+export const MODE_OF_TYPE: Record<MediaType, MediaMode> = {
+  Manga: "Ler",
+  Manhwa: "Ler",
+  Manhua: "Ler",
+  Fanfic: "Ler",
+  Livro: "Ler",
+  Webtoon: "Ler",
+  "Light Novel": "Ler",
+  HQ: "Ler",
+  Anime: "Assistir",
+  Série: "Assistir",
+  Filme: "Assistir",
+  Donghua: "Assistir",
+  Dorama: "Assistir",
+  Vídeos: "Assistir",
+  "Gacha Videos": "Assistir",
+  Jogo: "Jogar",
+  Música: "Ouvir",
+};
+
+export const MODE_STATUSES: Record<MediaMode, readonly Status[]> = {
+  Ler: ["Lendo", "Quero ler", "Pausado", "Abandonado", "Concluído"],
+  Assistir: ["Assistindo", "Quero assistir", "Assistido", "Pausado", "Abandonado", "Concluído"],
+  Jogar: ["Jogando", "Quero jogar", "Platinado", "Pausado", "Abandonado", "Concluído"],
+  Ouvir: ["Ouvindo", "Quero ouvir", "Ouvido"],
+};
+
 export interface DateParts {
   d?: number;
   m?: number;

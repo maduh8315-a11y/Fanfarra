@@ -9,9 +9,12 @@
 // os componentes de slide lá (veja os blocos marcados com // ── ARQUIVO: ──)
 // O CSS vai em src/components/fanfarra/wrapped/wrapped.css
 
+
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import domtoimage from "dom-to-image-more";
+import { BookMarked, Trophy, Gamepad2, Flame, Zap, Star, Sparkles, Sprout, type LucideIcon } from "lucide-react";
+import type { MediaType } from "@/lib/fanfarra/types";
 import { useWorks } from "@/lib/fanfarra/store";
 import { useProfile } from "@/lib/fanfarra/extras";
 import "@/components/fanfarra/wrapped/wrapped.css";
@@ -26,6 +29,7 @@ import Slide8End from "@/components/fanfarra/wrapped/Slide8End";
 import WrappedPaywall from "@/components/fanfarra/wrapped/WrappedPaywall";
 import { useIsPro } from "@/lib/fanfarra/config";
 import type { Work } from "@/lib/fanfarra/types";
+
 
 export const Route = createFileRoute("/wrapped")({
   head: () => ({ meta: [{ title: "Wrapped Anual — Fanfarra" }] }),
@@ -47,23 +51,7 @@ function calcWrappedData(works: Work[], userName: string) {
   const typeCounts: Record<string, number> = {};
   works.forEach((w) => (typeCounts[w.type] = (typeCounts[w.type] ?? 0) + 1));
   const topTypeEntry = Object.entries(typeCounts).sort((a, b) => b[1] - a[1])[0];
-  const TYPE_EMOJI: Record<string, string> = {
-    Anime: "🎌",
-    Manga: "📖",
-    Manhwa: "🌸",
-    Manhua: "🐉",
-    Série: "📺",
-    Filme: "🎬",
-    Livro: "📚",
-    Jogo: "🎮",
-    Webtoon: "📱",
-    Fanfic: "✍️",
-    "Light Novel": "📝",
-    Donghua: "🎴",
-    HQ: "💥",
-    Dorama: "🎥",
-    Música: "🎵",
-  };
+
   // Obra favorita (maior rating, desempate por updatedAt)
   const rated = [...works]
     .filter((w) => w.rating > 0)
@@ -95,22 +83,22 @@ function calcWrappedData(works: Work[], userName: string) {
   const streak = Math.min(daySet.size, 365);
 
   // Conquistas (baseadas nos selos do extras.ts — aqui mocadas para não depender de importação circular)
-  const achievements = [
-    works.length >= 10 ? { emoji: "📚", name: "Bibliófilo" } : null,
-    works.length >= 50 ? { emoji: "🏆", name: "Colecionador" } : null,
-    gamesBeaten >= 1 ? { emoji: "🎮", name: "Platinador" } : null,
-    streak >= 7 ? { emoji: "🔥", name: "Streak 7+" } : null,
-    streak >= 30 ? { emoji: "💥", name: "Streak 30+" } : null,
-    rated.length >= 5 ? { emoji: "⭐", name: "Crítico" } : null,
-    thisYear.length >= 5 ? { emoji: "🌟", name: "Ativo " + YEAR } : null,
-  ].filter(Boolean) as { emoji: string; name: string }[];
+  const achievements: { Icon: LucideIcon; name: string }[] = [
+    works.length >= 10 ? { Icon: BookMarked, name: "Bibliófilo" } : null,
+    works.length >= 50 ? { Icon: Trophy, name: "Colecionador" } : null,
+    gamesBeaten >= 1 ? { Icon: Gamepad2, name: "Platinador" } : null,
+    streak >= 7 ? { Icon: Flame, name: "Streak 7+" } : null,
+    streak >= 30 ? { Icon: Zap, name: "Streak 30+" } : null,
+    rated.length >= 5 ? { Icon: Star, name: "Crítico" } : null,
+    thisYear.length >= 5 ? { Icon: Sparkles, name: "Ativo " + YEAR } : null,
+  ].filter(Boolean) as { Icon: LucideIcon; name: string }[];
 
   return {
     year: YEAR,
     userName: userName || "Fã",
     favoriteType: topTypeEntry
-      ? { icon: TYPE_EMOJI[topTypeEntry[0]] ?? "🎯", name: topTypeEntry[0], count: topTypeEntry[1] }
-      : { icon: "🎯", name: "Variado", count: works.length },
+      ? { type: topTypeEntry[0] as MediaType, name: topTypeEntry[0], count: topTypeEntry[1] }
+      : { type: null, name: "Variado", count: works.length },
     favoriteWork: fav
       ? { title: fav.title, rating: fav.rating, status: fav.status }
       : { title: "Nenhuma obra ainda", rating: 0, status: "—" },
@@ -129,10 +117,9 @@ function calcWrappedData(works: Work[], userName: string) {
       gamesBeaten,
     },
     streak,
-    achievements: achievements.length > 0 ? achievements : [{ emoji: "🌱", name: "Começando" }],
+    achievements: achievements.length > 0 ? achievements : [{ Icon: Sprout, name: "Começando" }],
   };
 }
-
 // ─── Componente principal ────────────────────────────────────────────────────
 
 function WrappedPage() {
@@ -213,7 +200,7 @@ function WrappedPage() {
           zIndex: 60,
           background: "rgba(13,0,8,0.7)",
           border: "1px solid rgba(255,0,102,0.4)",
-          color: "#FFE6F0",
+          color: "var(--fan-text)",
           borderRadius: "50%",
           width: 40,
           height: 40,

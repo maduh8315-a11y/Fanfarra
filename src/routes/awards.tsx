@@ -93,7 +93,7 @@ function AwardsPage() {
         <button onClick={() => nav({ to: "/" })} aria-label="Voltar">
           <ArrowLeft size={22} color="var(--fan-text-2)" />
         </button>
-        <h1 className="text-lg font-bold" style={{ color: "#FFE6F0" }}>
+        <h1 className="text-lg font-bold" style={{ color: "var(--fan-text)" }}>
           Fanfarra Awards
         </h1>
         <span className="w-6" />
@@ -108,7 +108,7 @@ function AwardsPage() {
             <Trophy size={30} color="var(--fan-pink-light)" />
           </div>
         </div>
-        <h2 className="text-[22px] font-extrabold" style={{ color: "#FFE6F0" }}>
+        <h2 className="fan-font-display text-[22px] font-extrabold" style={{ color: "var(--fan-text)" }}>
           {config.title}
         </h2>
         <p className="text-[13px] mt-1.5" style={{ color: "var(--fan-text-2)" }}>
@@ -168,7 +168,7 @@ function AwardsPage() {
       ) : phase === "final" ? (
         <VotingPhase categories={categories} phase="final" />
       ) : (
-        <ResultsPhase categories={categories} />
+        <ResultsPhase categories={categories} config={config} />
       )}
     </AppShell>
   );
@@ -196,7 +196,7 @@ function RecommendationPhase({ config }: { config: AwardsConfig }) {
         <p className="text-[13px]" style={{ color: "var(--fan-text-2)" }}>
           As indicações não são mais sugeridas manualmente aqui — elas vêm direto das recomendações que
           a galera posta na tela{" "}
-          <span style={{ color: "#FFE6F0", fontWeight: 700 }}>Para você</span>, ao longo do ano. 👏 e 👎
+          <span style={{ color: "var(--fan-text)", fontWeight: 700 }}>Para você</span>, ao longo do ano. 👏 e 👎
           contam pra valer!
         </p>
         {deadline ? (
@@ -251,7 +251,7 @@ function LeaderboardView() {
             {i + 1}
           </span>
           <div className="flex-1 min-w-0">
-            <div className="text-[13px] font-semibold truncate" style={{ color: "#FFE6F0" }}>
+            <div className="text-[13px] font-semibold truncate" style={{ color: "var(--fan-text)" }}>
               @{r.username}
             </div>
             <div className="text-[10px]" style={{ color: "var(--fan-text-2)" }}>
@@ -310,7 +310,7 @@ function VotingPhase({ categories, phase }: { categories: AwardCategory[]; phase
           <div key={c.id} className="rounded-[14px] p-4" style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-rose-mid)" }}>
             <div className="flex items-center gap-2 mb-3">
               <Icon size={16} color="var(--fan-pink-light)" />
-              <span className="text-[13px] font-bold" style={{ color: "#FFE6F0" }}>
+              <span className="text-[13px] font-bold" style={{ color: "var(--fan-text)" }}>
                 {c.emoji} {c.name}
               </span>
             </div>
@@ -330,7 +330,7 @@ function VotingPhase({ categories, phase }: { categories: AwardCategory[]; phase
                       style={{
                         background: isSelected ? "var(--fan-active-chip)" : "transparent",
                         border: `1px solid ${isSelected ? "var(--fan-pink)" : "var(--fan-border)"}`,
-                        color: isSelected ? "var(--fan-pink-light)" : "#FFE6F0",
+                        color: isSelected ? "var(--fan-pink-light)" : "var(--fan-text)",
                       }}
                     >
                       <span>{nominee}</span>
@@ -368,8 +368,14 @@ function VotingPhase({ categories, phase }: { categories: AwardCategory[]; phase
 
 // ===== Fase 3 — Resultado final =====
 
-function ResultsPhase({ categories }: { categories: AwardCategory[] }) {
-  const allVotes = useAllConfirmedAwardVotes("final");
+function ResultsPhase({ categories, config }: { categories: AwardCategory[]; config: AwardsConfig }) {
+  const rawVotes = useAllConfirmedAwardVotes("final");
+  // mesmo princípio do freeze: votos confirmados depois do prazo final não
+  // contam pro resultado, mesmo que a virada pra "resultado" demore a acontecer.
+  const deadline = config.finalDeadline;
+  const allVotes = deadline
+    ? rawVotes.filter((v) => v.confirmedAt === undefined || v.confirmedAt <= deadline)
+    : rawVotes;
 
   return (
     <div className="px-4 pb-10 space-y-3">
@@ -385,7 +391,7 @@ function ResultsPhase({ categories }: { categories: AwardCategory[] }) {
           <div key={c.id} className="rounded-[14px] p-4" style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-rose-mid)" }}>
             <div className="flex items-center gap-2 mb-2">
               <Icon size={16} color="var(--fan-pink-light)" />
-              <span className="text-[13px] font-bold" style={{ color: "#FFE6F0" }}>
+              <span className="text-[13px] font-bold" style={{ color: "var(--fan-text)" }}>
                 {c.emoji} {c.name}
               </span>
             </div>
@@ -452,7 +458,7 @@ function AdminPanel({ categories, config }: { categories: AwardCategory[]; confi
             value={days}
             onChange={(e) => setDays(Number(e.target.value))}
             className="w-16 rounded-[8px] px-2 py-1 text-[11px] bg-transparent"
-            style={{ border: "1px solid var(--fan-rose-mid)", color: "#FFE6F0" }}
+            style={{ border: "1px solid var(--fan-rose-mid)", color: "var(--fan-text)" }}
           />
           <button
             onClick={handleStartCycle}

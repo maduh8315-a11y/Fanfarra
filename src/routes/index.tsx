@@ -177,10 +177,10 @@ function StatCard({
           {label}
         </span>
       </div>
-      <span className="text-[15px] font-bold" style={{ color: "#FFE6F0" }}>
+      <span className="text-[15px] font-bold" style={{ color: "var(--fan-pink)" }}>
         {total}
       </span>
-      <span className="text-[9px]" style={{ color: "var(--fan-rose-mid)" }}>
+      <span className="text-[9px]" style={{ color: "var(--fan-text-2)" }}>
         <span style={{ color: color }}>{month}</span> este mês
       </span>
     </div>

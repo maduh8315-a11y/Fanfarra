@@ -1,4 +1,5 @@
 import { uploadCoverImage } from "@/lib/fanfarra/uploadImage";
+import { ArrowLeft, Trash2, Image as ImageIconLucide, Lock } from "lucide-react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, useRef, useMemo, type CSSProperties } from "react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
@@ -186,7 +187,7 @@ function InnerHeader({
       <div style={{ width: 40 }}>
         {onBack && (
           <button onClick={onBack} style={iconBtn} aria-label="Voltar">
-            ←
+            <ArrowLeft size={18} />
           </button>
         )}
       </div>
@@ -432,7 +433,7 @@ function Level2({
             borderColor: "#3A0000",
           }}
         >
-          🗑 Excluir estante
+          <span className="inline-flex items-center gap-1.5"><Trash2 size={13} /> Excluir estante</span>
         </button>
       </div>
 
@@ -760,7 +761,7 @@ function CoverField({ value, onChange }: { value: string; onChange: (v: string) 
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           ) : (
-            <span style={{ fontSize: 20 }}>🖼️</span>
+           <ImageIconLucide size={20} color={C.muted} />
           )}
         </div>
         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
@@ -924,8 +925,8 @@ export function BookcaseFormModal({
             }}
           >
             <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "#FFE6F0" }}>
-                Tornar pública {!isPro && "🔒"}
+              <div style={{ fontSize: 13, fontWeight: 600, color: "var(--fan-text)" }}>
+                Tornar pública {!isPro && <Lock size={11} style={{ display: "inline", verticalAlign: "middle" }} />}
               </div>
               <div style={{ fontSize: 11, color: C.muted }}>
                 Outros usuários poderão ver e seguir essa estante

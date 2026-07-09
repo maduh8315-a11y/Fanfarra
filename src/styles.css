@@ -81,7 +81,7 @@
   --fan-red: #cc0022;
   --fan-red-dark: #3d0010;
   --fan-rose-mid: #4D0025;
-  --fan-text: #ffe6f0;
+  --fan-text: var(--fan-text);
   --fan-text-2: #CC6699;
   --fan-text-3: #f2d9e6;
   --fan-border: #2E0018;
@@ -92,14 +92,16 @@
   --sidebar-primary: var(--fan-pink);
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: var(--fan-bg-2);
-  --sidebar-accent-foreground: #ffe6f0;
+  --sidebar-accent-foreground: var(--fan-text);
   --sidebar-border: var(--fan-border);
   --sidebar-ring: var(--fan-pink);
   /* Safe areas para Android/iOS */
-  --sat: env(safe-area-inset-top, 0px);
-  --sab: env(safe-area-inset-bottom, 0px);
-  --sal: env(safe-area-inset-left, 0px);
-  --sar: env(safe-area-inset-right, 0px);
+  --sat: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --sab: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+  --sal: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
+  --sar: var(--safe-area-inset-right, env(safe-area-inset-right, 0px));
+  --font-body: "Manrope", system-ui, sans-serif;
+  --font-display: "Unbounded", system-ui, sans-serif;
 }
 
 [data-theme="lunar"] {
@@ -136,6 +138,60 @@
   --fan-active-chip: #145c46;
 }
 
+/* ===== MODO CLARO ===== */
+/* Combina com qualquer tema via data-theme. Sem data-theme = tema padrão (rosa). */
+
+[data-mode="light"] {
+  --fan-bg: #FFF5F8;
+  --fan-bg-2: #FFFFFF;
+  --fan-bg-3: #FFE9F0;
+  --fan-pink: #E5004F;
+  --fan-pink-light: #FF0066;
+  --fan-red: #cc0022;
+  --fan-red-dark: #FFD6E4;
+  --fan-rose-mid: #F2C6D9;
+  --fan-text: #2B0012;
+  --fan-text-2: #91375A;
+  --fan-text-3: #4D0025;
+  --fan-border: #F5D6E3;
+  --fan-tag: #FFE3ED;
+  --fan-active-chip: #FFD3E4;
+}
+
+[data-mode="light"][data-theme="lunar"] {
+  --fan-bg: #F7F5FF;
+  --fan-bg-2: #FFFFFF;
+  --fan-bg-3: #EFEBFF;
+  --fan-pink: #6D3FFF;
+  --fan-pink-light: #7C5CFF;
+  --fan-red: #4c1d95;
+  --fan-red-dark: #E4DBFF;
+  --fan-rose-mid: #D9CEFF;
+  --fan-text: #1A0F3D;
+  --fan-text-2: #6B4FBF;
+  --fan-text-3: #2D1B5E;
+  --fan-border: #E4DBFF;
+  --fan-tag: #EFEBFF;
+  --fan-active-chip: #E1D6FF;
+}
+
+[data-mode="light"][data-theme="aurora"] {
+  --fan-bg: #F2FBF7;
+  --fan-bg-2: #FFFFFF;
+  --fan-bg-3: #E3F7EE;
+  --fan-pink: #0C9468;
+  --fan-pink-light: #10b981;
+  --fan-red: #b45309;
+  --fan-red-dark: #D2F3E4;
+  --fan-rose-mid: #C6EEDD;
+  --fan-text: #04241A;
+  --fan-text-2: #1E8F6C;
+  --fan-text-3: #0A3626;
+  --fan-border: #D2F3E4;
+  --fan-tag: #E3F7EE;
+  --fan-active-chip: #CBEFDD;
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
@@ -170,10 +226,14 @@
   body {
     background-color: var(--fan-bg);
     color: var(--fan-text-2);
-    font-family: "Inter", system-ui, sans-serif;
+    font-family: var(--font-body);
     padding-top: var(--sat);
     padding-left: var(--sal);
     padding-right: var(--sar);
+  }
+
+  h1 {
+    font-family: var(--font-display);
   }
 
   /* Scroll suave e sem barra visível */
@@ -218,4 +278,8 @@
   font-weight: 700;
   padding: 10px 18px;
   transition: filter 0.15s;
+}
+
+@utility fan-font-display {
+  font-family: var(--font-display);
 }

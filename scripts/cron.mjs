@@ -33,6 +33,13 @@ async function advanceAwardsPhase() {
   const configSnap = await configRef.get();
   if (!configSnap.exists) return console.log("[awards] sem config, ignorando.");
   const config = configSnap.data();
+  // Blindagem: campos numéricos podem ter sido salvos como texto (string) no
+  // Console do Firebase — isso faz "prazo + WEEK_MS" virar concatenação de
+  // texto em vez de soma numérica.
+  config.year = Number(config.year);
+  if (config.recomendacaoDeadline !== undefined) config.recomendacaoDeadline = Number(config.recomendacaoDeadline);
+  if (config.indicacaoDeadline !== undefined) config.indicacaoDeadline = Number(config.indicacaoDeadline);
+  if (config.finalDeadline !== undefined) config.finalDeadline = Number(config.finalDeadline);
   const now = Date.now();
 
   const catalogSnap = await db.collection("awards_catalog").get();

@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Star } from "lucide-react";
 import type { WrappedData } from "./types";
 
 export default function Slide3Favorite({ data }: { data: WrappedData }) {
@@ -51,11 +52,15 @@ export default function Slide3Favorite({ data }: { data: WrappedData }) {
           >
             {data.favoriteWork.title}
           </h2>
-          <div style={{ marginTop: "1.25rem", fontSize: "2rem", color: "var(--fan-pink)" }}>
-            {"★".repeat(data.favoriteWork.rating)}
-            <span style={{ color: "rgba(255,230,240,0.25)" }}>
-              {"★".repeat(5 - data.favoriteWork.rating)}
-            </span>
+          <div style={{ marginTop: "1.25rem", display: "flex", gap: 4 }}>
+            {Array.from({ length: 5 }, (_, i) => (
+              <Star
+                key={i}
+                size={28}
+                fill={i < data.favoriteWork.rating ? "var(--fan-pink)" : "none"}
+                color={i < data.favoriteWork.rating ? "var(--fan-pink)" : "rgba(255,230,240,0.25)"}
+              />
+            ))}
           </div>
           <div
             style={{

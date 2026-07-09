@@ -346,7 +346,7 @@ export function EpisodeDurationField({
           onChangeFn(v);
         }}
         className="w-full px-2 py-3 text-sm text-center outline-none rounded-[10px]"
-        style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-rose-mid)", color: "#FFE6F0" }}
+        style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-rose-mid)", color: "var(--fan-text)" }}
       />
     </div>
   );

@@ -51,7 +51,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         style={{
           background: "var(--fan-bg-3)",
           borderTop: "0.5px solid #1E0010",
-          paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom, 0px))",
+          paddingBottom: "calc(0.75rem + var(--sab))",
         }}
       >
         {TABS.map((t) => {
@@ -107,7 +107,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           />
           <aside
             className="w-[80%] max-w-[320px] h-full overflow-y-auto"
-            style={{ background: "var(--fan-bg)", paddingTop: "env(safe-area-inset-top, 0px)" }}
+            style={{ background: "var(--fan-bg)", paddingTop: "var(--sat)" }}
           >
             <div className="p-5 flex items-center justify-between">
               {user ? (
@@ -149,20 +149,11 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="h-px mx-5" style={{ background: "var(--fan-rose-mid)" }} />
             <nav className="p-3 space-y-1" onClick={() => setDrawerOpen(false)}>
               <DrawerSection label="Principal" />
-              <DrawerLink to="/" icon={Home} label="Início" />
-              <DrawerLink to="/library" icon={Library} label="Biblioteca" />
               <DrawerLink to="/search" icon={Search} label="Buscar" />
-              <DrawerLink to="/add" icon={Plus} label="Adicionar obra" />
 
               <DrawerSection label="Descobrir" />
-              <DrawerLink to="/recommendations" icon={Wand2} label="Recomendações" />
               <DrawerLink to="/stats" icon={BarChart3} label="Estatísticas Avançadas" />
-              <DrawerLink
-                to="/notifications"
-                icon={Sparkles}
-                label="Novidades"
-                badge={unreadCount > 0 ? String(unreadCount) : undefined}
-              />
+              <DrawerLink to="/wrapped" icon={Sparkles} label="Wrapped Anual" pro />
 
               <DrawerSection label="Comunidade" />
               <DrawerLink
@@ -173,12 +164,15 @@ export function AppShell({ children }: { children: ReactNode }) {
               />
               <DrawerLink to="/challenges" icon={Award} label="Desafios Fandom" />
               <DrawerLink to="/collections" icon={Users} label="Minhas Estantes" />
-              <DrawerLink to="/wrapped" icon={Sparkles} label="Wrapped Anual" pro />
 
               <DrawerSection label="Conta" />
-              <DrawerLink to="/profile" icon={User} label="Perfil" />
+              <DrawerLink
+                to="/notifications"
+                icon={Bell}
+                label="Notificações"
+                badge={unreadCount > 0 ? String(unreadCount) : undefined}
+              />
               <DrawerLink to="/settings" icon={Settings} label="Configurações" />
-              <DrawerLink to="/notifications" icon={Bell} label="Notificações" />
               <DrawerLink to="/about" icon={Info} label="Sobre o App" />
               <button
                 onClick={handleLogout}

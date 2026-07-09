@@ -31,7 +31,7 @@ export default function WrappedPaywall() {
       >
         <Sparkles size={32} color="var(--fan-pink-light)" fill="var(--fan-pink-light)" />
       </div>
-      <h2 style={{ color: "#FFE6F0", fontSize: 20, fontWeight: 800, marginBottom: 8 }}>
+      <h2 style={{ color: "var(--fan-text)", fontSize: 20, fontWeight: 800, marginBottom: 8 }}>
         O resto do seu Wrapped é PRO ✦
       </h2>
       <p style={{ color: "var(--fan-text-2)", fontSize: 13, maxWidth: 280, marginBottom: 24 }}>

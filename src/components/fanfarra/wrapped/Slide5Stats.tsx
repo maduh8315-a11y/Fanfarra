@@ -1,11 +1,12 @@
+import { Tv, Clock, BookOpen, Gamepad2 } from "lucide-react";
 import type { WrappedData } from "./types";
 
 export default function Slide5Stats({ data }: { data: WrappedData }) {
   const items = [
-    { label: "Obras", value: data.stats.works, icon: "📺" },
-    { label: "Horas consumidas", value: data.stats.hours, icon: "⏱️" },
-    { label: "Capítulos lidos", value: data.stats.chapters.toLocaleString("pt-BR"), icon: "📖" },
-    { label: "Jogos zerados", value: data.stats.gamesBeaten, icon: "🎮" },
+    { label: "Obras", value: data.stats.works, Icon: Tv },
+    { label: "Horas consumidas", value: data.stats.hours, Icon: Clock },
+    { label: "Capítulos lidos", value: data.stats.chapters.toLocaleString("pt-BR"), Icon: BookOpen },
+    { label: "Jogos zerados", value: data.stats.gamesBeaten, Icon: Gamepad2 },
   ];
   return (
     <div className="wrapped-slide">
@@ -41,12 +42,14 @@ export default function Slide5Stats({ data }: { data: WrappedData }) {
         >
           {items.map((it) => (
             <div key={it.label} className="stat-card">
-              <div style={{ fontSize: "2rem" }}>{it.icon}</div>
+              <div style={{ display: "flex", justifyContent: "center" }}>
+                <it.Icon size={32} color="var(--fan-pink)" />
+              </div>
               <div
                 style={{
                   fontSize: "clamp(1.75rem, 4vw, 2.75rem)",
                   fontWeight: 900,
-                  color: "#FFE6F0",
+                  color: "var(--fan-text)",
                   marginTop: "0.25rem",
                 }}
               >

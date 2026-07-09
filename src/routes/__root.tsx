@@ -95,7 +95,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@600;700;800;900&display=swap",
       },
       { rel: "stylesheet", href: appCss },
       { rel: "icon", href: "/favicon.ico", sizes: "any" },
@@ -137,13 +137,16 @@ function RootComponent() {
   );
 }
 
-// Aplica o tema salvo (default/lunar/aurora) trocando o atributo data-theme
-// da tag <html> — é esse atributo que os seletores do styles.css escutam.
+// Aplica o tema salvo (default/lunar/aurora) e o modo (claro/escuro) trocando
+// os atributos data-theme e data-mode da tag <html> — são esses atributos que
+// os seletores do styles.css escutam. Os dois são independentes: qualquer
+// tema pode ser combinado com claro ou escuro.
 function ApplyTheme() {
-  const { theme } = useSettings();
+  const { theme, mode } = useSettings();
   useEffect(() => {
     document.documentElement.dataset.theme = theme === "default" ? "" : theme;
-  }, [theme]);
+    document.documentElement.dataset.mode = mode === "dark" ? "" : mode;
+  }, [theme, mode]);
   return null;
 }
 

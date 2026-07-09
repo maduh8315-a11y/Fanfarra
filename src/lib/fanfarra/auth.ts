@@ -3,6 +3,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signInWithPopup,
+  signInWithCredential,
   GoogleAuthProvider,
   EmailAuthProvider,
   reauthenticateWithCredential,
@@ -134,8 +135,12 @@ export async function signUpWithEmail(
 }
 
 export async function signInWithGoogle(): Promise<AuthUser> {
-  const provider = new GoogleAuthProvider();
-  const cred = await signInWithPopup(auth, provider);
+  const { FirebaseAuthentication } = await import("@capacitor-firebase/authentication");
+  const result = await FirebaseAuthentication.signInWithGoogle();
+  const idToken = result.credential?.idToken;
+  if (!idToken) throw new Error("Não foi possível obter o token do Google.");
+  const credential = GoogleAuthProvider.credential(idToken);
+  const cred = await signInWithCredential(auth, credential);
   return toAuthUser(cred.user);
 }
 

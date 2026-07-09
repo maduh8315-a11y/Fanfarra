@@ -16,6 +16,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "./firebase";
 import { stripUndefined } from "./firestoreUtils";
 import { pushNotification } from "./extras";
+import { getRecReactionCountsAsOf } from "./recReactions";
 
 // ===== Configuração da edição (ano/título/fase/prazos) — editável no Console do Firebase =====
 const CONFIG_COLLECTION = "awards_config";
@@ -41,6 +42,23 @@ const DEFAULT_CONFIG: AwardsConfig = {
   phase: "recomendacao",
 };
 
+// Blindagem: campos numéricos podem ter sido salvos como texto (string) no
+// Console do Firebase por engano — isso faz "prazo + WEEK_MS" virar
+// concatenação de texto em vez de soma. Essa função garante number sempre.
+function normalizeAwardsConfig(raw: Partial<AwardsConfig> | undefined): AwardsConfig {
+  const merged = { ...DEFAULT_CONFIG, ...raw };
+  return {
+    ...merged,
+    year: Number(merged.year),
+    recomendacaoDeadline:
+      merged.recomendacaoDeadline !== undefined ? Number(merged.recomendacaoDeadline) : undefined,
+    indicacaoDeadline:
+      merged.indicacaoDeadline !== undefined ? Number(merged.indicacaoDeadline) : undefined,
+    finalDeadline:
+      merged.finalDeadline !== undefined ? Number(merged.finalDeadline) : undefined,
+  };
+}
+
 let configCache: AwardsConfig = DEFAULT_CONFIG;
 const configListeners = new Set<() => void>();
 let configUnsub: (() => void) | null = null;
@@ -55,9 +73,7 @@ function connectConfig() {
   configUnsub = onSnapshot(
     doc(db, CONFIG_COLLECTION, CONFIG_DOC_ID),
     (snap) => {
-      configCache = snap.exists()
-        ? { ...DEFAULT_CONFIG, ...(snap.data() as Partial<AwardsConfig>) }
-        : DEFAULT_CONFIG;
+      configCache = normalizeAwardsConfig(snap.exists() ? (snap.data() as Partial<AwardsConfig>) : undefined);
       notifyConfig();
     },
     (err) => console.error("Erro ao carregar configuração do Awards:", err),
@@ -191,8 +207,10 @@ export function useAwardCategories(): AwardCategory[] {
 export interface AwardVoteDoc {
   votes: Record<string, string>;
   confirmed: boolean;
+  confirmedAt?: number;
   year: number;
 }
+
 
 export interface AwardVoteRecord extends AwardVoteDoc {
   uid: string;
@@ -359,7 +377,7 @@ function createPhaseVoteStore(phaseCollection: string) {
   function confirm(notifyText: string): void {
     const uid = auth.currentUser?.uid;
     if (!uid) throw new Error("Usuário não autenticado.");
-    const next: AwardVoteDoc = { ...cache, confirmed: true, year: configCache.year };
+    const next: AwardVoteDoc = { ...cache, confirmed: true, confirmedAt: Date.now(), year: configCache.year };
     cache = next;
     notify();
     setDoc(doc(db, phaseCollection, uid), stripUndefined(next), { merge: true }).catch((err) =>
@@ -443,9 +461,7 @@ export async function checkAndAdvanceAwardsPhase(
   if (categories.length === 0) return;
 
   const configSnap = await getDoc(doc(db, CONFIG_COLLECTION, CONFIG_DOC_ID));
-  const config = configSnap.exists()
-    ? { ...DEFAULT_CONFIG, ...(configSnap.data() as Partial<AwardsConfig>) }
-    : DEFAULT_CONFIG;
+  const config = normalizeAwardsConfig(configSnap.exists() ? (configSnap.data() as Partial<AwardsConfig>) : undefined);
   const now = Date.now();
 
   if (config.phase === "recomendacao") {
@@ -472,16 +488,13 @@ export async function forceAdvanceAwardsPhase(categories: AwardCategory[]): Prom
 // reais da comunidade (postadas em /recommendations) e grava o top 10 de
 // cada categoria. Reações que chegarem depois do prazo não contam mais.
 async function freezeNominationsAndAdvance(categories: AwardCategory[], config: AwardsConfig): Promise<void> {
-  const [recsSnap, countsSnap] = await Promise.all([
-    getDocs(collection(db, "communityRecs")),
-    getDocs(collection(db, "rec_reaction_counts")),
-  ]);
+  // Prazo real da fase de recomendação — é o corte que decide o que conta ou não.
+  const freezeDeadline = config.recomendacaoDeadline ?? Date.now();
 
-  const countsById = new Map<string, { likes: number; boos: number }>();
-  countsSnap.docs.forEach((d) => {
-    const data = d.data() as { likes?: number; boos?: number };
-    countsById.set(d.id, { likes: data.likes ?? 0, boos: data.boos ?? 0 });
-  });
+  const [recsSnap, countsById] = await Promise.all([
+    getDocs(collection(db, "communityRecs")),
+    getRecReactionCountsAsOf(freezeDeadline), // só reações com createdAt <= prazo
+  ]);
 
   const byTheme = new Map<string, { title: string; likes: number; boos: number }[]>();
   recsSnap.docs.forEach((d) => {
@@ -505,7 +518,7 @@ async function freezeNominationsAndAdvance(categories: AwardCategory[], config: 
     );
   }
 
-  const nextIndicacaoDeadline = (config.recomendacaoDeadline ?? Date.now()) + WEEK_MS;
+  const nextIndicacaoDeadline = freezeDeadline + WEEK_MS;
 
   await runTransaction(db, async (tx) => {
     const configRef = doc(db, CONFIG_COLLECTION, CONFIG_DOC_ID);
@@ -531,8 +544,13 @@ async function freezeNominationsAndAdvance(categories: AwardCategory[], config: 
 
 // Fase 1 → 2: pega os 5 mais votados de cada categoria na fase "indicacao".
 async function advanceIndicacaoToFinal(categories: AwardCategory[], config: AwardsConfig): Promise<void> {
+  const deadline = config.indicacaoDeadline ?? Date.now();
   const snap = await getDocs(query(collection(db, "award_votes_indicacao"), where("confirmed", "==", true)));
-  const allVotes = snap.docs.map((d) => ({ uid: d.id, ...(d.data() as Omit<AwardVoteRecord, "uid">) }));
+  const allVotes = snap.docs
+    .map((d) => ({ uid: d.id, ...(d.data() as Omit<AwardVoteRecord, "uid">) }))
+    // votos confirmados depois do prazo não contam pra avançar pra final;
+    // votos antigos sem confirmedAt (de antes dessa correção) continuam valendo.
+    .filter((v) => v.confirmedAt === undefined || v.confirmedAt <= deadline);
 
   const top5ByCategoryId = new Map<string, string[]>();
   categories.forEach((c) => {
@@ -544,7 +562,7 @@ async function advanceIndicacaoToFinal(categories: AwardCategory[], config: Awar
     );
   });
 
-  const nextFinalDeadline = (config.indicacaoDeadline ?? Date.now()) + WEEK_MS;
+  const nextFinalDeadline = deadline + WEEK_MS;
 
   await runTransaction(db, async (tx) => {
     const configRef = doc(db, CONFIG_COLLECTION, CONFIG_DOC_ID);

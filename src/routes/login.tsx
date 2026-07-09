@@ -51,7 +51,10 @@ function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen px-6 pb-10" style={{ background: "var(--fan-bg)" }}>
+    <div
+      className="min-h-dvh px-6"
+      style={{ background: "var(--fan-bg)", paddingBottom: "calc(2.5rem + var(--sab))" }}
+    >
       <div className="pt-12 text-center">
         <FanfarraLogo size={22} />
         <p className="mt-1 text-base" style={{ color: "var(--fan-text)" }}>

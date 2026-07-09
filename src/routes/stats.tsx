@@ -340,7 +340,7 @@ function SummaryCard({ label, value }: { label: string; value: number }) {
       <p className="text-[9px] font-bold uppercase tracking-wide mb-1" style={{ color: "var(--fan-text-2)" }}>
         {label}
       </p>
-      <p className="text-[18px] font-bold" style={{ color: "#FFE6F0" }}>
+      <p className="text-[18px] font-bold" style={{ color: "var(--fan-text)" }}>
         {value}
       </p>
     </div>

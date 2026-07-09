@@ -6,6 +6,7 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
     match /works/{workId} {
       allow read: if request.auth != null &&
         (resource.data.uid == request.auth.uid || resource.data.isPublicRec == true);
@@ -25,8 +26,8 @@ service cloud.firestore {
     }
 
     match /award_votes/{uid} {
-      allow read: if request.auth != null;
-      allow create, update, delete: if request.auth != null && request.auth.uid == uid;
+    allow read: if request.auth != null;
+    allow create, update, delete: if request.auth != null && request.auth.uid == uid;
     }
 
     match /communityRecs/{recId} {
@@ -45,7 +46,6 @@ service cloud.firestore {
       allow update, delete: if request.auth != null &&
         resource.data.uid == request.auth.uid;
     }
-
     match /settings/{uid} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
@@ -56,26 +56,102 @@ service cloud.firestore {
 
     match /challenges_catalog/{challengeId} {
       allow read: if request.auth != null;
-      allow write: if false; // gerido só pelo Console do Firebase
+      allow write: if request.auth != null &&
+        request.auth.uid in ["ikvASYa9kgQknCrZeiiupirGGef1"]; // troque/inclua os UIDs do(s) seu(s) admin(s)
     }
 
-    match /user_challenges/{docId} {
-      allow read: if request.auth != null &&
-        resource.data.uid == request.auth.uid;
-      allow create: if request.auth != null &&
-        request.resource.data.uid == request.auth.uid;
-      allow update: if request.auth != null &&
-        resource.data.uid == request.auth.uid;
-    }
+   	match /user_challenges/{docId} {
+  		allow read: if request.auth != null &&
+    	resource.data.uid == request.auth.uid;
+  		allow create: if request.auth != null &&
+    	request.resource.data.uid == request.auth.uid;
+  		allow update, delete: if request.auth != null &&
+    	resource.data.uid == request.auth.uid;
+		}
+    
+  	match /awards_catalog/{categoryId} {
+ 	 		allow read: if request.auth != null;
+			}
+		match /awards_config/{docId} {
+  		allow read: if request.auth != null;
+			}
+      match /awards_config/{docId} {
+  allow read: if request.auth != null;
+  allow write: if request.auth != null && request.auth.uid == "SEU_UID_AQUI";
+}
 
-    match /awards_catalog/{categoryId} {
+match /awards_catalog/{categoryId} {
+  allow read: if request.auth != null;
+  allow write: if request.auth != null && request.auth.uid == "SEU_UID_AQUI";
+}
+
+match /award_votes_indicacao/{uid} {
+  allow read: if request.auth != null;
+  allow create, update, delete: if request.auth != null && request.auth.uid == uid;
+}
+
+match /award_votes_final/{uid} {
+  allow read: if request.auth != null;
+  allow create, update, delete: if request.auth != null && request.auth.uid == uid;
+}
+
+match /award_nominations/{id} {
+  allow read: if request.auth != null;
+  allow create: if request.auth != null && request.auth.uid == request.resource.data.uid;
+  // "update" fica aberto pra qualquer autenticado porque quem incrementa o
+  // contador de aplausos/vaias é QUEM REAGE, não o dono da sugestão — sem
+  // Cloud Functions não dá pra restringir isso só ao campo applause/boos.
+  allow update: if request.auth != null;
+  allow delete: if request.auth != null &&
+    (request.auth.uid == resource.data.uid || request.auth.uid == "ikvASYa9kgQknCrZeiiupirGGef1");
+}
+
+match /award_reactions/{id} {
+  allow read: if request.auth != null;
+  allow create, update, delete: if request.auth != null && request.auth.uid == request.resource.data.uid;
+}
+
+// Já sugerida antes, repetindo aqui pra ficar tudo num lugar só:
+match /communityRecs/{recId} {
+  allow read: if request.auth != null;
+  allow create, update: if request.auth != null && request.auth.uid == request.resource.data.uid;
+  allow delete: if request.auth != null && request.auth.uid == resource.data.uid;
+}
+
+match /rec_reaction_counts/{itemId} {
       allow read: if request.auth != null;
-      allow write: if false; // gerido só pelo Console do Firebase
+      allow write: if request.auth != null;
     }
 
-    match /awards_config/{docId} {
+    match /rec_reactions/{id} {
       allow read: if request.auth != null;
-      allow write: if false; // gerido só pelo Console do Firebase
+      allow create, update, delete: if request.auth != null &&
+        request.auth.uid == request.resource.data.uid;
     }
+    match /award_votes_indicacao/{uid} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if request.auth != null && request.auth.uid == uid;
+    }
+
+    match /award_votes_final/{uid} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if request.auth != null && request.auth.uid == uid;
+    }
+
+    match /rec_reactions/{id} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if request.auth != null && request.auth.uid == request.resource.data.uid;
+    }
+
+    match /rec_reaction_counts/{itemId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    match /rec_reaction_daily_snapshot/{day} {
+      allow read: if request.auth != null;
+      allow write: if false; // só o GitHub Actions (Admin SDK) escreve aqui
+    }
+
   }
 }

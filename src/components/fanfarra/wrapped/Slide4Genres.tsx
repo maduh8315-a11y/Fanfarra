@@ -47,7 +47,7 @@ export default function Slide4Genres({ data }: { data: WrappedData }) {
                   <span style={{ color: "var(--fan-pink-light)", marginRight: "0.5rem" }}>#{i + 1}</span>
                   {g.name}
                 </span>
-                <span style={{ color: "#FFE6F0", fontWeight: 600 }}>{g.pct}%</span>
+                <span style={{ color: "var(--fan-text)", fontWeight: 600 }}>{g.pct}%</span>
               </div>
               <div className="progress-track">
                 <div

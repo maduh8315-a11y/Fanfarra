@@ -112,7 +112,7 @@ function ChallengesPage() {
                 className="w-full mt-3 py-2 rounded-[8px] text-[12px] font-bold"
                 style={{
                   background: c.joined ? "transparent" : "var(--fan-pink)",
-                  color: c.joined ? "var(--fan-pink-light)" : "#FFE6F0",
+                  color: c.joined ? "var(--fan-pink-light)" : "var(--fan-text)",
                   border: c.joined ? "0.5px solid var(--fan-pink)" : "none",
                 }}
               >

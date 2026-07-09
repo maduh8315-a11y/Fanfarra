@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ChevronRight, RefreshCw } from "lucide-react";
+import { ArrowLeft, ChevronRight, RefreshCw, Sun, Moon } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { ToggleField } from "@/components/fanfarra/forms/FormFields";
 import { updateSettings, useSettings } from "@/lib/fanfarra/extras";
@@ -147,6 +147,38 @@ function SettingsPage() {
                   {n} colunas
                 </button>
               ))}
+            </div>
+          </div>
+          <div className="pt-2">
+            <span className="text-[13px]" style={{ color: "var(--fan-text-3)" }}>
+              Aparência
+            </span>
+            <div className="flex gap-2 mt-2">
+              {(
+                [
+                  { id: "dark", label: "Escuro", icon: Moon },
+                  { id: "light", label: "Claro", icon: Sun },
+                ] as const
+              ).map((m) => {
+                const Icon = m.icon;
+                const selected = s.mode === m.id;
+                return (
+                  <button
+                    key={m.id}
+                    onClick={() => updateSettings({ mode: m.id })}
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 rounded-[10px]"
+                    style={{
+                      background: selected ? "var(--fan-active-chip)" : "var(--fan-bg-2)",
+                      border: `1px solid ${selected ? "var(--fan-pink)" : "var(--fan-rose-mid)"}`,
+                    }}
+                  >
+                    <Icon size={16} color={selected ? "var(--fan-pink-light)" : "var(--fan-text-2)"} />
+                    <span className="text-[12px]" style={{ color: "var(--fan-text-3)" }}>
+                      {m.label}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 

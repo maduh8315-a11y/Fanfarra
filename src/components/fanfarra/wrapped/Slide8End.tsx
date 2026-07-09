@@ -42,7 +42,7 @@ export default function Slide8End({ data }: { data: WrappedData }) {
         <p style={{ color: "var(--fan-pink-light)", marginTop: "1rem", fontSize: "1.2rem" }}>
           Obrigado por compartilhar seu ano,
         </p>
-        <p style={{ color: "#FFE6F0", fontSize: "2rem", fontWeight: 800 }}>{data.userName}</p>
+        <p style={{ color: "var(--fan-text)", fontSize: "2rem", fontWeight: 800 }}>{data.userName}</p>
 
         {/* Só o botão Compartilhar — o de baixar foi removido daqui */}
         <div

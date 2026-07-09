@@ -1,6 +1,6 @@
 # Plano — Novas páginas e atualizações do Fanfarra
 
-O escopo é grande (9 novas páginas + 5 atualizações + 13 formulários específicos). Vou entregar tudo em **3 fases** para você poder validar o caminho antes de eu seguir. Tudo mantém a paleta atual (`var(--fan-bg)`, `var(--fan-pink)`, `var(--fan-pink-light)`, `#CC0022`, `#FFE6F0`, `var(--fan-text-2)`) e usa apenas frontend + `localStorage` (sem backend ainda).
+O escopo é grande (9 novas páginas + 5 atualizações + 13 formulários específicos). Vou entregar tudo em **3 fases** para você poder validar o caminho antes de eu seguir. Tudo mantém a paleta atual (`var(--fan-bg)`, `var(--fan-pink)`, `var(--fan-pink-light)`, `#CC0022`, `var(--fan-text)`, `var(--fan-text-2)`) e usa apenas frontend + `localStorage` (sem backend ainda).
 
 ---
 

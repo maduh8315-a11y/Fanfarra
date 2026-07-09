@@ -49,7 +49,7 @@ export default function Slide1Intro({ data, onStart }: { data: WrappedData; onSt
           style={{
             fontSize: "clamp(3rem, 10vw, 7rem)",
             fontWeight: 900,
-            color: "#FFE6F0",
+            color: "var(--fan-text)",
             marginTop: "0.5rem",
           }}
         >

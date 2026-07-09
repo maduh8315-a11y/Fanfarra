@@ -5,13 +5,7 @@
   overflow: hidden;
   background: var(--fan-bg);
   color: #ffffff;
-  font-family:
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    Roboto,
-    sans-serif;
+  font-family: var(--font-display);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -49,7 +43,7 @@
 .wrapped-btn.secondary {
   background: transparent;
   border: 2px solid var(--fan-pink);
-  color: #ffe6f0;
+  color: var(--fan-text);
 }
 
 @keyframes pulseRing {
@@ -186,7 +180,7 @@
   position: fixed;
   bottom: 3.5rem;
   background: rgba(13, 0, 8, 0.75);
-  color: #ffe6f0;
+  color: var(--fan-text);
   border: 1px solid rgba(255, 0, 102, 0.5);
   width: 44px;
   height: 44px;

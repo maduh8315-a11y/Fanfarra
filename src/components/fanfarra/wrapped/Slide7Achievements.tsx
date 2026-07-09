@@ -57,7 +57,9 @@ export default function Slide7Achievements({ data }: { data: WrappedData }) {
                 padding: "1.25rem 0.75rem",
               }}
             >
-              <div style={{ fontSize: "2.25rem" }}>{a.emoji}</div>
+              <div style={{ fontSize: "2.25rem", display: "flex", justifyContent: "center" }}>
+                <a.Icon size={36} color="var(--fan-pink-light)" />
+              </div>
               <div
                 style={{
                   marginTop: "0.4rem",

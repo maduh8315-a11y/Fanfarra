@@ -1,4 +1,5 @@
 import { useState, useRef, useMemo } from "react";
+import { splitReaction } from "@/lib/fanfarra/icons";
 import { uploadCoverImage } from "@/lib/fanfarra/uploadImage";
 import { EPISODE_DURATION_TYPES } from "@/lib/fanfarra/formConfig";
 import { useNavigate } from "@tanstack/react-router";
@@ -11,6 +12,8 @@ import {
   Plus,
   X,
   Search,
+  Star,
+  AlertTriangle,
 } from "lucide-react";
 import {
   useBookcases,
@@ -282,7 +285,7 @@ function hasAnyDatePart(d?: DateParts): boolean {
 const PAIR_BOX_STYLE: React.CSSProperties = {
   background: "var(--fan-bg-2)",
   border: "1px solid var(--fan-rose-mid)",
-  color: "#FFE6F0",
+  color: "var(--fan-text)",
   borderRadius: 10,
   textAlign: "center",
 };
@@ -406,8 +409,8 @@ function RatingsBlock({
           </div>
         ))}
         <div className="flex items-center justify-between pt-3">
-          <span className="text-[13px] font-bold" style={{ color: "#FFE6F0" }}>
-            ⭐ Geral
+          <span className="text-[13px] font-bold" style={{ color: "var(--fan-text)" }}>
+            <span className="inline-flex items-center gap-1"><Star size={13} fill="currentColor" /> Geral</span>
           </span>
           <RatingStars
             value={values.rating}
@@ -470,7 +473,7 @@ function RelatedWorksSection({
                 {r.cover && <img src={r.cover} alt="" className="w-full h-full object-cover" />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-semibold truncate" style={{ color: "#FFE6F0" }}>
+                <p className="text-[12px] font-semibold truncate" style={{ color: "var(--fan-text)" }}>
                   {r.title}
                 </p>
                 <p className="text-[10px]" style={{ color: "var(--fan-text-2)" }}>
@@ -562,7 +565,7 @@ function RelatedPickerSheet({
         }}
       >
         <div className="flex items-center justify-between">
-          <h3 className="text-[14px] font-bold" style={{ color: "#FFE6F0" }}>
+          <h3 className="text-[14px] font-bold" style={{ color: "var(--fan-text)" }}>
             Obra relacionada
           </h3>
           <button onPointerDown={onClose} aria-label="Fechar" style={{ color: "var(--fan-text-2)" }}>
@@ -605,7 +608,7 @@ function RelatedPickerSheet({
                 style={{
                   background: "var(--fan-bg)",
                   border: "1px solid var(--fan-rose-mid)",
-                  color: "#FFE6F0",
+                  color: "var(--fan-text)",
                 }}
               />
             </div>
@@ -642,7 +645,7 @@ function RelatedPickerSheet({
                       <div className="flex-1 min-w-0">
                         <p
                           className="text-[12px] font-semibold truncate"
-                          style={{ color: "#FFE6F0" }}
+                          style={{ color: "var(--fan-text)" }}
                         >
                           {w.title}
                         </p>
@@ -684,7 +687,7 @@ function RelatedPickerSheet({
                     <div className="flex-1 min-w-0">
                       <p
                         className="text-[12px] font-semibold truncate"
-                        style={{ color: "#FFE6F0" }}
+                        style={{ color: "var(--fan-text)" }}
                       >
                         {c.title}
                       </p>
@@ -712,7 +715,7 @@ function RelatedPickerSheet({
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-semibold truncate" style={{ color: "#FFE6F0" }}>
+                <p className="text-[12px] font-semibold truncate" style={{ color: "var(--fan-text)" }}>
                   {picked.title}
                 </p>
                 <p className="text-[10px]" style={{ color: "var(--fan-text-2)" }}>
@@ -793,7 +796,7 @@ function ShelfSelectorSection({
     >
       <div className="flex items-center gap-2 mb-1">
         <Library size={14} color="var(--fan-pink-light)" />
-        <span className="text-[13px] font-bold" style={{ color: "#FFE6F0" }}>
+        <span className="text-[13px] font-bold" style={{ color: "var(--fan-text)" }}>
           Adicionar à prateleira
         </span>
       </div>
@@ -824,7 +827,7 @@ function ShelfSelectorSection({
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-base">{bc.emoji}</span>
-                    <span className="text-[12px] font-semibold" style={{ color: "#FFE6F0" }}>
+                    <span className="text-[12px] font-semibold" style={{ color: "var(--fan-text)" }}>
                       {bc.name}
                     </span>
                     {selectedCount > 0 && (
@@ -865,7 +868,7 @@ function ShelfSelectorSection({
                             <div className="text-left">
                               <p
                                 className="text-[12px] font-semibold"
-                                style={{ color: active ? "var(--fan-pink-light)" : "#FFE6F0" }}
+                                style={{ color: active ? "var(--fan-pink-light)" : "var(--fan-text)" }}
                               >
                                 {shelf.name}
                               </p>
@@ -951,7 +954,7 @@ function ImportSection({
       >
         <div className="flex items-center gap-2">
           <LinkIcon size={14} color="var(--fan-pink-light)" />
-          <span className="text-[13px] font-bold" style={{ color: "#FFE6F0" }}>
+          <span className="text-[13px] font-bold" style={{ color: "var(--fan-text)" }}>
             Importar por link
           </span>
         </div>
@@ -961,7 +964,7 @@ function ImportSection({
           onChange={(e) => setUrl(e.target.value)}
           placeholder={IMPORT_HINTS[type]}
           className="w-full px-3 py-3 text-sm outline-none rounded-[10px]"
-          style={{ background: "var(--fan-bg)", border: "1px solid var(--fan-rose-mid)", color: "#FFE6F0" }}
+          style={{ background: "var(--fan-bg)", border: "1px solid var(--fan-rose-mid)", color: "var(--fan-text)" }}
         />
         <button
           type="button"
@@ -980,7 +983,7 @@ function ImportSection({
         )}
         {warning && (
           <p className="text-[11px]" style={{ color: "#FFB020" }}>
-            ⚠️ {warning}
+            <span className="inline-flex items-center gap-1"><AlertTriangle size={12} /> {warning}</span>
           </p>
         )}
       </div>
@@ -1057,7 +1060,7 @@ function CoverField({ value, onChange }: { value: string; onChange: (v: string) 
             style={{
               background: "var(--fan-bg-2)",
               border: "0.5px solid var(--fan-rose-mid)",
-              color: "#FFE6F0",
+              color: "var(--fan-text)",
             }}
           />
           {value && (
@@ -1322,7 +1325,7 @@ export function WorkForm({
             onChange={(e) => setValues((s) => ({ ...s, title: e.target.value }))}
             placeholder="Ex: Attack on Titan"
             className="w-full rounded-[10px] px-3 py-3 text-sm outline-none"
-            style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-rose-mid)", color: "#FFE6F0" }}
+            style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-rose-mid)", color: "var(--fan-text)" }}
           />
           {importedFlash && values.title && (
             <Check
@@ -1391,7 +1394,7 @@ export function WorkForm({
           className="flex items-center justify-between rounded-[10px] px-3 py-2.5"
           style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
         >
-          <span className="text-[12px]" style={{ color: "#FFE6F0" }}>
+          <span className="text-[12px]" style={{ color: "var(--fan-text)" }}>
             Obra completa
           </span>
           <ToggleField value={obraCompleta} onChange={toggleObraCompleta} />
@@ -1528,12 +1531,13 @@ export function WorkForm({
         <div className="flex flex-wrap gap-2">
           {REACTIONS[type].map((r) => {
             const active = reactions.includes(r);
+            const { Icon, label } = splitReaction(r);
             return (
               <button
                 key={r}
                 type="button"
                 onClick={() => toggleReaction(r)}
-                className="rounded-full px-3.5 py-2 text-[11px] transition-all"
+                className="flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[11px] transition-all"
                 style={{
                   background: active ? "var(--fan-active-chip)" : "var(--fan-bg-2)",
                   border: `1px solid ${active ? "var(--fan-pink)" : "var(--fan-border)"}`,
@@ -1542,7 +1546,8 @@ export function WorkForm({
                   transform: active ? "scale(1.05)" : "scale(1)",
                 }}
               >
-                {r}
+                <Icon size={13} />
+                {label}
               </button>
             );
           })}

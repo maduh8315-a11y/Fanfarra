@@ -1,7 +1,7 @@
 // Aplaudir / Vaiar em obras da tela de Recomendações (catálogo e comunidade).
 // Mesmo padrão do "award_nominations", mas aqui qualquer RecommendationItem
 // pode receber reação — não só indicações de prêmio.
-import { doc, onSnapshot, runTransaction } from "firebase/firestore";
+import { collection, doc, getDocs, onSnapshot, query, runTransaction, where } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "./firebase";
@@ -64,6 +64,26 @@ export function useMyRecReaction(itemId: string): RecReaction | null {
   }, [itemId, uid]);
 
   return reaction;
+}
+// ── Snapshot das contagens até um prazo (deadline) — usado pelo motor de fases do Awards ──
+// Em vez de usar os totais "ao vivo" de rec_reaction_counts (que continuam
+// mudando depois do prazo, até alguém abrir o app e disparar a virada), esta
+// função conta só as reações que já existiam ATÉ o prazo, olhando o createdAt
+// de cada reação individual. Assim, mesmo que a virada de fase demore a
+// rodar, o resultado congelado é sempre o mesmo: o que valia na hora do
+// prazo, e nada que chegou depois.
+export async function getRecReactionCountsAsOf(deadline: number): Promise<Map<string, RecReactionCounts>> {
+  const snap = await getDocs(query(collection(db, REACTIONS_COLLECTION), where("createdAt", "<=", deadline)));
+  const result = new Map<string, RecReactionCounts>();
+  snap.docs.forEach((d) => {
+    const data = d.data() as { itemId?: string; reaction?: RecReaction };
+    if (!data.itemId || !data.reaction) return;
+    const current = result.get(data.itemId) ?? { likes: 0, boos: 0 };
+    if (data.reaction === "like") current.likes += 1;
+    else if (data.reaction === "boo") current.boos += 1;
+    result.set(data.itemId, current);
+  });
+  return result;
 }
 
 // ── Aplaudir ou vaiar um item ────────────────────────────────────────────────

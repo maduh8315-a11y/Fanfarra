@@ -42,7 +42,14 @@ function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col px-6 py-6" style={{ background: "var(--fan-bg)" }}>
+    <div
+      className="min-h-dvh flex flex-col px-6"
+      style={{
+        background: "var(--fan-bg)",
+        paddingTop: "calc(1.5rem + var(--sat))",
+        paddingBottom: "calc(1.5rem + var(--sab))",
+      }}
+    >
       <div className="flex justify-end">
         <Link to="/login" onClick={finish} className="text-[12px]" style={{ color: "var(--fan-rose-mid)" }}>
           Pular
