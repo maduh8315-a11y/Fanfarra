@@ -538,6 +538,38 @@ async function fetchSpotify(url: string): Promise<ImportedWorkData | null> {
 
 // ─── AO3 (Archive of Our Own) — scraping da página pública ────────────────
 
+// ─── AO3 (Archive of Our Own) — scraping da página pública ────────────────
+// A AO3 não tem API pública, então extraímos os dados direto do HTML. Sites
+// assim podem mudar o layout a qualquer momento — por isso cada campo abaixo
+// tenta MÚLTIPLOS padrões possíveis, e nenhum campo derruba os outros: se só
+// o título mudar de classe, por exemplo, ainda conseguimos fandom, tags,
+// palavras e capítulos normalmente.
+
+function firstMatch(html: string, patterns: RegExp[]): RegExpMatchArray | undefined {
+    for (const re of patterns) {
+        const m = html.match(re);
+        if (m) return m;
+    }
+    return undefined;
+}
+
+// Extrai listas de tags da AO3 (fandom, relationship, character, freeform).
+// Aceita qualquer combinação/ordem de classes no <dd>, então uma mudança
+// como "fandom tags" -> "tags fandom" ou adição de classes extras não quebra.
+function extractAO3TagList(html: string, ddClassKeyword: string): string[] | undefined {
+    const block = html.match(
+        new RegExp(
+            `<dd[^>]+class=["'][^"']*\\b${ddClassKeyword}\\b[^"']*["'][^>]*>([\\s\\S]*?)<\\/dd>`,
+            "i",
+        ),
+    )?.[1];
+    if (!block) return undefined;
+    const items = [...block.matchAll(/<a[^>]+class=["'][^"']*\btag\b[^"']*["'][^>]*>([^<]+)<\/a>/gi)].map((m) =>
+        decodeHtmlEntities(m[1].trim()),
+    );
+    return items.length ? items : undefined;
+}
+
 async function fetchAO3(url: string): Promise<ImportedWorkData | null> {
     if (!/archiveofourown\.org\/works\/\d+/i.test(url)) return null;
 
@@ -554,69 +586,83 @@ async function fetchAO3(url: string): Promise<ImportedWorkData | null> {
     const html = await fetchHtml(fullUrl);
     if (!html) return null;
 
-    const title = html.match(/<h2 class="title heading">\s*([\s\S]*?)\s*<\/h2>/i)?.[1]?.trim();
+    // ── Título ──
+    // Tenta o <h2 class="title heading"> clássico (com variações de ordem
+    // de classe) e, se não achar, cai pro og:title, removendo os sufixos
+    // que a AO3 costuma colocar (ex: "- Chapter 3 - Archive of Our Own").
+    const titleBlock = firstMatch(html, [
+        /<h2[^>]+class=["'][^"']*\btitle\b[^"']*\bheading\b[^"']*["'][^>]*>([\s\S]*?)<\/h2>/i,
+        /<h2[^>]+class=["'][^"']*\bheading\b[^"']*\btitle\b[^"']*["'][^>]*>([\s\S]*?)<\/h2>/i,
+    ])?.[1];
+    const ogTitle = pickMeta(html, ["og:title"]);
+    const title = titleBlock
+        ? decodeHtmlEntities(titleBlock.replace(/<[^>]+>/g, "").trim())
+        : ogTitle
+            ? decodeHtmlEntities(ogTitle)
+                .replace(/\s*-\s*Chapter\s*\d+.*$/i, "")
+                .replace(/\s*[|–-]\s*Archive of Our Own\s*$/i, "")
+                .trim()
+            : undefined;
     if (!title) return null;
 
-    const bylineBlock = html.match(/<h3 class="byline heading">([\s\S]*?)<\/h3>/i)?.[1];
-    const author = bylineBlock
-        ? [...bylineBlock.matchAll(/<a rel="author"[^>]*>([^<]+)<\/a>/gi)]
-            .map((m) => m[1].trim())
-            .join(", ")
-        : undefined;
-
-    const fandomBlock = html.match(/<dd class="fandom tags">([\s\S]*?)<\/dd>/i)?.[1];
-    const fandoms = fandomBlock
-        ? [...fandomBlock.matchAll(/<a class="tag"[^>]*>([^<]+)<\/a>/gi)].map((m) =>
+    // ── Autor(es) ──
+    const bylineBlock = firstMatch(html, [
+        /<h3[^>]+class=["'][^"']*\bbyline\b[^"']*\bheading\b[^"']*["'][^>]*>([\s\S]*?)<\/h3>/i,
+    ])?.[1];
+    let author: string | undefined;
+    if (bylineBlock) {
+        const authorLinks = [...bylineBlock.matchAll(/<a[^>]+rel=["']author["'][^>]*>([^<]+)<\/a>/gi)].map((m) =>
             decodeHtmlEntities(m[1].trim()),
-        )
-        : undefined;
+        );
+        author = authorLinks.length
+            ? authorLinks.join(", ")
+            : /anonymous/i.test(bylineBlock)
+                ? "Anônimo"
+                : undefined;
+    }
 
-    const freeformBlock = html.match(/<dd class="freeform tags">([\s\S]*?)<\/dd>/i)?.[1];
-    const genres = freeformBlock
-        ? [...freeformBlock.matchAll(/<a class="tag"[^>]*>([^<]+)<\/a>/gi)].map((m) =>
-            decodeHtmlEntities(m[1].trim()),
-        )
-        : undefined;
+    // ── Fandoms / Relacionamentos / Personagens / Tags livres ──
+    const fandoms = extractAO3TagList(html, "fandom");
+    const relationships = extractAO3TagList(html, "relationship");
+    const characters = extractAO3TagList(html, "character");
+    const freeformTags = extractAO3TagList(html, "freeform");
+    const extraTags = [...(relationships ?? []), ...(characters ?? []), ...(freeformTags ?? [])];
 
-    const langRaw = html.match(/<dd class="language"[^>]*>\s*([^<]+?)\s*<\/dd>/i)?.[1]?.trim();
+    // ── Idioma ──
+    const langRaw = firstMatch(html, [
+        /<dd[^>]+class=["'][^"']*\blanguage\b[^"']*["'][^>]*>\s*([^<]+?)\s*<\/dd>/i,
+        /Language:\s*<\/dt>\s*<dd[^>]*>\s*([^<]+?)\s*</i,
+    ])?.[1]?.trim();
 
-    const wordsRaw = html.match(/<dd class="words">\s*([\d,]+)\s*<\/dd>/i)?.[1];
+    // ── Palavras ──
+    const wordsRaw = firstMatch(html, [
+        /<dd[^>]+class=["'][^"']*\bwords\b[^"']*["'][^>]*>\s*([\d,]+)\s*<\/dd>/i,
+        /Words:\s*<\/dt>\s*<dd[^>]*>\s*([\d,]+)/i,
+    ])?.[1];
     const wordCount = wordsRaw ? Number(wordsRaw.replace(/,/g, "")) : undefined;
 
-    const chaptersMatch =
-        html.match(
-            /<dd class="[^"]*chapters[^"]*"[^>]*>\s*(?:<[^>]+>\s*)*(\d+)\s*(?:<\/[^>]+>\s*)*\/\s*(?:<[^>]+>\s*)*(\d+|\?)\s*(?:<\/[^>]+>\s*)*<\/dd>/i,
-        ) ??
-        html.match(
-            /Chapters:\s*<\/dt>\s*<dd[^>]*>\s*(?:<[^>]+>\s*)*(\d+)\s*(?:<\/[^>]+>\s*)*\/\s*(?:<[^>]+>\s*)*(\d+|\?)/i,
-        );
-    const totalChapters =
-        chaptersMatch && chaptersMatch[2] !== "?" ? Number(chaptersMatch[2]) : undefined;
+    // ── Capítulos ──
+    const chaptersMatch = firstMatch(html, [
+        /<dd[^>]+class=["'][^"']*\bchapters\b[^"']*["'][^>]*>\s*(?:<[^>]+>\s*)*(\d+)\s*(?:<\/[^>]+>\s*)*\/\s*(?:<[^>]+>\s*)*(\d+|\?)/i,
+        /Chapters:\s*<\/dt>\s*<dd[^>]*>\s*(?:<[^>]+>\s*)*(\d+)\s*(?:<\/[^>]+>\s*)*\/\s*(?:<[^>]+>\s*)*(\d+|\?)/i,
+    ]);
+    const totalChapters = chaptersMatch && chaptersMatch[2] !== "?" ? Number(chaptersMatch[2]) : undefined;
 
-    // Resumo (summary module) — tenta várias formas, pois a ordem das classes
-    // no HTML pode variar, e cai para o og:description como último recurso.
-    const summaryBlock =
-        html.match(/>Summary:<\/h3>\s*<blockquote class="userstuff">([\s\S]*?)<\/blockquote>/i)?.[1] ??
-        html.match(
-            /<div class="[^"]*summary[^"]*module[^"]*"[^>]*>[\s\S]*?<blockquote class="userstuff">([\s\S]*?)<\/blockquote>/i,
-        )?.[1];
-    const synopsis = summaryBlock
-        ? decodeHtmlEntities(summaryBlock.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ")).trim()
-        : pickMeta(html, ["og:description"]);
-
-    // Tags livres (Additional Tags) — separadas dos fandoms/gêneros
-    const freeformTags = freeformBlock
-        ? [...freeformBlock.matchAll(/<a class="tag"[^>]*>([^<]+)<\/a>/gi)].map((m) =>
-            decodeHtmlEntities(m[1].trim()),
-        )
-        : undefined;
+    // ── Resumo ──
+    const summaryRaw = firstMatch(html, [
+        />Summary:<\/h3>\s*<blockquote[^>]+class=["'][^"']*\buserstuff\b[^"']*["'][^>]*>([\s\S]*?)<\/blockquote>/i,
+        /<div[^>]+class=["'][^"']*\bsummary\b[^"']*\bmodule\b[^"']*["'][^>]*>[\s\S]*?<blockquote[^>]+class=["'][^"']*\buserstuff\b[^"']*["'][^>]*>([\s\S]*?)<\/blockquote>/i,
+    ])?.[1];
+    const synopsis = summaryRaw
+        ? decodeHtmlEntities(summaryRaw.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ")).trim()
+        : (pickMeta(html, ["og:description"]) ?? extractBodySynopsis(html));
 
     return {
-        title: decodeHtmlEntities(title),
+        title,
         author: author || undefined,
         fandoms,
-        genres,
-        tags: freeformTags,
+        genres: freeformTags,
+        tags: extraTags.length ? extraTags : undefined,
         language: langRaw ? [langRaw] : undefined,
         wordCount,
         totalChapters,
@@ -624,7 +670,6 @@ async function fetchAO3(url: string): Promise<ImportedWorkData | null> {
         platform: "AO3",
     };
 }
-
 // ─── Wattpad (API pública v3, sem chave) ───────────────────────────────────
 
 interface WattpadPartResponse {
@@ -706,26 +751,34 @@ async function fetchSpiritFanfics(url: string): Promise<ImportedWorkData | null>
     const cover = pickMeta(html, ["og:image"]);
     if (!title && !cover) return null;
 
-    const description = pickMeta(html, ["og:description", "description"]);
-    const authorRaw = html.match(
-        /<a[^>]+href="\/(?:user|perfil|autor)\/[^"]+"[^>]*>\s*([^<]+?)\s*<\/a>/i,
-    )?.[1];
+    const jsonLd = extractJsonLd(html);
+    const description =
+        pickMeta(html, ["og:description", "description"]) ?? extractBodySynopsis(html) ?? jsonLd?.synopsis;
+
+    const authorRaw = firstMatch(html, [
+        /<a[^>]+href="\/(?:user|perfil|autor|profile)\/[^"]+"[^>]*>\s*([^<]+?)\s*<\/a>/i,
+        /<span[^>]+class=["'][^"']*\bauthor\b[^"']*["'][^>]*>\s*([^<]+?)\s*<\/span>/i,
+    ])?.[1];
+
     const fandoms = [
-        ...html.matchAll(/<a[^>]+href="\/fandom\/[^"]+"[^>]*>\s*([^<]+?)\s*<\/a>/gi),
+        ...html.matchAll(/<a[^>]+href="\/(?:fandom|categoria)\/[^"]+"[^>]*>\s*([^<]+?)\s*<\/a>/gi),
     ].map((m) => decodeHtmlEntities(m[1].trim()));
-    const chaptersRaw = html.match(/Cap[ií]tulos?\s*[:-]?\s*(\d+)/i)?.[1];
+
+    const chaptersRaw = firstMatch(html, [
+        /Cap[ií]tulos?\s*[:-]?\s*(\d+)/i,
+        /<span[^>]+class=["'][^"']*\bchapters?\b[^"']*["'][^>]*>\s*(\d+)/i,
+    ])?.[1];
 
     return {
         title: title ? decodeHtmlEntities(title) : undefined,
-        cover,
-        author: authorRaw ? decodeHtmlEntities(authorRaw.trim()) : undefined,
+        cover: cover ?? jsonLd?.cover,
+        author: authorRaw ? decodeHtmlEntities(authorRaw.trim()) : jsonLd?.author,
         fandoms: fandoms.length ? fandoms : undefined,
         totalChapters: chaptersRaw ? Number(chaptersRaw) : undefined,
         synopsis: description,
         platform: "Spirit Fanfics",
     };
 }
-
 // ─── Fanfiction.net (scraping do HTML clássico da FFN) ─────────────────────
 
 async function fetchFanfictionNet(url: string): Promise<ImportedWorkData | null> {
@@ -733,12 +786,25 @@ async function fetchFanfictionNet(url: string): Promise<ImportedWorkData | null>
     const html = await fetchHtml(url);
     if (!html) return null;
 
-    const title = html.match(/<b class="xcontrast_txt">\s*([^<]+?)\s*<\/b>/i)?.[1];
+    const titleRaw = firstMatch(html, [
+        /<b class="xcontrast_txt">\s*([^<]+?)\s*<\/b>/i,
+        /<div[^>]+id="content"[^>]*>[\s\S]*?<b>\s*([^<]+?)\s*<\/b>/i,
+    ])?.[1];
+    const ogOrTagTitle = pickMeta(html, ["og:title"]) ?? htmlTitleTag(html);
+    const title = titleRaw
+        ? decodeHtmlEntities(titleRaw.trim())
+        : ogOrTagTitle
+            ? decodeHtmlEntities(ogOrTagTitle)
+                .replace(/,\s*an?\s+.*$/i, "")
+                .replace(/\s*\|\s*FanFiction\s*$/i, "")
+                .trim()
+            : undefined;
     if (!title) return null;
 
-    const author = html.match(
+    const author = firstMatch(html, [
         /<a class="xcontrast_txt"[^>]+href="\/u\/\d+\/[^"]*"[^>]*>\s*([^<]+?)\s*<\/a>/i,
-    )?.[1];
+        /<a[^>]+href="\/u\/\d+\/[^"]*"[^>]*>\s*([^<]+?)\s*<\/a>/i,
+    ])?.[1];
 
     const fandomBlock = html.match(/id="pre_story_links"[^>]*>([\s\S]*?)<\/div>/i)?.[1];
     const fandomLinks = fandomBlock
@@ -747,21 +813,24 @@ async function fetchFanfictionNet(url: string): Promise<ImportedWorkData | null>
     const fandom = fandomLinks.length ? fandomLinks[fandomLinks.length - 1] : undefined;
 
     const infoLine =
-        html
-            .match(/<span class="xgray xcontrast_txt">([\s\S]*?)<\/span>/i)?.[1]
-            ?.replace(/<[^>]+>/g, "") ?? "";
+        firstMatch(html, [
+            /<span class="xgray xcontrast_txt">([\s\S]*?)<\/span>/i,
+            /<span[^>]+class=["'][^"']*\bxgray\b[^"']*["'][^>]*>([\s\S]*?)<\/span>/i,
+        ])?.[1]?.replace(/<[^>]+>/g, "") ?? "";
 
     const chaptersRaw = infoLine.match(/Chapters:\s*([\d,]+)/i)?.[1];
     const wordsRaw = infoLine.match(/Words:\s*([\d,]+)/i)?.[1];
 
-    // Resumo — div logo antes da linha "Rated: ... - Chapters: ..."
-    const summaryRaw = html.match(/<div style=["']margin-top:2px["'][^>]*>([\s\S]*?)<\/div>/i)?.[1];
+    const summaryRaw = firstMatch(html, [
+        /<div style=["']margin-top:2px["'][^>]*>([\s\S]*?)<\/div>/i,
+        /<div[^>]+class=["'][^"']*\bmarg-x\b[^"']*["'][^>]*>([\s\S]*?)<\/div>/i,
+    ])?.[1];
     const synopsis = summaryRaw
         ? decodeHtmlEntities(summaryRaw.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ")).trim()
-        : undefined;
+        : pickMeta(html, ["og:description"]);
 
     return {
-        title: decodeHtmlEntities(title.trim()),
+        title,
         author: author ? decodeHtmlEntities(author.trim()) : undefined,
         fandoms: fandom ? [decodeHtmlEntities(fandom)] : undefined,
         totalChapters: chaptersRaw ? Number(chaptersRaw.replace(/,/g, "")) : undefined,
@@ -847,10 +916,16 @@ async function fetchMyDramaList(url: string): Promise<ImportedWorkData | null> {
         : jsonLd?.title;
     if (!title && !cover) return null;
 
-    const countryRaw =
-        html.match(/Country:\s*<\/b>\s*<a[^>]*>\s*([^<]+?)\s*<\/a>/i)?.[1] ??
-        html.match(/Country:\s*<\/b>\s*([^<]+?)\s*</i)?.[1];
-    const episodesRaw = html.match(/Episodes:\s*<\/b>\s*([^<]+?)\s*</i)?.[1];
+    const countryRaw = firstMatch(html, [
+        /Country:\s*<\/b>\s*<a[^>]*>\s*([^<]+?)\s*<\/a>/i,
+        /Country:\s*<\/b>\s*([^<]+?)\s*</i,
+        /Country:\s*<\/(?:span|strong)>\s*(?:<a[^>]*>)?\s*([^<]+?)\s*</i,
+    ])?.[1];
+
+    const episodesRaw = firstMatch(html, [
+        /Episodes:\s*<\/b>\s*([^<]+?)\s*</i,
+        /Episodes:\s*<\/(?:span|strong)>\s*([^<]+?)\s*</i,
+    ])?.[1];
 
     return {
         title,

@@ -5,7 +5,7 @@ import type { WrappedData } from "./types";
 export default function Slide2Type({ data }: { data: WrappedData }) {
   const rings = [
     { size: 200, color: "var(--fan-pink)", delay: 0 },
-    { size: 380, color: "#CC0022", delay: 0.5 },
+    { size: 740, color: "#CC0022", delay: 1.5 },
     { size: 560, color: "var(--fan-pink)", delay: 1 },
     { size: 740, color: "#CC0022", delay: 1.5 },
     { size: 920, color: "var(--fan-pink)", delay: 2 },
@@ -48,7 +48,7 @@ export default function Slide2Type({ data }: { data: WrappedData }) {
         >
           {data.favoriteType.name}
         </h1>
-        <p style={{ color: "#FFE6F0", fontSize: "1.25rem" }}>
+       <p style={{ color: "var(--fan-text-3)", fontSize: "1.25rem" }}>
           {data.favoriteType.count} obras adicionadas
         </p>
       </div>

@@ -4,7 +4,7 @@
   position: relative;
   overflow: hidden;
   background: var(--fan-bg);
-  color: #ffffff;
+  color: var(--fan-text);
   font-family: var(--font-display);
   display: flex;
   align-items: center;
@@ -123,19 +123,25 @@
 }
 
 .wrapped-card {
-  background: rgba(255, 230, 240, 0.06);
-  border: 1px solid rgba(255, 0, 102, 0.4);
+  background: color-mix(in srgb, var(--fan-pink) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fan-pink) 40%, transparent);
   border-radius: 20px;
   padding: 2.5rem;
   backdrop-filter: blur(8px);
 }
 
-.progress-track {
-  background: rgba(255, 230, 240, 0.1);
-  height: 14px;
-  border-radius: 999px;
-  overflow: hidden;
+.stat-card {
+  background: color-mix(in srgb, var(--fan-pink) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fan-pink-light) 30%, transparent);
+  border-radius: 18px;
+  padding: 1.75rem 0.75rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
+
 .progress-fill {
   height: 100%;
   border-radius: 999px;
@@ -143,11 +149,15 @@
 }
 
 .stat-card {
-  background: rgba(255, 0, 102, 0.08);
-  border: 1px solid rgba(255, 77, 148, 0.3);
+  background: rgba(var(--fan-pink-rgb), 0.08);
+  border: 1px solid rgba(var(--fan-pink-light-rgb), 0.3);
   border-radius: 18px;
-  padding: 1.75rem;
+  padding: 1.75rem 0.75rem;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Indicadores de slide (bolinhas embaixo) */
@@ -164,7 +174,7 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: rgba(255, 230, 240, 0.3);
+  background: color-mix(in srgb, var(--fan-text) 30%, transparent);
   border: none;
   cursor: pointer;
   transition: all 0.2s;
@@ -179,9 +189,9 @@
 .wrapped-arrow {
   position: fixed;
   bottom: 3.5rem;
-  background: rgba(13, 0, 8, 0.75);
+  background: color-mix(in srgb, var(--fan-bg-3) 85%, transparent);
   color: var(--fan-text);
-  border: 1px solid rgba(255, 0, 102, 0.5);
+  border: 1px solid color-mix(in srgb, var(--fan-pink) 50%, transparent);
   width: 44px;
   height: 44px;
   border-radius: 50%;

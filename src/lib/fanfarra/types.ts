@@ -1,3 +1,5 @@
+
+
 export const MEDIA_TYPES = [
   "Anime",
   "Manga",
@@ -21,8 +23,6 @@ export const MEDIA_TYPES = [
 export type MediaType = (typeof MEDIA_TYPES)[number];
 
 export const STATUSES = [
-  "Consumindo",
-  "Quero consumir",
   "Assistindo",
   "Quero assistir",
   "Assistido",
@@ -45,12 +45,6 @@ export type Status = (typeof STATUSES)[number];
 export const MEDIA_MODES = ["Ler", "Assistir", "Jogar", "Ouvir"] as const;
 export type MediaMode = (typeof MEDIA_MODES)[number];
 
-export const MODE_ICONS: Record<MediaMode, string> = {
-  Ler: "📖",
-  Assistir: "🎬",
-  Jogar: "🎮",
-  Ouvir: "🎧",
-};
 
 export const MODE_LABELS: Record<MediaMode, string> = {
   Ler: "Leitura",
@@ -115,8 +109,6 @@ export interface Work {
 }
 
 export const STATUS_COLORS: Record<Status, { bg: string; fg: string }> = {
-  Consumindo: { bg: "#1F3A1F", fg: "#4ADE80" },
-  "Quero consumir": { bg: "var(--fan-bg-2)", fg: "var(--fan-pink-light)" },
   Assistindo: { bg: "#1F3A1F", fg: "#4ADE80" },
   "Quero assistir": { bg: "var(--fan-bg-2)", fg: "var(--fan-pink-light)" },
   Assistido: { bg: "#0A2A1E", fg: "#34D399" },
@@ -155,14 +147,12 @@ export const TYPE_STATUSES: Record<MediaType, readonly Status[]> = {
 
 // "Group" statuses for home screen sections (in-progress / wishlist / done)
 export const IN_PROGRESS_STATUSES: readonly Status[] = [
-  "Consumindo",
   "Assistindo",
   "Lendo",
   "Jogando",
   "Ouvindo",
 ];
 export const WISHLIST_STATUSES: readonly Status[] = [
-  "Quero consumir",
   "Quero assistir",
   "Quero ler",
   "Quero jogar",

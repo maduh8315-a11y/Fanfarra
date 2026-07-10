@@ -8,11 +8,24 @@ const INPUT_STYLE: React.CSSProperties = {
   color: "var(--fan-text)",
 };
 
-export function Field({ label, children }: { label: string; children: React.ReactNode }) {
+export function Field({
+  label,
+  required,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <div>
       <label className="block text-[12px] mb-2" style={{ color: "var(--fan-text-2)" }}>
         {label}
+        {required && (
+          <span style={{ color: "#F87171", marginLeft: 4 }} aria-label="Campo obrigatório">
+            *
+          </span>
+        )}
       </label>
       {children}
     </div>
@@ -356,7 +369,7 @@ export function EpisodeDurationField({
       className="rounded-[12px] p-4 space-y-3"
       style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
     >
-      <p className="text-[12px] font-bold" style={{ color: "#F2D9E6" }}>
+      <p className="text-[12px] font-bold" style={{ color: "var(--fan-text-3)" }}>
         Duração por episódio
       </p>
       <div className="flex gap-2 items-end">

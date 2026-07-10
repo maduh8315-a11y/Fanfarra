@@ -2,7 +2,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { X } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { MediaIcon } from "@/components/fanfarra/MediaIcon";
-import { MEDIA_TYPES, MEDIA_MODES, MODE_OF_TYPE, MODE_ICONS, MODE_LABELS, type MediaType, type MediaMode } from "@/lib/fanfarra/types";
+import { ModeIcon } from "@/components/fanfarra/ModeIcon";
+import { MEDIA_TYPES, MEDIA_MODES, MODE_OF_TYPE, MODE_LABELS, type MediaType, type MediaMode } from "@/lib/fanfarra/types";
 
 export const Route = createFileRoute("/add/")({
   head: () => ({ meta: [{ title: "Adicionar obra — Fanfarra" }] }),
@@ -38,10 +39,8 @@ function AddIndex() {
       <div className="px-4 mt-3 flex flex-col gap-6 pb-6">
         {MEDIA_MODES.map((m) => (
           <section key={m}>
-            <div className="flex items-center gap-2 mb-2.5">
-              <span className="text-[15px]" aria-hidden>
-                {MODE_ICONS[m]}
-              </span>
+           <div className="flex items-center gap-2 mb-2.5">
+              <ModeIcon mode={m} size={16} color="var(--fan-pink)" />
               <h2
                 className="text-[12px] font-bold uppercase tracking-wide"
                 style={{ color: "var(--fan-text-2)" }}
@@ -53,10 +52,15 @@ function AddIndex() {
 
             <div className="grid grid-cols-3 gap-3">
               {TYPES_BY_MODE[m].map((t) => (
-                <Link
+               <Link
                   key={t}
                   to="/add/$type"
                   params={{ type: t }}
+                  aria-label={
+                    t === "Vídeos"
+                      ? "Vídeos. Deslize este card para ver também Gacha Videos."
+                      : undefined
+                  }
                   className="relative flex flex-col items-center justify-center gap-2 p-4 rounded-[12px] active:scale-95 transition"
                   style={{
                     background: "var(--fan-bg-2)",

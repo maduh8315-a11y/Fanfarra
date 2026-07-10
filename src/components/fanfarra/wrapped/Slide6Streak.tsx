@@ -9,16 +9,16 @@ export default function Slide6Streak({ data }: { data: WrappedData }) {
         ? "Mantendo o ritmo! 💪"
         : days >= 7
           ? "Boa constância ✨"
-          : "Todo dia é um novo começo 🌱";
+          : "Todo dia é um novo começo";
 
   return (
     <div className="wrapped-slide">
       <svg className="flames" viewBox="0 0 1000 400" preserveAspectRatio="none">
         <defs>
           <linearGradient id="flameGrad" x1="0" y1="1" x2="0" y2="0">
-            <stop offset="0%" stopColor="#CC0022" />
+            <stop offset="0%" stopColor="var(--fan-red)" />
             <stop offset="60%" stopColor="var(--fan-pink)" />
-            <stop offset="100%" stopColor="#FFE6F0" stopOpacity="0.6" />
+            <stop offset="100%" stopColor="var(--fan-text-3)" stopOpacity="0.6" />
           </linearGradient>
         </defs>
         <path
@@ -28,7 +28,7 @@ export default function Slide6Streak({ data }: { data: WrappedData }) {
         />
         <path
           d="M0 400 L0 320 Q 80 270 160 310 Q 240 230 320 300 Q 400 220 500 300 Q 600 230 700 300 Q 800 240 900 310 Q 960 280 1000 320 L1000 400 Z"
-          fill="#CC0022"
+          fill="var(--fan-red)"
           opacity="0.8"
         />
       </svg>
@@ -48,8 +48,8 @@ export default function Slide6Streak({ data }: { data: WrappedData }) {
             fontSize: "clamp(7rem, 22vw, 16rem)",
             fontWeight: 900,
             lineHeight: 1,
-            color: "#FFE6F0",
-            textShadow: "0 0 60px rgba(255,0,102,0.6)",
+            color: "var(--fan-text-3)",
+            textShadow: "0 0 60px color-mix(in srgb, var(--fan-pink) 60%, transparent)",
           }}
         >
           {days}

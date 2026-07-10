@@ -388,7 +388,7 @@ function RatingsBlock({
       className="rounded-[12px] p-4"
       style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
     >
-      <span className="block text-[12px] font-bold mb-3" style={{ color: "#F2D9E6" }}>
+      <span className="block text-[12px] font-bold mb-3" style={{ color: "var(--fan-text-3)" }}>
         Avaliações
       </span>
       <div>
@@ -438,7 +438,7 @@ function RelatedWorksSection({
     <div>
       <div className="flex items-end justify-between mb-2">
         <div>
-          <h3 className="text-[12px] font-bold" style={{ color: "#F2D9E6" }}>
+          <h3 className="text-[12px] font-bold" style={{ color: "var(--fan-text-3)" }}>
             Obras relacionadas
           </h3>
           <p className="text-[10px]" style={{ color: "var(--fan-text-2)" }}>
@@ -775,6 +775,7 @@ function ShelfSelectorSection({
 }) {
   const bookcases = useBookcases();
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [sectionOpen, setSectionOpen] = useState(value.length > 0);
 
   const isSelected = (bookcaseId: string, shelfId: string) =>
     value.some((e) => e.bookcaseId === bookcaseId && e.shelfId === shelfId);
@@ -794,14 +795,30 @@ function ShelfSelectorSection({
       className="rounded-[12px] p-4 space-y-3"
       style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
     >
-      <div className="flex items-center gap-2 mb-1">
-        <Library size={14} color="var(--fan-pink-light)" />
-        <span className="text-[13px] font-bold" style={{ color: "var(--fan-text)" }}>
-          Adicionar à prateleira
-        </span>
-      </div>
+      <button
+        type="button"
+        onClick={() => setSectionOpen((o) => !o)}
+        className="w-full flex items-center justify-between"
+      >
+        <div className="flex items-center gap-2">
+          <Library size={14} color="var(--fan-pink-light)" />
+          <span className="text-[13px] font-bold" style={{ color: "var(--fan-text)" }}>
+            Adicionar à prateleira
+          </span>
+          {value.length > 0 && (
+            <span
+              className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+              style={{ background: "var(--fan-active-chip)", color: "var(--fan-pink-light)" }}
+            >
+              {value.length}
+            </span>
+          )}
+        </div>
+        <span style={{ color: "var(--fan-text-2)", fontSize: 14 }}>{sectionOpen ? "▲" : "▼"}</span>
+      </button>
 
-      {bookcases.length === 0 ? (
+      {sectionOpen && (
+        bookcases.length === 0 ? (
         <p className="text-[11px]" style={{ color: "var(--fan-text-2)" }}>
           Você ainda não criou nenhuma estante.{" "}
           <a href="/collections" style={{ color: "var(--fan-pink-light)", textDecoration: "underline" }}>
@@ -906,7 +923,8 @@ function ShelfSelectorSection({
               </div>
             );
           })}
-        </div>
+       </div>
+        )
       )}
     </div>
   );
@@ -1123,6 +1141,10 @@ export function WorkForm({
   const [triedSubmit, setTriedSubmit] = useState(false);
   const [importedFlash, setImportedFlash] = useState(false);
 
+  const [step, setStep] = useState(0);
+  const STEPS = ["Informações básicas", "Status e progresso", "Categorização", "Avaliação"];
+  const totalSteps = STEPS.length;
+
   const setDetail = (k: string, v: unknown) =>
     setValues((s) => ({ ...s, details: { ...s.details, [k]: v } }));
 
@@ -1302,7 +1324,26 @@ export function WorkForm({
   };
 
   return (
-    <div className="px-4 space-y-5 pb-10">
+  <div className="px-4 space-y-5 pb-10">
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-bold" style={{ color: "var(--fan-text-3)" }}>
+            Passo {step + 1} de {totalSteps} — {STEPS[step]}
+          </span>
+          <span className="text-[11px]" style={{ color: "var(--fan-text-3)" }}>
+            {Math.round(((step + 1) / totalSteps) * 100)}%
+          </span>
+        </div>
+        <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: "var(--fan-border)" }}>
+          <div
+            className="h-full rounded-full transition-all"
+            style={{ width: `${((step + 1) / totalSteps) * 100}%`, background: "var(--fan-pink)" }}
+          />
+        </div>
+      </div>
+
+      {step === 0 && (
+      <>
       <ImportSection
         type={type}
         onImported={(data, meta) => {
@@ -1311,7 +1352,7 @@ export function WorkForm({
           setTimeout(() => setImportedFlash(false), 2500);
         }}
       />
-      <Field label="Título da obra">
+      <Field label="Título da obra" required>
         <ShelfSelectorSection
           value={values.shelfEntries}
           onChange={(v) => setValues((s) => ({ ...s, shelfEntries: v }))}
@@ -1353,8 +1394,12 @@ export function WorkForm({
           placeholder="Escreva um resumo ou prólogo da obra..."
           rows={10}
         />
-      </Field>
+     </Field>
+      </>
+      )}
 
+      {step === 1 && (
+      <>
       <Field label="Status">
         <ChipsField
           options={statusOptions}
@@ -1497,7 +1542,11 @@ export function WorkForm({
               );
           }
         })}
+      </>
+      )}
 
+      {step === 2 && (
+      <>
       <RelatedWorksSection
         currentType={type}
         value={(values.details.related as RelatedWork[] | undefined) ?? []}
@@ -1521,11 +1570,15 @@ export function WorkForm({
           maxTags={50}
         />
       </Field>
+      </>
+      )}
 
+      {step === 3 && (
+      <>
       <RatingsBlock type={type} values={values} setValues={setValues} setDetail={setDetail} />
 
       <div className="space-y-2">
-        <span className="text-[12px] font-bold" style={{ color: "#F2D9E6" }}>
+        <span className="text-[12px] font-bold" style={{ color: "var(--fan-text-3)" }}>
           Sua reação
         </span>
         <div className="flex flex-wrap gap-2">
@@ -1562,23 +1615,57 @@ export function WorkForm({
         />
       </Field>
 
-      <button
-        type="button"
-        onPointerDown={() => {
-          const liveTitle = (titleRef.current?.value ?? values.title).trim();
-          const updatedValues =
-            liveTitle !== values.title ? { ...values, title: liveTitle } : values;
-          setValues(updatedValues);
-          setTriedSubmit(true);
-          if (liveTitle.length > 0) onSubmit(updatedValues);
-        }}
-        disabled={false}
-        className="fan-btn-primary w-full text-sm disabled:opacity-40"
-        style={{ touchAction: "manipulation" }}
-      >
-        {submitLabel}
-      </button>
-      {onDelete && (
+</>
+      )}
+
+      <div className="flex gap-2 mt-2">
+        {step > 0 && (
+          <button
+            type="button"
+            onPointerDown={() => setStep((s) => Math.max(0, s - 1))}
+            className="flex-1 rounded-full py-2.5 text-sm font-bold"
+            style={{ border: "1px solid var(--fan-rose-mid)", color: "var(--fan-text-3)" }}
+          >
+            Voltar
+          </button>
+        )}
+
+        {step < totalSteps - 1 ? (
+          <button
+            type="button"
+            onPointerDown={() => {
+              if (step === 0 && titleMissing) {
+                setTriedSubmit(true);
+                return;
+              }
+              setStep((s) => Math.min(totalSteps - 1, s + 1));
+            }}
+            className="flex-1 fan-btn-primary text-sm"
+            style={{ touchAction: "manipulation" }}
+          >
+            Próximo
+          </button>
+        ) : (
+          <button
+            type="button"
+            onPointerDown={() => {
+              const liveTitle = (titleRef.current?.value ?? values.title).trim();
+              const updatedValues =
+                liveTitle !== values.title ? { ...values, title: liveTitle } : values;
+              setValues(updatedValues);
+              setTriedSubmit(true);
+              if (liveTitle.length > 0) onSubmit(updatedValues);
+            }}
+            disabled={false}
+            className="flex-1 fan-btn-primary text-sm disabled:opacity-40"
+            style={{ touchAction: "manipulation" }}
+          >
+            {submitLabel}
+          </button>
+        )}
+      </div>
+
+      {step === totalSteps - 1 && onDelete && (
         <button
           onPointerDown={() => setConfirmDelete(true)}
           className="w-full text-sm rounded-full py-2.5 font-bold text-white"

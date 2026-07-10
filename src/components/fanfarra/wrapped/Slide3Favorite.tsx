@@ -26,7 +26,7 @@ export default function Slide3Favorite({ data }: { data: WrappedData }) {
             width: p.size,
             height: p.size,
             animationDelay: `${p.delay}s`,
-            background: i % 3 === 0 ? "#FFE6F0" : i % 3 === 1 ? "var(--fan-pink)" : "var(--fan-pink-light)",
+            background: i % 3 === 0 ? "var(--fan-text-3)" : i % 3 === 1 ? "var(--fan-pink)" : "var(--fan-pink-light)",
           }}
         />
       ))}
@@ -47,7 +47,7 @@ export default function Slide3Favorite({ data }: { data: WrappedData }) {
               fontSize: "clamp(2rem, 5vw, 3.25rem)",
               fontWeight: 800,
               margin: 0,
-              color: "#FFE6F0",
+              color: "var(--fan-text-3)",
             }}
           >
             {data.favoriteWork.title}
@@ -58,7 +58,7 @@ export default function Slide3Favorite({ data }: { data: WrappedData }) {
                 key={i}
                 size={28}
                 fill={i < data.favoriteWork.rating ? "var(--fan-pink)" : "none"}
-                color={i < data.favoriteWork.rating ? "var(--fan-pink)" : "rgba(255,230,240,0.25)"}
+                color={i < data.favoriteWork.rating ? "var(--fan-pink)" : "color-mix(in srgb, var(--fan-text-3) 25%, transparent)"}
               />
             ))}
           </div>
@@ -68,7 +68,7 @@ export default function Slide3Favorite({ data }: { data: WrappedData }) {
               marginTop: "1.25rem",
               padding: "0.4rem 1rem",
               borderRadius: 999,
-              background: "rgba(204, 102, 153, 0.2)",
+              background: "color-mix(in srgb, var(--fan-text-2) 20%, transparent)",
               color: "var(--fan-text-2)",
               border: "1px solid var(--fan-text-2)",
               fontWeight: 600,

@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState, useRef } from "react";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import { Filter, Plus, BookMarked, LayoutGrid } from "lucide-react";
+import { Filter, BookMarked, LayoutGrid } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { ClientOnly } from "@/components/fanfarra/ClientOnly";
 import { TypeChips, type TypeFilter } from "@/components/fanfarra/Chips";
@@ -12,12 +12,13 @@ import {
   MEDIA_MODES,
   MODE_OF_TYPE,
   MODE_STATUSES,
-  MODE_ICONS,
   MODE_LABELS,
+  IN_PROGRESS_STATUSES,
+  WISHLIST_STATUSES,
+  COMPLETED_STATUSES,
   type Status,
   type MediaMode,
 } from "@/lib/fanfarra/types";
-import { MediaIcon } from "@/components/fanfarra/MediaIcon";
 import {
   FilterSheet,
   DEFAULT_FILTERS,
@@ -25,9 +26,35 @@ import {
   type LibraryFilters,
 } from "@/components/fanfarra/FilterSheet";
 import { BookcaseFormModal } from "@/routes/collections";
+import { MediaIcon } from "@/components/fanfarra/MediaIcon";
+import { ModeIcon } from "@/components/fanfarra/ModeIcon";
+
+// Grupos de status usados pelas seções da Home ("Recentemente atualizado",
+// "Quero consumir", "Concluídos") — permitem que o "Ver tudo" chegue na
+// Biblioteca já filtrado, mesmo cobrindo vários status de uma vez (ex:
+// "Quero consumir" = Quero ler + Quero assistir + Quero jogar + Quero ouvir).
+export const STATUS_GROUPS = {
+  "em-andamento": IN_PROGRESS_STATUSES,
+  "quero-consumir": WISHLIST_STATUSES,
+  concluidos: COMPLETED_STATUSES,
+} as const;
+export type LibraryStatusGroup = keyof typeof STATUS_GROUPS;
+
+const GROUP_LABELS: Record<LibraryStatusGroup, string> = {
+  "em-andamento": "Em andamento",
+  "quero-consumir": "Quero consumir",
+  concluidos: "Concluídos",
+};
+
+function isLibraryStatusGroup(value: unknown): value is LibraryStatusGroup {
+  return value === "em-andamento" || value === "quero-consumir" || value === "concluidos";
+}
 
 export const Route = createFileRoute("/library")({
   head: () => ({ meta: [{ title: "Biblioteca — Fanfarra" }] }),
+  validateSearch: (search: Record<string, unknown>): { group?: LibraryStatusGroup } => {
+    return isLibraryStatusGroup(search.group) ? { group: search.group } : {};
+  },
   component: LibraryPage,
 });
 
@@ -35,10 +62,12 @@ const MODE_TABS = ["Todos", ...MEDIA_MODES] as const;
 type ModeTab = (typeof MODE_TABS)[number];
 
 function LibraryPage() {
+  const { group } = Route.useSearch();
   const works = useWorks();
   const bookcases = useBookcases();
   const [mode, setMode] = useState<ModeTab>("Todos");
   const [tab, setTab] = useState<Status | "Todos">("Todos");
+  const groupStatuses = group ? STATUS_GROUPS[group] : null;
 
   const statusTabsForMode = useMemo(() => {
     return mode === "Todos" ? (["Todos", ...STATUSES] as const) : (["Todos", ...MODE_STATUSES[mode]] as const);
@@ -48,16 +77,16 @@ function LibraryPage() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [creatingBookcase, setCreatingBookcase] = useState(false);
 
-  const filtered = useMemo(() => {
+ const filtered = useMemo(() => {
     const base = works.filter((w) => {
       if (mode !== "Todos" && MODE_OF_TYPE[w.type] !== mode) return false;
       if (tab !== "Todos" && w.status !== tab) return false;
       if (type !== "Todos" && w.type !== type) return false;
+      if (groupStatuses && !(groupStatuses as readonly Status[]).includes(w.status)) return false;
       return true;
     });
     return applyFilters(base, filters);
-  }, [works, mode, tab, type, filters]);
-
+  }, [works, mode, tab, type, filters, groupStatuses]);
   const listRef = useRef<HTMLDivElement>(null);
 
   const rows = useMemo(() => {
@@ -111,7 +140,7 @@ function LibraryPage() {
                 border: active ? "none" : "1px solid var(--fan-border)",
               }}
             >
-              {m !== "Todos" && <span aria-hidden>{MODE_ICONS[m]}</span>}
+              {m !== "Todos" && <ModeIcon mode={m} size={13} />}
               {m === "Todos" ? "Todos" : MODE_LABELS[m]}
             </button>
           );
@@ -140,6 +169,20 @@ function LibraryPage() {
           );
         })}
       </div>
+
+      {group && (
+        <div className="flex items-center gap-2 px-4 pb-2">
+          <span
+            className="text-[11px] font-bold px-2.5 py-1 rounded-full"
+            style={{ background: "var(--fan-active-chip)", color: "var(--fan-pink-light)" }}
+          >
+            Filtrando: {GROUP_LABELS[group]}
+          </span>
+          <Link to="/library" search={{}} className="text-[11px]" style={{ color: "var(--fan-text-2)" }}>
+            Limpar
+          </Link>
+        </div>
+      )}
 
       <TypeChips value={type} onChange={setType} />
 
@@ -261,19 +304,6 @@ function LibraryPage() {
         )}
       </ClientOnly>
 
-      <Link
-        to="/add"
-        className="fixed bottom-24 right-4 rounded-full flex items-center justify-center shadow-lg z-30"
-        style={{
-          background: "var(--fan-pink)",
-          width: 52,
-          height: 52,
-          boxShadow: "0 8px 20px color-mix(in srgb, var(--fan-pink) 40%, transparent)",
-        }}
-        aria-label="Adicionar obra"
-      >
-        <Plus size={26} color="white" />
-      </Link>
 
       {/* Modal de criar estante */}
       {creatingBookcase && (

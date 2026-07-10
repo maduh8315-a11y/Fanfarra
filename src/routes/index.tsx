@@ -36,6 +36,7 @@ import { useWorks } from "@/lib/fanfarra/store";
 import { useAuthUser } from "@/lib/fanfarra/auth";
 import { COMPLETED_STATUSES, IN_PROGRESS_STATUSES, WISHLIST_STATUSES } from "@/lib/fanfarra/types";
 import type { Work } from "@/lib/fanfarra/types";
+import type { LibraryStatusGroup } from "@/routes/library";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -512,17 +513,25 @@ function Index() {
             </Link>
           )}
 
-          <Section title="Recentemente atualizado" works={recent} />
+         <Section title="Recentemente atualizado" works={recent} group="em-andamento" />
           <Section title="Adicionadas recentemente" works={recentlyAdded} />
-          <Section title="Quero consumir" works={wishlist} />
-          <Section title="Concluídos recentemente" works={completed} />
+          <Section title="Quero consumir" works={wishlist} group="quero-consumir" />
+          <Section title="Concluídos recentemente" works={completed} group="concluidos" />
         </>
       )}
     </AppShell>
   );
 }
 
-function Section({ title, works }: { title: string; works: ReturnType<typeof useWorks> }) {
+function Section({
+  title,
+  works,
+  group,
+}: {
+  title: string;
+  works: ReturnType<typeof useWorks>;
+  group?: LibraryStatusGroup;
+}) {
   if (works.length === 0) return null;
   return (
     <section className="mt-6">
@@ -530,7 +539,12 @@ function Section({ title, works }: { title: string; works: ReturnType<typeof use
         <h3 className="text-[13px] font-bold" style={{ color: "var(--fan-text-3)" }}>
           {title}
         </h3>
-        <Link to="/library" className="text-[10px]" style={{ color: "var(--fan-pink)" }}>
+        <Link
+          to="/library"
+          search={group ? { group } : {}}
+          className="text-[10px]"
+          style={{ color: "var(--fan-pink)" }}
+        >
           Ver tudo
         </Link>
       </div>

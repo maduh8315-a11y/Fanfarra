@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import type { WrappedData } from "./types";
 
-const PALETTE = ["var(--fan-pink)", "var(--fan-pink-light)", "#CC0022", "#FFE6F0", "var(--fan-text-2)"];
+const PALETTE = ["var(--fan-pink)", "var(--fan-pink-light)", "var(--fan-red)", "var(--fan-text-3)", "var(--fan-text-2)"];
 
 export default function Slide7Achievements({ data }: { data: WrappedData }) {
   const confetti = useMemo(
@@ -51,8 +51,8 @@ export default function Slide7Achievements({ data }: { data: WrappedData }) {
             <div
               key={a.name}
               style={{
-                background: "rgba(255,0,102,0.1)",
-                border: "1px solid rgba(255,77,148,0.4)",
+               background: "color-mix(in srgb, var(--fan-pink) 10%, transparent)",
+                border: "1px solid color-mix(in srgb, var(--fan-pink-light) 40%, transparent)",
                 borderRadius: 16,
                 padding: "1.25rem 0.75rem",
               }}
@@ -63,7 +63,7 @@ export default function Slide7Achievements({ data }: { data: WrappedData }) {
               <div
                 style={{
                   marginTop: "0.4rem",
-                  color: "#FFE6F0",
+                  color: "var(--fan-text-3)",
                   fontWeight: 600,
                   fontSize: "0.95rem",
                 }}

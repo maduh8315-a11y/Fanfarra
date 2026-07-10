@@ -26,12 +26,12 @@ export const Route = createFileRoute("/collections")({
 // ─── Paleta ──────────────────────────────────────────────────────────────────
 const C = {
   bg: "var(--fan-bg)",
-  card: "#12000A",
+  card: "var(--fan-bg-3)",
   border: "var(--fan-border)",
   pink: "var(--fan-pink)",
   pinkLight: "var(--fan-pink-light)",
   lilac: "var(--fan-text-2)",
-  white: "#FFFFFF",
+  white: "var(--fan-text)",
   muted: "var(--fan-text-2)",
 };
 
@@ -154,10 +154,12 @@ function totalWorksInBookcase(b: Bookcase, allWorks: Work[]): number {
 // ─── Status badge colorido ────────────────────────────────────────────────────
 function statusStyle(status: string): CSSProperties {
   if (["Concluído", "Assistido", "Platinado"].includes(status))
-    return { background: "#063A29", color: "#34D399" };
-  if (["Pausado"].includes(status)) return { background: "#3A2E00", color: "#F59E0B" };
-  if (["Abandonado"].includes(status)) return { background: "#3A0000", color: "#F87171" };
-  return { background: "#3A0020", color: C.pinkLight };
+    return { background: "color-mix(in srgb, #34D399 18%, transparent)", color: "#34D399" };
+  if (["Pausado"].includes(status))
+    return { background: "color-mix(in srgb, #F59E0B 18%, transparent)", color: "#F59E0B" };
+  if (["Abandonado"].includes(status))
+    return { background: "color-mix(in srgb, #F87171 18%, transparent)", color: "#F87171" };
+  return { background: "color-mix(in srgb, var(--fan-pink) 18%, transparent)", color: C.pinkLight };
 }
 
 // ─── Header interno ───────────────────────────────────────────────────────────
@@ -511,7 +513,7 @@ function Level2({
                 <span
                   style={{
                     ...badge,
-                    background: s.mode === "auto" ? "#1A0030" : "#3A0020",
+                    background: s.mode === "auto" ? "color-mix(in srgb, #A78BFA 18%, transparent)" : "color-mix(in srgb, var(--fan-pink) 18%, transparent)",
                     color: s.mode === "auto" ? "#A78BFA" : C.pinkLight,
                   }}
                 >
@@ -877,7 +879,7 @@ export function BookcaseFormModal({
                 padding: 6,
                 cursor: "pointer",
                 border: `1px solid ${emoji === e ? C.pink : C.border}`,
-                background: emoji === e ? "#3A0020" : C.card,
+                background: emoji === e ? "var(--fan-active-chip)" : C.card,
               }}
             >
               {e}

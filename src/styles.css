@@ -57,6 +57,8 @@
   --popover-foreground: oklch(0.95 0.03 350);
   --primary: oklch(0.65 0.27 0);
   --primary-foreground: oklch(1 0 0);
+  --fan-pink-rgb: 255, 0, 102;
+  --fan-pink-light-rgb: 255, 77, 148;
   --secondary: oklch(0.2 0.1 0);
   --secondary-foreground: oklch(0.78 0.16 355);
   --muted: oklch(0.16 0.07 355);
@@ -81,7 +83,7 @@
   --fan-red: #cc0022;
   --fan-red-dark: #3d0010;
   --fan-rose-mid: #4D0025;
-  --fan-text: var(--fan-text);
+  --fan-text: #FFF0F7;
   --fan-text-2: #CC6699;
   --fan-text-3: #f2d9e6;
   --fan-border: #2E0018;
@@ -119,6 +121,8 @@
   --fan-border: #241a4d;
   --fan-tag: #1a1240;
   --fan-active-chip: #2e2166;
+  --fan-pink-rgb: 124, 92, 255;
+--fan-pink-light-rgb: 167, 139, 250;
 }
 
 [data-theme="aurora"] {
@@ -156,6 +160,8 @@
   --fan-border: #F5D6E3;
   --fan-tag: #FFE3ED;
   --fan-active-chip: #FFD3E4;
+  --fan-pink-rgb: 229, 0, 79;
+--fan-pink-light-rgb: 255, 0, 102;
 }
 
 [data-mode="light"][data-theme="lunar"] {
@@ -173,6 +179,8 @@
   --fan-border: #E4DBFF;
   --fan-tag: #EFEBFF;
   --fan-active-chip: #E1D6FF;
+  --fan-pink-rgb: 109, 63, 255;
+--fan-pink-light-rgb: 124, 92, 255;
 }
 
 [data-mode="light"][data-theme="aurora"] {
@@ -190,6 +198,8 @@
   --fan-border: #D2F3E4;
   --fan-tag: #E3F7EE;
   --fan-active-chip: #CBEFDD;
+  --fan-pink-rgb: 12, 148, 104;
+--fan-pink-light-rgb: 16, 185, 129;
 }
 
 @layer base {
@@ -240,6 +250,7 @@
   ::-webkit-scrollbar {
     display: none;
   }
+
   * {
     scrollbar-width: none;
   }
@@ -261,16 +272,19 @@
     border-color 0.15s,
     color 0.15s;
 }
+
 @utility fan-chip-active {
   background: var(--fan-active-chip);
   border-color: var(--fan-pink);
   color: var(--fan-pink-light);
 }
+
 @utility fan-card {
   background: var(--fan-bg-2);
   border: 0.5px solid var(--fan-rose-mid);
   border-radius: 10px;
 }
+
 @utility fan-btn-primary {
   background: var(--fan-pink);
   color: white;
@@ -282,4 +296,17 @@
 
 @utility fan-font-display {
   font-family: var(--font-display);
+}
+
+/* ─── Piso mínimo de legibilidade: nenhum texto abaixo de 13px no site ─── */
+.text-\[9px\],
+.text-\[10px\],
+.text-\[11px\] {
+  font-size: 15px !important;
+}
+
+.text-\[12px\],
+.text-\[13px\],
+.text-xs {
+  font-size: 16px !important;
 }
