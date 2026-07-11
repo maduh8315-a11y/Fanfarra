@@ -51,13 +51,13 @@ function OnboardingPage() {
       }}
     >
       <div className="flex justify-end">
-        <Link to="/login" onClick={finish} className="text-[12px]" style={{ color: "var(--fan-rose-mid)" }}>
+        <Link to="/login" onClick={finish} className="text-sm" style={{ color: "var(--fan-text-2)" }}>
           Pular
         </Link>
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center text-center">
-        <Icon size={64} color="var(--fan-pink-light)" />
+        <Icon size={64} color="var(--fan-icon-blue)" />
         <h1 className="mt-6 text-[22px] font-extrabold" style={{ color: "var(--fan-text)" }}>
           {slide.title}
         </h1>

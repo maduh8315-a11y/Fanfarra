@@ -110,6 +110,7 @@ export function TagInput({
                 removeTag(tag);
               }}
               className="opacity-70 hover:opacity-100"
+              aria-label={`Remover tag ${tag}`}
             >
               <X size={10} />
             </button>
@@ -129,7 +130,7 @@ export function TagInput({
               onKeyDown={handleKeyDown}
               onFocus={() => updateSuggestions(input)}
               placeholder={value.length === 0 ? placeholder : ""}
-              className="flex-1 bg-transparent outline-none text-[12px]"
+              className="flex-1 bg-transparent outline-none text-sm"
               style={{
                 color: "var(--fan-text)",
                 caretColor: "var(--fan-pink-light)",
@@ -139,7 +140,7 @@ export function TagInput({
               <button
                 type="button"
                 onClick={() => addTag(input)}
-                className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold"
+                className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold"
                 style={{ background: "var(--fan-pink)", color: "#fff" }}
               >
                 <Plus size={10} />
@@ -161,14 +162,14 @@ export function TagInput({
               key={s}
               type="button"
               onClick={() => addTag(s)}
-              className="w-full px-4 py-2.5 text-left text-[12px] flex items-center gap-2"
+              className="w-full px-4 py-2.5 text-left text-sm flex items-center gap-2"
               style={{ color: "var(--fan-text)", borderBottom: "1px solid var(--fan-border)" }}
             >
               <span
                 className="w-4 h-4 rounded-full flex items-center justify-center shrink-0"
                 style={{ background: "var(--fan-active-chip)", border: "1px solid var(--fan-pink)" }}
               >
-                <Plus size={8} color="var(--fan-pink-light)" />
+                <Plus size={8} color="var(--fan-icon-blue)" />
               </span>
               {s}
             </button>
@@ -177,7 +178,7 @@ export function TagInput({
       )}
 
       {/* Hint */}
-      <p className="mt-1.5 text-[10px]" style={{ color: "var(--fan-text-3)" }}>
+      <p className="mt-1.5 text-sm" style={{ color: "var(--fan-text-3)" }}>
         {atLimit
           ? `Limite de ${maxTags} tags atingido`
           : "Pressione Enter ou vírgula para adicionar · Backspace para remover"}

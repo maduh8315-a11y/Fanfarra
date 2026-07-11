@@ -5,7 +5,8 @@ import { Filter, BookMarked, LayoutGrid } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { ClientOnly } from "@/components/fanfarra/ClientOnly";
 import { TypeChips, type TypeFilter } from "@/components/fanfarra/Chips";
-import { useWorks } from "@/lib/fanfarra/store";
+import { useWorks, useWorksLoading } from "@/lib/fanfarra/store";
+import { WorkGridSkeleton } from "@/components/fanfarra/WorkCardSkeleton";
 import { useBookcases, addBookcase } from "@/lib/fanfarra/bookcaseStore";
 import {
   STATUSES,
@@ -28,6 +29,7 @@ import {
 import { BookcaseFormModal } from "@/routes/collections";
 import { MediaIcon } from "@/components/fanfarra/MediaIcon";
 import { ModeIcon } from "@/components/fanfarra/ModeIcon";
+
 
 // Grupos de status usados pelas seções da Home ("Recentemente atualizado",
 // "Quero consumir", "Concluídos") — permitem que o "Ver tudo" chegue na
@@ -64,6 +66,7 @@ type ModeTab = (typeof MODE_TABS)[number];
 function LibraryPage() {
   const { group } = Route.useSearch();
   const works = useWorks();
+  const worksLoading = useWorksLoading();
   const bookcases = useBookcases();
   const [mode, setMode] = useState<ModeTab>("Todos");
   const [tab, setTab] = useState<Status | "Todos">("Todos");
@@ -112,11 +115,9 @@ function LibraryPage() {
           Biblioteca
         </h1>
         <button
+          type="button"
           aria-label="Filtrar"
-          onPointerDown={(e) => {
-            e.preventDefault();
-            setSheetOpen(true);
-          }}
+          onClick={() => setSheetOpen(true)}
         >
           <Filter size={20} color="var(--fan-text-2)" />
         </button>
@@ -133,7 +134,7 @@ function LibraryPage() {
                 setMode(m);
                 setTab("Todos");
               }}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[12px] font-bold whitespace-nowrap transition"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-bold whitespace-nowrap transition"
               style={{
                 background: active ? "var(--fan-pink)" : "var(--fan-bg-2)",
                 color: active ? "white" : "var(--fan-text-2)",
@@ -155,7 +156,7 @@ function LibraryPage() {
             <button
               key={s}
               onPointerDown={() => setTab(s as Status | "Todos")}
-              className="text-[12px] pb-2 whitespace-nowrap relative"
+              className="text-sm pb-2 whitespace-nowrap relative"
               style={{ color: active ? "var(--fan-pink-light)" : "var(--fan-text-2)", fontWeight: active ? 700 : 500 }}
             >
               {s}
@@ -178,7 +179,7 @@ function LibraryPage() {
           >
             Filtrando: {GROUP_LABELS[group]}
           </span>
-          <Link to="/library" search={{}} className="text-[11px]" style={{ color: "var(--fan-text-2)" }}>
+          <Link to="/library" search={{}} className="text-sm" style={{ color: "var(--fan-text-2)" }}>
             Limpar
           </Link>
         </div>
@@ -190,22 +191,22 @@ function LibraryPage() {
       <div className="flex gap-3 px-4 mt-3 mb-1">
         <button
           onPointerDown={() => setCreatingBookcase(true)}
-          className="flex-1 flex items-center justify-center gap-2 rounded-[12px] py-3 text-[12px] font-bold"
+          className="flex-1 flex items-center justify-center gap-2 rounded-[12px] py-3 text-sm font-bold"
           style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-pink)", color: "var(--fan-pink-light)" }}
         >
-          <BookMarked size={15} color="var(--fan-pink)" />
+          <BookMarked size={15} color="var(--fan-icon-blue)" />
           Nova estante
         </button>
         <Link
           to="/collections"
-          className="flex-1 flex items-center justify-center gap-2 rounded-[12px] py-3 text-[12px] font-bold"
+          className="flex-1 flex items-center justify-center gap-2 rounded-[12px] py-3 text-sm font-bold"
           style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)", color: "var(--fan-text-2)" }}
         >
           <LayoutGrid size={15} color="var(--fan-text-2)" />
           Ver estantes
           {bookcases.length > 0 && (
             <span
-              className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+              className="text-[11px] font-bold px-1.5 py-0.5 rounded-full"
               style={{ background: "var(--fan-active-chip)", color: "var(--fan-pink-light)" }}
             >
               {bookcases.length}
@@ -215,7 +216,9 @@ function LibraryPage() {
       </div>
 
       <ClientOnly>
-        {filtered.length === 0 ? (
+        {worksLoading ? (
+          <WorkGridSkeleton />
+        ) : filtered.length === 0 ? (
           <div className="text-center py-20 px-6" style={{ color: "var(--fan-text-2)" }}>
             <p className="text-sm">Nada por aqui ainda.</p>
           </div>
@@ -268,18 +271,18 @@ function LibraryPage() {
                               decoding="async"
                             />
                           ) : (
-                            <MediaIcon type={w.type} size={36} className="opacity-40" />
+                            <MediaIcon type={w.type} size={36} className="opacity-80" />
                           )}
                         </div>
                         <div className="p-2">
                           <div
-                            className="text-[11px] font-bold truncate"
+                            className="text-sm font-bold truncate"
                             style={{ color: "var(--fan-text)" }}
                           >
                             {w.title}
                           </div>
                           <span
-                            className="inline-block mt-1 text-[8px] px-2 py-0.5 rounded-full"
+                            className="inline-block mt-1 text-[11px] px-2 py-0.5 rounded-full"
                             style={{ background: "var(--fan-tag)", color: "var(--fan-pink-light)" }}
                           >
                             {w.type}

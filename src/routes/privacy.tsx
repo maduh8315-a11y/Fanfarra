@@ -23,7 +23,7 @@ function PrivacyPage() {
       </header>
 
       <div
-        className="px-5 pb-16 text-[13px] leading-relaxed"
+        className="px-5 pb-16 text-sm leading-relaxed"
         style={{ color: "var(--fan-text-2)" }}
       >
         <p className="mb-4" style={{ color: "var(--fan-text-3)" }}>

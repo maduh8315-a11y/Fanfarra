@@ -33,7 +33,7 @@ function StrengthBar({ pw }: { pw: string }) {
           />
         ))}
       </div>
-      <p className="mt-1 text-[10px]" style={{ color: colors[s] }}>
+      <p className="mt-1 text-sm" style={{ color: colors[s] }}>
         {labels[s]}
       </p>
     </div>
@@ -134,7 +134,7 @@ function RegisterPage() {
           error={errors.confirm}
         />
         {errors.form && (
-          <p className="text-[12px] text-center" style={{ color: "#F87171" }}>
+          <p className="text-sm text-center" style={{ color: "#F87171" }}>
             {errors.form}
           </p>
         )}
@@ -148,7 +148,7 @@ function RegisterPage() {
           {loading ? <Loader2 size={16} className="animate-spin" color="white" /> : "Criar conta"}
         </button>
       </div>
-      <p className="mt-6 text-center text-[13px]" style={{ color: "var(--fan-text-2)" }}>
+      <p className="mt-6 text-center text-sm" style={{ color: "var(--fan-text-2)" }}>
         Já tem conta?{" "}
         <Link to="/login" style={{ color: "var(--fan-pink-light)", fontWeight: 700 }}>
           Entrar

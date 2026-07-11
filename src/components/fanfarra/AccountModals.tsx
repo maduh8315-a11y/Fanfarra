@@ -79,10 +79,10 @@ export function ChangeEmailModal({ open, onClose }: { open: boolean; onClose: ()
     <ModalShell title="Alterar e-mail" onClose={onClose}>
       {sent ? (
         <div className="text-center py-4">
-          <p className="text-[13px]" style={{ color: "var(--fan-text)" }}>
+          <p className="text-sm" style={{ color: "var(--fan-text)" }}>
             Enviamos um link de confirmação para <strong>{newEmail}</strong>.
           </p>
-          <p className="text-[12px] mt-2" style={{ color: "var(--fan-text-2)" }}>
+          <p className="text-sm mt-2" style={{ color: "var(--fan-text-2)" }}>
             Abra o e-mail e clique no link para concluir a troca. Seu e-mail atual continua valendo
             até você confirmar.
           </p>
@@ -96,7 +96,7 @@ export function ChangeEmailModal({ open, onClose }: { open: boolean; onClose: ()
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-3">
-          <p className="text-[12px] mb-1" style={{ color: "var(--fan-text-2)" }}>
+          <p className="text-sm mb-1" style={{ color: "var(--fan-text-2)" }}>
             E-mail atual: {user?.email}
           </p>
           <AuthInput
@@ -119,13 +119,13 @@ export function ChangeEmailModal({ open, onClose }: { open: boolean; onClose: ()
             />
           )}
           {isGoogle && (
-            <p className="text-[11px]" style={{ color: "var(--fan-text-2)" }}>
+            <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
               Sua conta usa login do Google — vamos pedir para confirmar com o Google antes de
               trocar o e-mail.
             </p>
           )}
           {error && (
-            <p className="text-[12px]" style={{ color: "#F87171" }}>
+            <p className="text-sm" style={{ color: "#F87171" }}>
               {error}
             </p>
           )}
@@ -179,7 +179,7 @@ export function ChangePasswordModal({ open, onClose }: { open: boolean; onClose:
     <ModalShell title="Alterar senha" onClose={onClose}>
       {done ? (
         <div className="text-center py-4">
-          <p className="text-[13px]" style={{ color: "var(--fan-text)" }}>
+          <p className="text-sm" style={{ color: "var(--fan-text)" }}>
             Senha alterada com sucesso! 🎉
           </p>
           <button
@@ -220,7 +220,7 @@ export function ChangePasswordModal({ open, onClose }: { open: boolean; onClose:
             onChange={(e) => setConfirmPassword(e.target.value)}
           />
           {error && (
-            <p className="text-[12px]" style={{ color: "#F87171" }}>
+            <p className="text-sm" style={{ color: "#F87171" }}>
               {error}
             </p>
           )}
@@ -282,7 +282,7 @@ export function DeleteAccountModal({
         style={{ background: "#2A0008", border: "1px solid #5C0018" }}
       >
         <AlertTriangle size={18} color="#F87171" className="mt-0.5" />
-        <p className="text-[12px]" style={{ color: "#FCA5A5" }}>
+        <p className="text-sm" style={{ color: "#FCA5A5" }}>
           Esta ação é permanente. Suas obras, estantes e votos do Awards serão apagados e não podem
           ser recuperados.
         </p>
@@ -301,7 +301,7 @@ export function DeleteAccountModal({
           />
         )}
         {isGoogle && (
-          <p className="text-[11px]" style={{ color: "var(--fan-text-2)" }}>
+          <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
             Sua conta usa login do Google — vamos pedir para confirmar com o Google antes de
             excluir.
           </p>
@@ -314,7 +314,7 @@ export function DeleteAccountModal({
           onChange={(e) => setConfirmText(e.target.value)}
         />
         {error && (
-          <p className="text-[12px]" style={{ color: "#F87171" }}>
+          <p className="text-sm" style={{ color: "#F87171" }}>
             {error}
           </p>
         )}

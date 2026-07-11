@@ -105,13 +105,13 @@ function AwardsPage() {
             className="w-16 h-16 rounded-full flex items-center justify-center"
             style={{ background: "radial-gradient(circle, var(--fan-active-chip) 0%, var(--fan-bg-2) 70%)", border: "1px solid var(--fan-rose-mid)" }}
           >
-            <Trophy size={30} color="var(--fan-pink-light)" />
+            <Trophy size={30} color="var(--fan-icon-blue)" />
           </div>
         </div>
         <h2 className="fan-font-display text-[22px] font-extrabold" style={{ color: "var(--fan-text)" }}>
           {config.title}
         </h2>
-        <p className="text-[13px] mt-1.5" style={{ color: "var(--fan-text-2)" }}>
+        <p className="text-sm mt-1.5" style={{ color: "var(--fan-text-2)" }}>
           {phase === "recomendacao" && "Sugira obras e aplauda ou vaie as sugestões dos outros."}
           {phase === "indicacao" && "Vote nos 10 indicados de cada categoria — os 5 mais votados avançam."}
           {phase === "final" && "Vote nos 5 finalistas — quem tiver mais votos vence."}
@@ -121,7 +121,7 @@ function AwardsPage() {
         <div className="flex justify-center gap-2 mt-4">
           <button
             onClick={() => setView("participar")}
-            className="rounded-full px-4 py-1.5 text-[11px] font-bold"
+            className="rounded-full px-4 py-1.5 text-sm font-bold"
             style={{
               background: view === "participar" ? "var(--fan-active-chip)" : "transparent",
               border: `1px solid ${view === "participar" ? "var(--fan-pink)" : "var(--fan-border)"}`,
@@ -132,7 +132,7 @@ function AwardsPage() {
           </button>
           <button
             onClick={() => setView("leaderboard")}
-            className="rounded-full px-4 py-1.5 text-[11px] font-bold"
+            className="rounded-full px-4 py-1.5 text-sm font-bold"
             style={{
               background: view === "leaderboard" ? "var(--fan-active-chip)" : "transparent",
               border: `1px solid ${view === "leaderboard" ? "var(--fan-pink)" : "var(--fan-border)"}`,
@@ -156,7 +156,7 @@ function AwardsPage() {
       <AdminPanel categories={categories} config={config} />
 
       {categories.length === 0 ? (
-        <div className="px-4 pb-10 text-center text-[13px]" style={{ color: "var(--fan-text-2)" }}>
+        <div className="px-4 pb-10 text-center text-sm" style={{ color: "var(--fan-text-2)" }}>
           Carregando categorias do Awards...
         </div>
       ) : view === "leaderboard" ? (
@@ -193,7 +193,7 @@ function RecommendationPhase({ config }: { config: AwardsConfig }) {
         className="rounded-[14px] p-4 text-center"
         style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-rose-mid)" }}
       >
-        <p className="text-[13px]" style={{ color: "var(--fan-text-2)" }}>
+        <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
           As indicações não são mais sugeridas manualmente aqui — elas vêm direto das recomendações que
           a galera posta na tela{" "}
           <span style={{ color: "var(--fan-text)", fontWeight: 700 }}>Para você</span>, ao longo do ano. 👏 e 👎
@@ -204,11 +204,11 @@ function RecommendationPhase({ config }: { config: AwardsConfig }) {
             {countdown ? `Fecha em ${countdown}` : "Fechando as indicações..."}
           </p>
         ) : (
-          <p className="mt-3 text-[12px]" style={{ color: "var(--fan-rose-mid)" }}>
+          <p className="mt-3 text-sm" style={{  color: "var(--fan-text-2)" }}>
             Data de corte ainda não configurada pelo time do Fanfarra.
           </p>
         )}
-        <p className="mt-1 text-[10px]" style={{ color: "var(--fan-rose-mid)" }}>
+        <p className="mt-1 text-sm" style={{color: "var(--fan-text-2)" }}>
           Quando bater a hora, as 10 obras mais aplaudidas de cada categoria viram indicadas a "Melhor", e
           as 10 mais vaiadas viram indicadas a "Pior" — reações depois disso não contam mais.
         </p>
@@ -233,11 +233,11 @@ function LeaderboardView() {
   const rows = useRecommenderLeaderboard();
   return (
     <div className="px-4 space-y-2 pb-10">
-      <p className="text-[12px] text-center mb-2" style={{ color: "var(--fan-text-2)" }}>
+      <p className="text-sm text-center mb-2" style={{ color: "var(--fan-text-2)" }}>
         Ranking: nº de recomendações × taxa de aprovação (aplausos ÷ total de reações recebidas).
       </p>
       {rows.length === 0 && (
-        <p className="text-center text-[12px]" style={{ color: "var(--fan-text-2)" }}>
+        <p className="text-center text-sm" style={{ color: "var(--fan-text-2)" }}>
           Ainda não há dados suficientes.
         </p>
       )}
@@ -247,18 +247,18 @@ function LeaderboardView() {
           className="flex items-center gap-2.5 rounded-[12px] px-3.5 py-2.5"
           style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-rose-mid)" }}
         >
-          <span className="text-[12px] font-bold w-5 text-center" style={{ color: i < 3 ? "#FFD24D" : "var(--fan-text-2)" }}>
+          <span className="text-sm font-bold w-5 text-center" style={{ color: i < 3 ? "#FFD24D" : "var(--fan-text-2)" }}>
             {i + 1}
           </span>
           <div className="flex-1 min-w-0">
-            <div className="text-[13px] font-semibold truncate" style={{ color: "var(--fan-text)" }}>
+            <div className="text-sm font-semibold truncate" style={{ color: "var(--fan-text)" }}>
               @{r.username}
             </div>
-            <div className="text-[10px]" style={{ color: "var(--fan-text-2)" }}>
+            <div className="text-sm" style={{ color: "var(--fan-text-2)" }}>
               {r.nominations} recomendações · {Math.round(r.approvalRate * 100)}% aprovação
             </div>
           </div>
-          <span className="text-[12px] font-bold shrink-0" style={{ color: "var(--fan-pink-light)" }}>
+          <span className="text-sm font-bold shrink-0" style={{ color: "var(--fan-pink-light)" }}>
             {r.score.toFixed(1)}
           </span>
         </div>
@@ -294,7 +294,7 @@ function VotingPhase({ categories, phase }: { categories: AwardCategory[]; phase
     <div className="px-4 pb-10 space-y-3">
       {confirmed && (
         <div
-          className="rounded-[12px] p-3 text-center text-[12px] font-bold flex items-center justify-center gap-1.5"
+          className="rounded-[12px] p-3 text-center text-sm font-bold flex items-center justify-center gap-1.5"
           style={{ background: "var(--fan-active-chip)", border: "1px solid var(--fan-pink)", color: "var(--fan-pink-light)" }}
         >
           <Check size={14} />
@@ -309,13 +309,13 @@ function VotingPhase({ categories, phase }: { categories: AwardCategory[]; phase
         return (
           <div key={c.id} className="rounded-[14px] p-4" style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-rose-mid)" }}>
             <div className="flex items-center gap-2 mb-3">
-              <Icon size={16} color="var(--fan-pink-light)" />
-              <span className="text-[13px] font-bold" style={{ color: "var(--fan-text)" }}>
+              <Icon size={16} color="var(--fan-icon-blue)" />
+              <span className="text-sm font-bold" style={{ color: "var(--fan-text)" }}>
                 {c.emoji} {c.name}
               </span>
             </div>
             {nominees.length === 0 ? (
-              <p className="text-[11px]" style={{ color: "var(--fan-text-2)" }}>
+              <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
                 Nenhum indicado nesta categoria ainda.
               </p>
             ) : (
@@ -326,7 +326,7 @@ function VotingPhase({ categories, phase }: { categories: AwardCategory[]; phase
                     <button
                       key={nominee}
                       onClick={() => voteAward(phase, c.id, nominee)}
-                      className="w-full flex items-center justify-between rounded-[10px] px-3 py-2 text-left text-[12px]"
+                      className="w-full flex items-center justify-between rounded-[10px] px-3 py-2 text-left text-sm"
                       style={{
                         background: isSelected ? "var(--fan-active-chip)" : "transparent",
                         border: `1px solid ${isSelected ? "var(--fan-pink)" : "var(--fan-border)"}`,
@@ -348,7 +348,7 @@ function VotingPhase({ categories, phase }: { categories: AwardCategory[]; phase
         <button
           onClick={handleConfirm}
           disabled={!allVoted || confirming}
-          className="w-full rounded-full py-3 text-[13px] font-bold"
+          className="w-full rounded-full py-3 text-sm font-bold"
           style={{
             background: allVoted ? "var(--fan-pink)" : "var(--fan-bg-2)",
             color: allVoted ? "#1a0a12" : "var(--fan-text-2)",
@@ -379,7 +379,7 @@ function ResultsPhase({ categories, config }: { categories: AwardCategory[]; con
 
   return (
     <div className="px-4 pb-10 space-y-3">
-      <div className="flex items-center justify-center gap-1.5 mb-1 text-[11px]" style={{ color: "var(--fan-text-2)" }}>
+      <div className="flex items-center justify-center gap-1.5 mb-1 text-sm" style={{ color: "var(--fan-text-2)" }}>
         <Users size={13} />
         <span>{allVotes.length} voto(s) confirmado(s) na fase final</span>
       </div>
@@ -390,29 +390,29 @@ function ResultsPhase({ categories, config }: { categories: AwardCategory[]; con
         return (
           <div key={c.id} className="rounded-[14px] p-4" style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-rose-mid)" }}>
             <div className="flex items-center gap-2 mb-2">
-              <Icon size={16} color="var(--fan-pink-light)" />
-              <span className="text-[13px] font-bold" style={{ color: "var(--fan-text)" }}>
+              <Icon size={16} color="var(--fan-icon-blue)" />
+              <span className="text-sm font-bold" style={{ color: "var(--fan-text)" }}>
                 {c.emoji} {c.name}
               </span>
             </div>
             {!winner ? (
-              <p className="text-[11px]" style={{ color: "var(--fan-text-2)" }}>
+              <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
                 Nenhum voto registrado nesta categoria.
               </p>
             ) : (
               <>
                 <div className="flex items-center gap-2 mb-2">
                   <Crown size={16} color="#FFD24D" />
-                  <span className="text-[13px] font-extrabold" style={{ color: "#FFD24D" }}>
+                  <span className="text-sm font-extrabold" style={{ color: "#FFD24D" }}>
                     {winner.nominee}
                   </span>
-                  <span className="text-[11px] ml-auto" style={{ color: "var(--fan-text-2)" }}>
+                  <span className="text-sm ml-auto" style={{ color: "var(--fan-text-2)" }}>
                     {winner.count} voto(s) · {winner.pct}%
                   </span>
                 </div>
                 <div className="space-y-1">
                   {results.slice(1).map((r) => (
-                    <div key={r.nominee} className="flex items-center justify-between text-[11px]" style={{ color: "var(--fan-text-2)" }}>
+                    <div key={r.nominee} className="flex items-center justify-between text-sm" style={{ color: "var(--fan-text-2)" }}>
                       <span>{r.nominee}</span>
                       <span>{r.count} voto(s) · {r.pct}%</span>
                     </div>
@@ -447,7 +447,7 @@ function AdminPanel({ categories, config }: { categories: AwardCategory[]; confi
 
   return (
     <div className="mx-4 mb-4 rounded-[14px] p-4" style={{ background: "var(--fan-bg)", border: "1px dashed var(--fan-pink)" }}>
-      <p className="text-[11px] font-bold mb-2" style={{ color: "var(--fan-pink-light)" }}>
+      <p className="text-sm font-bold mb-2" style={{ color: "var(--fan-pink-light)" }}>
         Painel admin — fase atual: {config.phase}
       </p>
       {config.phase === "recomendacao" && (
@@ -457,12 +457,12 @@ function AdminPanel({ categories, config }: { categories: AwardCategory[]; confi
             min={1}
             value={days}
             onChange={(e) => setDays(Number(e.target.value))}
-            className="w-16 rounded-[8px] px-2 py-1 text-[11px] bg-transparent"
+            className="w-16 rounded-[8px] px-2 py-1 text-sm bg-transparent"
             style={{ border: "1px solid var(--fan-rose-mid)", color: "var(--fan-text)" }}
           />
           <button
             onClick={handleStartCycle}
-            className="text-[10px] px-2 py-1 rounded-full"
+            className="text-[11px] px-2 py-1 rounded-full"
             style={{ border: "1px solid var(--fan-pink)", color: "var(--fan-pink-light)" }}
           >
             Fechar indicações em N dia(s)
@@ -471,7 +471,7 @@ function AdminPanel({ categories, config }: { categories: AwardCategory[]; confi
       )}
       <button
         onClick={handleForceAdvance}
-        className="text-[10px] px-2 py-1 rounded-full"
+        className="text-[11px] px-2 py-1 rounded-full"
         style={{ border: "1px solid var(--fan-pink)", color: "var(--fan-pink-light)" }}
       >
         ⚡ Forçar verificação de fase agora

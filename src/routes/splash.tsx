@@ -34,7 +34,7 @@ function SplashPage() {
       style={{ background: "var(--fan-bg)" }}
     >
       <FanfarraLogo size={26} />
-      <p className="mt-2 text-[13px]" style={{ color: "var(--fan-text-2)" }}>
+      <p className="mt-2 text-sm" style={{ color: "var(--fan-text-2)" }}>
         Seu universo fandom
       </p>
       <div

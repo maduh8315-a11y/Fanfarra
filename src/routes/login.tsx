@@ -93,14 +93,14 @@ function LoginPage() {
 
       <div className="my-5 flex items-center gap-3">
         <div className="flex-1 h-px" style={{ background: "var(--fan-border)" }} />
-        <span className="text-[11px]" style={{ color: "var(--fan-rose-mid)" }}>
+        <span className="text-sm" style={{ color: "var(--fan-text-2)"}}>
           ou
         </span>
         <div className="flex-1 h-px" style={{ background: "var(--fan-border)" }} />
       </div>
 
       {errors.form && (
-        <p className="text-center text-[12px] mb-3" style={{ color: "#F87171" }}>
+        <p className="text-center text-sm mb-3" style={{ color: "#F87171" }}>
           {errors.form}
         </p>
       )}
@@ -124,7 +124,7 @@ function LoginPage() {
       </button>
 
       <div className="mt-8 text-center">
-        <p className="text-[13px]" style={{ color: "var(--fan-text-2)" }}>
+        <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
           Não tem conta?{" "}
           <Link to="/register" style={{ color: "var(--fan-pink-light)", fontWeight: 700 }}>
             Criar conta
@@ -132,7 +132,7 @@ function LoginPage() {
         </p>
         <Link
           to="/forgot-password"
-          className="inline-block mt-3 text-[12px]"
+          className="inline-block mt-3 text-sm"
           style={{ color: "var(--fan-text-2)" }}
         >
           Esqueceu a senha?

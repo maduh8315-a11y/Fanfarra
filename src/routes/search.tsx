@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Search as SearchIcon, SearchX } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { useWorks } from "@/lib/fanfarra/store";
@@ -13,6 +13,11 @@ export const Route = createFileRoute("/search")({
 function SearchPage() {
   const works = useWorks();
   const [q, setQ] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
   const results = useMemo(() => {
     const term = q.trim().toLowerCase();
@@ -34,6 +39,7 @@ function SearchPage() {
         >
           <SearchIcon size={18} color="var(--fan-rose-mid)" />
           <input
+            ref={inputRef}
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Buscar na biblioteca..."
@@ -46,17 +52,17 @@ function SearchPage() {
       {!q.trim() ? (
         <div className="flex flex-col items-center justify-center py-24 px-6 text-center">
           <SearchIcon size={48} color="var(--fan-rose-mid)" />
-          <p className="mt-4 text-[13px]" style={{ color: "var(--fan-text-2)" }}>
+          <p className="mt-4 text-sm" style={{ color: "var(--fan-text-2)" }}>
             Busque por título, tipo ou status
           </p>
         </div>
       ) : results.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
           <SearchX size={48} color="var(--fan-rose-mid)" />
-          <p className="mt-4 text-[13px]" style={{ color: "var(--fan-text-2)" }}>
+          <p className="mt-4 text-sm" style={{ color: "var(--fan-text-2)" }}>
             Nenhuma obra encontrada
           </p>
-          <Link to="/add" className="fan-btn-primary mt-5 text-xs">
+          <Link to="/add" search={{ title: q }} className="fan-btn-primary mt-5 text-sm">
             Adicionar "{q}" como nova obra
           </Link>
         </div>
@@ -87,17 +93,17 @@ function SearchPage() {
                     {w.cover ? (
                       <img src={w.cover} alt="" className="w-full h-full object-cover rounded-lg" />
                     ) : (
-                      <MediaIcon type={w.type} size={20} className="opacity-50" />
+                      <MediaIcon type={w.type} size={20} className="opacity-80" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div
-                      className="text-[13px] font-bold truncate"
+                      className="text-sm font-bold truncate"
                       style={{ color: "var(--fan-text-3)" }}
                     >
                       {w.title}
                     </div>
-                    <div className="text-[10px]" style={{ color: "var(--fan-text-2)" }}>
+                    <div className="text-sm" style={{ color: "var(--fan-text-2)" }}>
                       {w.type} · {w.status}
                     </div>
                     <div

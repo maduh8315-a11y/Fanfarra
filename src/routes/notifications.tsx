@@ -30,6 +30,15 @@ const ICONS = {
   "calendar-clock": CalendarClock,
 };
 
+const ICON_COLORS: Record<keyof typeof ICONS, string> = {
+  "pause-circle": "var(--fan-pink)",
+  award: "var(--fan-pink)",
+  "bar-chart": "var(--fan-gold)",
+  vote: "var(--fan-pink)",
+  "check-circle": "var(--fan-gold)",
+  "calendar-clock": "var(--fan-gold)",
+};
+
 function timeAgo(ts: number) {
   const s = Math.floor((Date.now() - ts) / 1000);
   if (s < 60) return `${s}s`;
@@ -53,7 +62,7 @@ function NotificationsPage() {
         </h1>
         <button
           onClick={markAllNotificationsRead}
-          className="text-[11px]"
+          className="text-sm"
           style={{ color: "var(--fan-pink)" }}
         >
           Marcar todas
@@ -63,7 +72,7 @@ function NotificationsPage() {
       {notifs.length === 0 ? (
         <div className="text-center py-24">
           <Bell size={48} color="var(--fan-rose-mid)" className="mx-auto mb-3" />
-          <p className="text-[13px]" style={{ color: "var(--fan-text-2)" }}>
+          <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
             Nenhuma notificação por enquanto
           </p>
         </div>
@@ -90,13 +99,13 @@ function NotifItem({ n }: { n: Notification }) {
         opacity: n.read ? 0.6 : 1,
       }}
     >
-      <Icon size={24} color="var(--fan-pink)" strokeWidth={1.5} />
+      <Icon size={24} color={ICON_COLORS[n.icon]} strokeWidth={1.5} />
       <div className="flex-1 min-w-0">
-        <p className="text-[12px]" style={{ color: "var(--fan-text)" }}>
+        <p className="text-sm" style={{ color: "var(--fan-text)" }}>
           {n.text}
         </p>
       </div>
-      <span className="text-[10px]" style={{ color: "var(--fan-text-2)" }}>
+      <span className="text-sm" style={{ color: "var(--fan-text-2)" }}>
         {timeAgo(n.ts)}
       </span>
     </li>

@@ -7,6 +7,11 @@ import { MEDIA_TYPES, MEDIA_MODES, MODE_OF_TYPE, MODE_LABELS, type MediaType, ty
 
 export const Route = createFileRoute("/add/")({
   head: () => ({ meta: [{ title: "Adicionar obra — Fanfarra" }] }),
+  validateSearch: (search: Record<string, unknown>): { title?: string } => {
+    return typeof search.title === "string" && search.title.trim()
+      ? { title: search.title }
+      : {};
+  },
   component: AddIndex,
 });
 
@@ -24,6 +29,7 @@ const TYPES_BY_MODE: Record<MediaMode, MediaType[]> = MEDIA_MODES.reduce(
 
 function AddIndex() {
   const nav = useNavigate();
+  const { title } = Route.useSearch();
   return (
     <AppShell>
       <header className="flex items-center justify-between px-4 pt-4 pb-3">
@@ -40,9 +46,9 @@ function AddIndex() {
         {MEDIA_MODES.map((m) => (
           <section key={m}>
            <div className="flex items-center gap-2 mb-2.5">
-              <ModeIcon mode={m} size={16} color="var(--fan-pink)" />
+              <ModeIcon mode={m} size={16} color="var(--fan-icon-blue)" />
               <h2
-                className="text-[12px] font-bold uppercase tracking-wide"
+                className="text-sm font-bold uppercase tracking-wide"
                 style={{ color: "var(--fan-text-2)" }}
               >
                 {MODE_LABELS[m]}
@@ -52,10 +58,11 @@ function AddIndex() {
 
             <div className="grid grid-cols-3 gap-3">
               {TYPES_BY_MODE[m].map((t) => (
-               <Link
+              <Link
                   key={t}
                   to="/add/$type"
                   params={{ type: t }}
+                  search={title ? { title } : undefined}
                   aria-label={
                     t === "Vídeos"
                       ? "Vídeos. Deslize este card para ver também Gacha Videos."
@@ -75,7 +82,7 @@ function AddIndex() {
                   )}
                   <MediaIcon type={t} size={28} className="text-[var(--fan-pink)]" />
                   <span
-                    className="text-[11px] font-bold text-center"
+                    className="text-sm font-bold text-center"
                     style={{ color: "var(--fan-text-3)" }}
                   >
                     {t}

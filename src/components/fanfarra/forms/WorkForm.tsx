@@ -314,7 +314,7 @@ function ProgressPairBlock({
     <div className="space-y-2">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-[10px] mb-1 text-center" style={{ color: "var(--fan-text-2)" }}>
+          <label className="block text-sm mb-1 text-center" style={{ color: "var(--fan-text-2)" }}>
             {pair.currentLabel}
           </label>
           <input
@@ -329,7 +329,7 @@ function ProgressPairBlock({
           />
         </div>
         <div>
-          <label className="block text-[10px] mb-1 text-center" style={{ color: "var(--fan-text-2)" }}>
+          <label className="block text-sm mb-1 text-center" style={{ color: "var(--fan-text-2)" }}>
             {pair.totalLabel}
           </label>
           <input
@@ -357,7 +357,7 @@ function ProgressPairBlock({
               }}
             />
           </div>
-          <p className="text-[10px]" style={{ color: "var(--fan-text-2)" }}>
+          <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
             {pair.totalIsPercent
               ? `${curNum}h · ${totNum}% concluído`
               : `${curNum} de ${totNum}${pair.unit ? ` ${pair.unit}` : ""} · ${pctRounded}% ${pair.verb ?? "concluído"}`}
@@ -388,7 +388,7 @@ function RatingsBlock({
       className="rounded-[12px] p-4"
       style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
     >
-      <span className="block text-[12px] font-bold mb-3" style={{ color: "var(--fan-text-3)" }}>
+      <span className="block text-sm font-bold mb-3" style={{ color: "var(--fan-text-3)" }}>
         Avaliações
       </span>
       <div>
@@ -398,7 +398,7 @@ function RatingsBlock({
             className="flex items-center justify-between py-2.5"
             style={{ borderBottom: "1px solid var(--fan-border)" }}
           >
-            <span className="text-[12px]" style={{ color: "var(--fan-text-2)" }}>
+            <span className="text-sm" style={{ color: "var(--fan-text-2)" }}>
               {c.label}
             </span>
             <RatingStars
@@ -409,7 +409,7 @@ function RatingsBlock({
           </div>
         ))}
         <div className="flex items-center justify-between pt-3">
-          <span className="text-[13px] font-bold" style={{ color: "var(--fan-text)" }}>
+          <span className="text-sm font-bold" style={{ color: "var(--fan-text)" }}>
             <span className="inline-flex items-center gap-1"><Star size={13} fill="currentColor" /> Geral</span>
           </span>
           <RatingStars
@@ -438,17 +438,17 @@ function RelatedWorksSection({
     <div>
       <div className="flex items-end justify-between mb-2">
         <div>
-          <h3 className="text-[12px] font-bold" style={{ color: "var(--fan-text-3)" }}>
+          <h3 className="text-sm font-bold" style={{ color: "var(--fan-text-3)" }}>
             Obras relacionadas
           </h3>
-          <p className="text-[10px]" style={{ color: "var(--fan-text-2)" }}>
+          <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
             Sequências, prequelas ou spin-offs
           </p>
         </div>
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="text-[11px] font-bold flex items-center gap-1"
+          className="text-sm font-bold flex items-center gap-1"
           style={{ color: "var(--fan-pink)" }}
         >
           <Plus size={12} /> Adicionar
@@ -473,10 +473,10 @@ function RelatedWorksSection({
                 {r.cover && <img src={r.cover} alt="" className="w-full h-full object-cover" />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-semibold truncate" style={{ color: "var(--fan-text)" }}>
+                <p className="text-sm font-semibold truncate" style={{ color: "var(--fan-text)" }}>
                   {r.title}
                 </p>
-                <p className="text-[10px]" style={{ color: "var(--fan-text-2)" }}>
+                <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
                   {r.type} · {r.relation}
                 </p>
               </div>
@@ -581,7 +581,7 @@ function RelatedPickerSheet({
                 <button
                   key={t}
                   onClick={() => setTab(t)}
-                  className="flex-1 rounded-full py-2 text-[11px] font-bold"
+                  className="flex-1 rounded-full py-2 text-sm font-bold"
                   style={{
                     background: tab === t ? "var(--fan-active-chip)" : "transparent",
                     border: `1px solid ${tab === t ? "var(--fan-pink)" : "var(--fan-border)"}`,
@@ -615,7 +615,7 @@ function RelatedPickerSheet({
             <div className="space-y-2">
               {tab === "library" ? (
                 results.length === 0 ? (
-                  <p className="text-[11px] text-center py-6" style={{ color: "var(--fan-text-2)" }}>
+                  <p className="text-sm text-center py-6" style={{ color: "var(--fan-text-2)" }}>
                     Nada encontrado.
                   </p>
                 ) : (
@@ -644,12 +644,12 @@ function RelatedPickerSheet({
                       </div>
                       <div className="flex-1 min-w-0">
                         <p
-                          className="text-[12px] font-semibold truncate"
+                          className="text-sm font-semibold truncate"
                           style={{ color: "var(--fan-text)" }}
                         >
                           {w.title}
                         </p>
-                        <p className="text-[10px]" style={{ color: "var(--fan-text-2)" }}>
+                        <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
                           {w.type}
                         </p>
                       </div>
@@ -657,7 +657,7 @@ function RelatedPickerSheet({
                   ))
                 )
               ) : recResults.length === 0 ? (
-                <p className="text-[11px] text-center py-6" style={{ color: "var(--fan-text-2)" }}>
+                <p className="text-sm text-center py-6" style={{ color: "var(--fan-text-2)" }}>
                   Nada encontrado.
                 </p>
               ) : (
@@ -686,12 +686,12 @@ function RelatedPickerSheet({
                     </div>
                     <div className="flex-1 min-w-0">
                       <p
-                        className="text-[12px] font-semibold truncate"
+                        className="text-sm font-semibold truncate"
                         style={{ color: "var(--fan-text)" }}
                       >
                         {c.title}
                       </p>
-                      <p className="text-[10px]" style={{ color: "var(--fan-text-2)" }}>
+                      <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
                         {c.type}
                       </p>
                     </div>
@@ -715,16 +715,16 @@ function RelatedPickerSheet({
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[12px] font-semibold truncate" style={{ color: "var(--fan-text)" }}>
+                <p className="text-sm font-semibold truncate" style={{ color: "var(--fan-text)" }}>
                   {picked.title}
                 </p>
-                <p className="text-[10px]" style={{ color: "var(--fan-text-2)" }}>
+                <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
                   {picked.type}
                 </p>
               </div>
             </div>
             <div>
-              <p className="text-[11px] mb-2" style={{ color: "var(--fan-text-2)" }}>
+              <p className="text-sm mb-2" style={{ color: "var(--fan-text-2)" }}>
                 Tipo de relação
               </p>
               <div className="flex flex-wrap gap-2">
@@ -750,7 +750,7 @@ function RelatedPickerSheet({
             </div>
             <button
               onClick={() => onAdd({ ...picked, relation })}
-              className="w-full rounded-full py-3 text-[13px] font-bold text-white"
+              className="w-full rounded-full py-3 text-sm font-bold text-white"
               style={{ background: "var(--fan-pink)" }}
             >
               Confirmar
@@ -801,13 +801,13 @@ function ShelfSelectorSection({
         className="w-full flex items-center justify-between"
       >
         <div className="flex items-center gap-2">
-          <Library size={14} color="var(--fan-pink-light)" />
-          <span className="text-[13px] font-bold" style={{ color: "var(--fan-text)" }}>
+          <Library size={14} color="var(--fan-icon-blue)" />
+          <span className="text-sm font-bold" style={{ color: "var(--fan-text)" }}>
             Adicionar à prateleira
           </span>
           {value.length > 0 && (
             <span
-              className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+              className="text-[11px] font-bold px-1.5 py-0.5 rounded-full"
               style={{ background: "var(--fan-active-chip)", color: "var(--fan-pink-light)" }}
             >
               {value.length}
@@ -819,7 +819,7 @@ function ShelfSelectorSection({
 
       {sectionOpen && (
         bookcases.length === 0 ? (
-        <p className="text-[11px]" style={{ color: "var(--fan-text-2)" }}>
+        <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
           Você ainda não criou nenhuma estante.{" "}
           <a href="/collections" style={{ color: "var(--fan-pink-light)", textDecoration: "underline" }}>
             Criar agora
@@ -844,12 +844,12 @@ function ShelfSelectorSection({
                 >
                   <div className="flex items-center gap-2">
                     <span className="text-base">{bc.emoji}</span>
-                    <span className="text-[12px] font-semibold" style={{ color: "var(--fan-text)" }}>
+                    <span className="text-sm font-semibold" style={{ color: "var(--fan-text)" }}>
                       {bc.name}
                     </span>
                     {selectedCount > 0 && (
                       <span
-                        className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+                        className="text-[11px] font-bold px-1.5 py-0.5 rounded-full"
                         style={{ background: "var(--fan-active-chip)", color: "var(--fan-pink-light)" }}
                       >
                         {selectedCount}
@@ -865,7 +865,7 @@ function ShelfSelectorSection({
                     style={{ background: "var(--fan-bg)", borderTop: "1px solid var(--fan-border)" }}
                   >
                     {bc.shelves.length === 0 ? (
-                      <p className="text-[10px]" style={{ color: "var(--fan-rose-mid)" }}>
+                      <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
                         Nenhuma prateleira ainda.
                       </p>
                     ) : (
@@ -884,13 +884,13 @@ function ShelfSelectorSection({
                           >
                             <div className="text-left">
                               <p
-                                className="text-[12px] font-semibold"
+                                className="text-sm font-semibold"
                                 style={{ color: active ? "var(--fan-pink-light)" : "var(--fan-text)" }}
                               >
                                 {shelf.name}
                               </p>
                               {shelf.description && (
-                                <p className="text-[10px]" style={{ color: "var(--fan-text-2)" }}>
+                                <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
                                   {shelf.description}
                                 </p>
                               )}
@@ -971,8 +971,8 @@ function ImportSection({
         style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-rose-mid)" }}
       >
         <div className="flex items-center gap-2">
-          <LinkIcon size={14} color="var(--fan-pink-light)" />
-          <span className="text-[13px] font-bold" style={{ color: "var(--fan-text)" }}>
+          <LinkIcon size={14} color="var(--fan-icon-blue)" />
+          <span className="text-sm font-bold" style={{ color: "var(--fan-text)" }}>
             Importar por link
           </span>
         </div>
@@ -988,26 +988,26 @@ function ImportSection({
           type="button"
           disabled={!url.trim() || loading}
           onClick={handleImport}
-          className="w-full rounded-full py-2.5 text-[13px] font-bold text-white flex items-center justify-center gap-2 disabled:opacity-40"
+          className="w-full rounded-full py-2.5 text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-40"
           style={{ background: "var(--fan-pink)" }}
         >
           {loading ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
           {loading ? "Buscando..." : "Buscar informações"}
         </button>
         {error && (
-          <p className="text-[11px]" style={{ color: "#F87171" }}>
+          <p className="text-sm" style={{ color: "#F87171" }}>
             {error}
           </p>
         )}
         {warning && (
-          <p className="text-[11px]" style={{ color: "#FFB020" }}>
+          <p className="text-sm" style={{ color: "#FFB020" }}>
             <span className="inline-flex items-center gap-1"><AlertTriangle size={12} /> {warning}</span>
           </p>
         )}
       </div>
       <div className="flex items-center gap-3">
         <div className="flex-1 h-px" style={{ background: "var(--fan-border)" }} />
-        <span className="text-[11px]" style={{ color: "var(--fan-rose-mid)" }}>
+        <span className="text-sm" style={{ color: "var(--fan-rose-mid)" }}>
           — ou preencha manualmente —
         </span>
         <div className="flex-1 h-px" style={{ background: "var(--fan-border)" }} />
@@ -1052,7 +1052,7 @@ function CoverField({ value, onChange }: { value: string; onChange: (v: string) 
           onClick={() => !uploading && fileRef.current?.click()}
         >
           {uploading ? (
-            <span className="text-[11px]">⏳</span>
+            <span className="text-sm">⏳</span>
           ) : value ? (
             <img src={value} alt="Capa" className="w-full h-full object-cover" />
           ) : (
@@ -1064,7 +1064,7 @@ function CoverField({ value, onChange }: { value: string; onChange: (v: string) 
             type="button"
             disabled={uploading}
             onClick={() => fileRef.current?.click()}
-            className="w-full rounded-[8px] py-2.5 text-[12px] font-bold disabled:opacity-60"
+            className="w-full rounded-[8px] py-2.5 text-sm font-bold disabled:opacity-60"
             style={{ border: "1px solid var(--fan-pink)", color: "var(--fan-pink-light)", background: "transparent" }}
           >
             {uploading ? "Enviando..." : isFile ? "Trocar imagem" : "Escolher arquivo"}
@@ -1074,7 +1074,7 @@ function CoverField({ value, onChange }: { value: string; onChange: (v: string) 
             value={isFile ? "" : value}
             onChange={(e) => onChange(e.target.value)}
             placeholder="ou cole uma URL..."
-            className="w-full px-3 py-2.5 rounded-[10px] text-[12px] outline-none"
+            className="w-full px-3 py-2.5 rounded-[10px] text-sm outline-none"
             style={{
               background: "var(--fan-bg-2)",
               border: "0.5px solid var(--fan-rose-mid)",
@@ -1085,7 +1085,7 @@ function CoverField({ value, onChange }: { value: string; onChange: (v: string) 
             <button
               type="button"
               onClick={() => onChange("")}
-              className="text-[10px] text-left"
+              className="text-sm text-left"
               style={{ color: "#7A0030" }}
             >
               Remover capa
@@ -1101,7 +1101,7 @@ function CoverField({ value, onChange }: { value: string; onChange: (v: string) 
         </div>
       </div>
       {error && (
-        <span className="text-[11px]" style={{ color: "#F87171" }}>
+        <span className="text-sm" style={{ color: "#F87171" }}>
           {error}
         </span>
       )}
@@ -1327,10 +1327,10 @@ export function WorkForm({
   <div className="px-4 space-y-5 pb-10">
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-bold" style={{ color: "var(--fan-text-3)" }}>
+          <span className="text-sm font-bold" style={{ color: "var(--fan-text-3)" }}>
             Passo {step + 1} de {totalSteps} — {STEPS[step]}
           </span>
-          <span className="text-[11px]" style={{ color: "var(--fan-text-3)" }}>
+          <span className="text-sm" style={{ color: "var(--fan-text-3)" }}>
             {Math.round(((step + 1) / totalSteps) * 100)}%
           </span>
         </div>
@@ -1371,13 +1371,13 @@ export function WorkForm({
           {importedFlash && values.title && (
             <Check
               size={14}
-              color="var(--fan-pink-light)"
+              color="var(--fan-icon-blue)"
               className="absolute right-3 top-1/2 -translate-y-1/2"
             />
           )}
         </div>
         {triedSubmit && titleMissing && (
-          <p className="text-[11px] mt-1.5" style={{ color: "#F87171" }}>
+          <p className="text-sm mt-1.5" style={{ color: "#F87171" }}>
             O título é obrigatório.
           </p>
         )}
@@ -1439,7 +1439,7 @@ export function WorkForm({
           className="flex items-center justify-between rounded-[10px] px-3 py-2.5"
           style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
         >
-          <span className="text-[12px]" style={{ color: "var(--fan-text)" }}>
+          <span className="text-sm" style={{ color: "var(--fan-text)" }}>
             Obra completa
           </span>
           <ToggleField value={obraCompleta} onChange={toggleObraCompleta} />
@@ -1578,7 +1578,7 @@ export function WorkForm({
       <RatingsBlock type={type} values={values} setValues={setValues} setDetail={setDetail} />
 
       <div className="space-y-2">
-        <span className="text-[12px] font-bold" style={{ color: "var(--fan-text-3)" }}>
+        <span className="text-sm font-bold" style={{ color: "var(--fan-text-3)" }}>
           Sua reação
         </span>
         <div className="flex flex-wrap gap-2">
@@ -1590,7 +1590,7 @@ export function WorkForm({
                 key={r}
                 type="button"
                 onClick={() => toggleReaction(r)}
-                className="flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[11px] transition-all"
+                className="flex items-center gap-1.5 rounded-full px-3.5 py-2 text-sm transition-all"
                 style={{
                   background: active ? "var(--fan-active-chip)" : "var(--fan-bg-2)",
                   border: `1px solid ${active ? "var(--fan-pink)" : "var(--fan-border)"}`,
@@ -1689,13 +1689,13 @@ export function WorkForm({
             <h3 className="text-base font-bold" style={{ color: "var(--fan-text)" }}>
               Tem certeza?
             </h3>
-            <p className="text-[12px] mt-2" style={{ color: "var(--fan-text-2)" }}>
+            <p className="text-sm mt-2" style={{ color: "var(--fan-text-2)" }}>
               Essa ação não pode ser desfeita.
             </p>
             <div className="flex gap-2 mt-5">
               <button
                 onPointerDown={() => setConfirmDelete(false)}
-                className="flex-1 rounded-full py-2.5 text-[12px]"
+                className="flex-1 rounded-full py-2.5 text-sm"
                 style={{ border: "0.5px solid var(--fan-rose-mid)", color: "var(--fan-text-3)" }}
               >
                 Cancelar
@@ -1705,7 +1705,7 @@ export function WorkForm({
                   onDelete();
                   nav({ to: "/library" });
                 }}
-                className="flex-1 rounded-full py-2.5 text-[12px] font-bold text-white"
+                className="flex-1 rounded-full py-2.5 text-sm font-bold text-white"
                 style={{ background: "var(--fan-red)" }}
               >
                 Excluir

@@ -68,6 +68,7 @@ let cache: Bookcase[] = [];
 let unsubscribeSnapshot: (() => void) | null = null;
 const listeners = new Set<() => void>();
 const SERVER_SNAPSHOT: Bookcase[] = [];
+let loading = true;
 
 function notify() {
   listeners.forEach((l) => l());
@@ -80,8 +81,13 @@ onAuthStateChanged(auth, (user) => {
     unsubscribeSnapshot = null;
   }
   cache = [];
+  loading = true;
   notify();
-  if (!user) return;
+  if (!user) {
+    loading = false;
+    notify();
+    return;
+  }
 
   const q = query(
     collection(db, COLLECTION),
@@ -92,9 +98,14 @@ onAuthStateChanged(auth, (user) => {
     q,
     (snap) => {
       cache = snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Bookcase, "id">) }));
+      loading = false;
       notify();
     },
-    (err) => console.error("Erro ao sincronizar estantes:", err),
+    (err) => {
+      console.error("Erro ao sincronizar estantes:", err);
+      loading = false;
+      notify();
+    },
   );
 });
 
@@ -112,6 +123,17 @@ export function useBookcases(): Bookcase[] {
     () => SERVER_SNAPSHOT,
   );
   return mounted ? data : SERVER_SNAPSHOT;
+}
+
+export function useBookcasesLoading(): boolean {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const data = useSyncExternalStore(
+    subscribe,
+    () => loading,
+    () => true,
+  );
+  return mounted ? data : true;
 }
 
 export function useBookcase(id: string): Bookcase | undefined {

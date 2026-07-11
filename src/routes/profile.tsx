@@ -76,13 +76,13 @@ function ProfilePage() {
             {profile.avatar ? (
               <img src={profile.avatar} alt="" className="w-full h-full object-cover" />
             ) : (
-              <User size={36} color="var(--fan-pink-light)" />
+              <User size={36} color="var(--fan-icon-blue)" />
             )}
             <div
               className="absolute inset-0 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
               style={{ background: "rgba(0,0,0,0.5)" }}
             >
-              <span className="text-[10px] font-bold text-white">Alterar</span>
+              <span className="text-sm font-bold text-white">Alterar</span>
             </div>
           </div>
           <input
@@ -102,7 +102,7 @@ function ProfilePage() {
             }}
           />
         </label>
-        <span className="mt-2 text-[12px]" style={{ color: "var(--fan-pink-light)" }}>
+        <span className="mt-2 text-sm" style={{ color: "var(--fan-pink-light)" }}>
           Alterar foto
         </span>
       </div>
@@ -123,7 +123,7 @@ function ProfilePage() {
             <span>{profile.email}</span>
             <Link
               to="/settings"
-              className="text-[11px] font-semibold"
+              className="text-sm font-semibold"
               style={{ color: "var(--fan-pink)" }}
             >
               Alterar
@@ -141,7 +141,7 @@ function ProfilePage() {
           <Stat n={stats.streak} label="Dias streak" />
         </div>
 
-        <h3 className="text-[12px] font-bold mt-4" style={{ color: "var(--fan-text-3)" }}>
+        <h3 className="text-sm font-bold mt-4" style={{ color: "var(--fan-text-3)" }}>
           Selos conquistados
         </h3>
         <div className="grid grid-cols-4 gap-3 pb-8">
@@ -163,7 +163,7 @@ function ProfilePage() {
                 >
                   <b.Icon size={20} />
                 </div>
-                <span className="text-[9px] text-center" style={{ color: "var(--fan-text-2)" }}>
+                <span className="text-sm text-center" style={{ color: "var(--fan-text-2)" }}>
                   {b.name}
                 </span>
               </button>
@@ -187,7 +187,7 @@ function ProfilePage() {
             <h3 className="text-base font-bold" style={{ color: "var(--fan-text)" }}>
               {selectedBadge.name}
             </h3>
-            <p className="text-[12px] mt-2" style={{ color: "var(--fan-text-2)" }}>
+            <p className="text-sm mt-2" style={{ color: "var(--fan-text-2)" }}>
               {selectedBadge.description}
             </p>
           </div>
@@ -206,7 +206,7 @@ function Stat({ n, label }: { n: number; label: string }) {
       <div className="text-[22px] font-bold" style={{ color: "var(--fan-pink-light)" }}>
         {n}
       </div>
-      <div className="text-[10px]" style={{ color: "var(--fan-text-2)" }}>
+      <div className="text-sm" style={{ color: "var(--fan-text-2)" }}>
         {label}
       </div>
     </div>

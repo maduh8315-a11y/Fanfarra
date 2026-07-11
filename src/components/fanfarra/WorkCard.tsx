@@ -1,8 +1,10 @@
 import { Link } from "@tanstack/react-router";
+import { useState } from "react";
 import type { Work } from "@/lib/fanfarra/types";
 import { MediaIcon } from "./MediaIcon";
 
 export function WorkCard({ work }: { work: Work }) {
+  const [imgLoaded, setImgLoaded] = useState(false);
   const pct =
     work.total > 0
       ? Math.min(100, (work.current / work.total) * 100)
@@ -40,17 +42,22 @@ export function WorkCard({ work }: { work: Work }) {
             alt={work.title}
             loading="lazy"
             decoding="async"
+            onLoad={() => setImgLoaded(true)}
             className="w-full h-full object-cover"
+            style={{
+              opacity: imgLoaded ? 1 : 0,
+              transition: "opacity 250ms ease",
+            }}
           />
         ) : (
-          <MediaIcon type={work.type} size={28} className="opacity-40" />
+          <MediaIcon type={work.type} size={28} className="opacity-80" />
         )}
       </div>
       <div className="p-2">
-        <div className="text-[10px] font-bold truncate" style={{ color: "var(--fan-text-3)" }}>
+        <div className="text-sm font-bold truncate" style={{ color: "var(--fan-text-3)" }}>
           {work.title}
         </div>
-        <div className="text-[9px] mt-0.5" style={{ color: "var(--fan-pink)" }}>
+        <div className="text-sm mt-0.5" style={{ color: "var(--fan-pink)" }}>
           {subtitle}
         </div>
         <div

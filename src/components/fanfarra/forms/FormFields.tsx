@@ -19,7 +19,7 @@ export function Field({
 }) {
   return (
     <div>
-      <label className="block text-[12px] mb-2" style={{ color: "var(--fan-text-2)" }}>
+      <label className="block text-sm mb-2" style={{ color: "var(--fan-text-2)" }}>
         {label}
         {required && (
           <span style={{ color: "#F87171", marginLeft: 4 }} aria-label="Campo obrigatório">
@@ -82,7 +82,7 @@ export function UrlInput({
         type="button"
         onClick={open}
         disabled={!value}
-        className="px-3 rounded-[10px] flex items-center gap-1 text-[11px] disabled:opacity-40"
+        className="px-3 rounded-[10px] flex items-center gap-1 text-sm disabled:opacity-40"
         style={{
           background: "var(--fan-bg-2)",
           border: "0.5px solid var(--fan-pink)",
@@ -139,7 +139,7 @@ export function SliderField({
         onChange={(e) => onChange(parseInt(e.target.value, 10))}
         className="flex-1 accent-[var(--fan-pink)]"
       />
-      <span className="text-[12px] w-10 text-right" style={{ color: "var(--fan-pink-light)" }}>
+      <span className="text-sm w-10 text-right" style={{ color: "var(--fan-pink-light)" }}>
         {value}%
       </span>
     </div>
@@ -258,10 +258,10 @@ export function RatingStars({
   return (
     <div className="flex gap-2">
       {[1, 2, 3, 4, 5].map((n) => (
-        <button key={n} type="button" onClick={() => onChange(n === value ? 0 : n)}>
+        <button key={n} type="button" onClick={() => onChange(n === value ? 0 : n)} aria-label={`Avaliar com ${n} estrela${n > 1 ? "s" : ""}`}>
           <Star
             size={size}
-            color={n <= value ? "var(--fan-pink-light)" : "var(--fan-rose-mid)"}
+            color={n <= value ? "var(--fan-pink-light)" : "var(--fan-text-2)"}
             fill={n <= value ? "var(--fan-pink-light)" : "transparent"}
           />
         </button>
@@ -296,7 +296,7 @@ export function TextareaField({
       />
       {maxLength && (
         <span
-          className="absolute bottom-2 right-3 text-[10px]"
+          className="absolute bottom-2 right-3 text-sm"
           style={{ color: "var(--fan-text-2)" }}
         >
           {value.length}/{maxLength}
@@ -344,7 +344,7 @@ export function EpisodeDurationField({
 
   const numInput = (label: string, value: number, onChangeFn: (v: number) => void, max: number) => (
     <div className="flex-1">
-      <label className="block text-[10px] text-center mb-1" style={{ color: "var(--fan-text-2)" }}>
+      <label className="block text-sm text-center mb-1" style={{ color: "var(--fan-text-2)" }}>
         {label}
       </label>
       <input
@@ -369,7 +369,7 @@ export function EpisodeDurationField({
       className="rounded-[12px] p-4 space-y-3"
       style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
     >
-      <p className="text-[12px] font-bold" style={{ color: "var(--fan-text-3)" }}>
+      <p className="text-sm font-bold" style={{ color: "var(--fan-text-3)" }}>
         Duração por episódio
       </p>
       <div className="flex gap-2 items-end">
@@ -392,10 +392,10 @@ export function EpisodeDurationField({
           border: `0.5px solid ${hasData ? "rgba(255,0,102,0.3)" : "var(--fan-border)"}`,
         }}
       >
-        <span className="text-[11px]" style={{ color: "var(--fan-text-2)" }}>
+        <span className="text-sm" style={{ color: "var(--fan-text-2)" }}>
           {episodeCount > 0 ? `${episodeCount} ep × duração` : "Informe episódios acima"}
         </span>
-        <span className="text-[13px] font-bold" style={{ color: hasData ? "var(--fan-pink-light)" : "var(--fan-rose-mid)" }}>
+        <span className="text-sm font-bold" style={{ color: hasData ? "var(--fan-pink-light)" : "var(--fan-rose-mid)" }}>
           {hasData ? formatMinutes(totalMinutes) : "—"}
         </span>
       </div>
@@ -468,7 +468,7 @@ export function FandomsField({
             >
               {f}
               <button type="button" onClick={() => remove(f)} aria-label={`Remover ${f}`}>
-                <X size={10} color="var(--fan-pink-light)" />
+                <X size={10} color="var(--fan-icon-blue)" />
               </button>
             </span>
           ))}
@@ -503,7 +503,7 @@ export function FandomsField({
             type="button"
             onClick={() => add(input)}
             disabled={!input.trim()}
-            className="px-3 rounded-[10px] flex items-center gap-1 text-[11px] font-bold disabled:opacity-40"
+            className="px-3 rounded-[10px] flex items-center gap-1 text-sm font-bold disabled:opacity-40"
             style={{ background: "var(--fan-pink)", color: "white" }}
           >
             <Plus size={14} /> Add
@@ -521,7 +521,7 @@ export function FandomsField({
                 key={s}
                 type="button"
                 onClick={() => add(s)}
-                className="w-full text-left px-4 py-2.5 text-[12px]"
+                className="w-full text-left px-4 py-2.5 text-sm"
                 style={{ color: "#F2D9E6", borderBottom: "0.5px solid var(--fan-border)" }}
               >
                 {s}
@@ -530,7 +530,7 @@ export function FandomsField({
           </div>
         )}
       </div>
-      <p className="text-[10px]" style={{ color: "var(--fan-rose-mid)" }}>
+      <p className="text-sm" style={{ color: "var(--fan-rose-mid)" }}>
         Digite e pressione Add ou Enter. Para crossovers, adicione mais de um fandom.
       </p>
     </div>

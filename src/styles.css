@@ -49,48 +49,50 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(0.08 0.03 0);
-  --foreground: oklch(0.95 0.03 350);
-  --card: oklch(0.13 0.06 355);
-  --card-foreground: oklch(0.95 0.03 350);
-  --popover: oklch(0.13 0.06 355);
-  --popover-foreground: oklch(0.95 0.03 350);
-  --primary: oklch(0.65 0.27 0);
+  --background: oklch(0.08 0.03 27);
+  --foreground: oklch(0.95 0.03 20);
+  --card: oklch(0.14 0.06 20);
+  --card-foreground: oklch(0.95 0.03 20);
+  --popover: oklch(0.14 0.06 20);
+  --popover-foreground: oklch(0.95 0.03 20);
+  --primary: oklch(0.58 0.22 27);
   --primary-foreground: oklch(1 0 0);
-  --fan-pink-rgb: 255, 0, 102;
-  --fan-pink-light-rgb: 255, 77, 148;
-  --secondary: oklch(0.2 0.1 0);
-  --secondary-foreground: oklch(0.78 0.16 355);
-  --muted: oklch(0.16 0.07 355);
-  --muted-foreground: oklch(0.62 0.12 355);
-  --accent: oklch(0.22 0.13 5);
-  --accent-foreground: oklch(0.78 0.16 355);
-  --destructive: oklch(0.5 0.22 20);
+  --fan-pink-rgb: 220, 38, 38;
+  --fan-pink-light-rgb: 242, 107, 94;
+  --secondary: oklch(0.2 0.1 27);
+  --secondary-foreground: oklch(0.76 0.17 20);
+  --muted: oklch(0.17 0.07 20);
+  --muted-foreground: oklch(0.65 0.13 20);
+  --accent: oklch(0.23 0.14 30);
+  --accent-foreground: oklch(0.76 0.17 20);
+  --destructive: oklch(0.5 0.22 27);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.28 0.12 355);
-  --input: oklch(0.13 0.06 355);
-  --ring: oklch(0.65 0.27 0);
-  --chart-1: oklch(0.65 0.27 0);
-  --chart-2: oklch(0.78 0.16 355);
-  --chart-3: oklch(0.5 0.22 20);
-  --chart-4: oklch(0.4 0.18 5);
-  --chart-5: oklch(0.6 0.22 355);
-  --fan-bg: #0D0008;
-  --fan-bg-2: #1A0010;
-  --fan-bg-3: #100008;
-  --fan-pink: #FF0066;
-  --fan-pink-light: #FF4D94;
-  --fan-red: #cc0022;
-  --fan-red-dark: #3d0010;
-  --fan-rose-mid: #4D0025;
-  --fan-text: #FFF0F7;
-  --fan-text-2: #CC6699;
-  --fan-text-3: #f2d9e6;
-  --fan-border: #2E0018;
-  --fan-tag: #33000f;
-  --fan-active-chip: #3D0020;
+  --border: oklch(0.29 0.12 20);
+  --input: oklch(0.14 0.06 20);
+  --ring: oklch(0.58 0.22 27);
+  --chart-1: oklch(0.58 0.22 27);
+  --chart-2: oklch(0.76 0.17 20);
+  --chart-3: oklch(0.5 0.22 27);
+  --chart-4: oklch(0.42 0.18 30);
+  --chart-5: oklch(0.6 0.22 20);
+  --fan-bg: #000000;
+  --fan-bg-2: #150000;
+  --fan-bg-3: #0A0000;
+  --fan-pink: #FF0000;
+  --fan-pink-light: #FF4D4D;
+  --fan-red: #950101;
+  --fan-red-dark: #3D0000;
+  --fan-rose-mid: #3D0000;
+  --fan-text: #FFF3F0;
+  --fan-text-2: #E89490;
+  --fan-text-3: #F7D6D2;
+  --fan-border: #3D0000;
+  --fan-tag: #150000;
+  --fan-active-chip: #3D0000;
+  --fan-gold: #7FA8C9;
+  --fan-gold-bg: #1C2B36;
   --sidebar: var(--fan-bg-3);
-  --sidebar-foreground: #f2d9e6;
+  --sidebar-foreground: #F7D6D2;
   --sidebar-primary: var(--fan-pink);
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: var(--fan-bg-2);
@@ -103,7 +105,7 @@
   --sal: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
   --sar: var(--safe-area-inset-right, env(safe-area-inset-right, 0px));
   --font-body: "Manrope", system-ui, sans-serif;
-  --font-display: "Unbounded", system-ui, sans-serif;
+  --fan-icon-blue: #234ea3;
 }
 
 [data-theme="lunar"] {
@@ -122,7 +124,8 @@
   --fan-tag: #1a1240;
   --fan-active-chip: #2e2166;
   --fan-pink-rgb: 124, 92, 255;
---fan-pink-light-rgb: 167, 139, 250;
+  --fan-pink-light-rgb: 167, 139, 250;
+  --fan-icon-blue: #F5A623;
 }
 
 [data-theme="aurora"] {
@@ -140,28 +143,32 @@
   --fan-border: #134e3a;
   --fan-tag: #0c2a1e;
   --fan-active-chip: #145c46;
+  --fan-icon-blue: #FF6F61;
 }
 
 /* ===== MODO CLARO ===== */
-/* Combina com qualquer tema via data-theme. Sem data-theme = tema padrão (rosa). */
+/* Combina com qualquer tema via data-theme. Sem data-theme = tema padrão (vermelho sinal). */
 
 [data-mode="light"] {
-  --fan-bg: #FFF5F8;
+  --fan-bg: #fff7ef;
   --fan-bg-2: #FFFFFF;
-  --fan-bg-3: #FFE9F0;
-  --fan-pink: #E5004F;
-  --fan-pink-light: #FF0066;
-  --fan-red: #cc0022;
-  --fan-red-dark: #FFD6E4;
-  --fan-rose-mid: #F2C6D9;
-  --fan-text: #2B0012;
-  --fan-text-2: #91375A;
-  --fan-text-3: #4D0025;
-  --fan-border: #F5D6E3;
-  --fan-tag: #FFE3ED;
-  --fan-active-chip: #FFD3E4;
-  --fan-pink-rgb: 229, 0, 79;
---fan-pink-light-rgb: 255, 0, 102;
+  --fan-bg-3: #fff7ef;
+  --fan-pink: #D25353;
+  --fan-pink-light: #EA7B7B;
+  --fan-red: #9E3B3B;
+  --fan-red-dark: #F6D9CC;
+  --fan-rose-mid: #EA7B7B;
+  --fan-text: #18181B;
+  --fan-text-2: #9E3B3B;
+  --fan-text-3: #3F3F46;
+  --fan-border: #EA7B7B;
+  --fan-tag: #FFEAD3;
+  --fan-active-chip: #F6D9CC;
+  --fan-gold: #3B5D76;
+  --fan-gold-bg: #E1EAF0;
+  --fan-pink-rgb: 210, 83, 83;
+  --fan-pink-light-rgb: 234, 123, 123;
+  --fan-icon-blue: #478bd0;
 }
 
 [data-mode="light"][data-theme="lunar"] {
@@ -180,7 +187,8 @@
   --fan-tag: #EFEBFF;
   --fan-active-chip: #E1D6FF;
   --fan-pink-rgb: 109, 63, 255;
---fan-pink-light-rgb: 124, 92, 255;
+  --fan-pink-light-rgb: 124, 92, 255;
+  --fan-icon-blue: #E8920D;
 }
 
 [data-mode="light"][data-theme="aurora"] {
@@ -193,13 +201,14 @@
   --fan-red-dark: #D2F3E4;
   --fan-rose-mid: #C6EEDD;
   --fan-text: #04241A;
-  --fan-text-2: #1E8F6C;
+  --fan-text-2: #157A59;
   --fan-text-3: #0A3626;
   --fan-border: #D2F3E4;
   --fan-tag: #E3F7EE;
   --fan-active-chip: #CBEFDD;
   --fan-pink-rgb: 12, 148, 104;
---fan-pink-light-rgb: 16, 185, 129;
+  --fan-pink-light-rgb: 16, 185, 129;
+  --fan-icon-blue: #E8523A;
 }
 
 @layer base {
@@ -274,9 +283,9 @@
 }
 
 @utility fan-chip-active {
-  background: var(--fan-active-chip);
+  background: var(--fan-pink);
   border-color: var(--fan-pink);
-  color: var(--fan-pink-light);
+  color: #fff;
 }
 
 @utility fan-card {
@@ -309,4 +318,9 @@
 .text-\[13px\],
 .text-xs {
   font-size: 16px !important;
+}
+
+/* ─── Ícones em azul (regra global) ─── */
+svg {
+  color: var(--fan-icon-blue) !important;
 }

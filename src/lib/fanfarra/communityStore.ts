@@ -47,6 +47,7 @@ const listeners = new Set<() => void>();
 const SERVER_SNAPSHOT: PostedRecommendation[] = [];
 let hasUser = false;
 let disconnectTimer: ReturnType<typeof setTimeout> | null = null;
+let loading = true;
 
 function notify() {
   listeners.forEach((l) => l());
@@ -62,9 +63,14 @@ function connect() {
         id: d.id,
         ...(d.data() as Omit<PostedRecommendation, "id">),
       }));
+      loading = false;
       notify();
     },
-    (err) => console.error("Erro ao sincronizar recomendações da comunidade:", err),
+    (err) => {
+      console.error("Erro ao sincronizar recomendações da comunidade:", err);
+      loading = false;
+      notify();
+    },
   );
 }
 
@@ -77,6 +83,7 @@ onAuthStateChanged(auth, (user) => {
   unsubscribeSnapshot = null;
   cache = [];
   hasUser = !!user;
+  loading = hasUser; // sem usuário, não tem nada pra carregar
   notify();
   if (hasUser && listeners.size > 0) connect();
 });
@@ -109,6 +116,17 @@ export function usePublicRecommendations(): PostedRecommendation[] {
     () => SERVER_SNAPSHOT,
   );
   return mounted ? data : SERVER_SNAPSHOT;
+}
+
+export function usePublicRecommendationsLoading(): boolean {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const data = useSyncExternalStore(
+    subscribe,
+    () => loading,
+    () => true,
+  );
+  return mounted ? data : true;
 }
 
 // Publica (ou atualiza, se já publicada) uma obra como recomendação pública.

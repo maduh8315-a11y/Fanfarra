@@ -73,7 +73,7 @@ export function FilterSheet({
           </h2>
           <button
             onClick={() => setF(DEFAULT_FILTERS)}
-            className="text-[12px]"
+            className="text-sm"
             style={{ color: "var(--fan-pink)" }}
           >
             Limpar tudo
@@ -128,6 +128,7 @@ export function FilterSheet({
               <button
                 key={n}
                 onClick={() => setF((p) => ({ ...p, minRating: n === p.minRating ? 0 : n }))}
+                aria-label={`Nota mínima ${n} estrela${n > 1 ? "s" : ""}`}
               >
                 <Star
                   size={24}
@@ -156,7 +157,7 @@ export function FilterSheet({
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="mb-5">
-      <h3 className="text-[11px] uppercase mb-2 font-bold" style={{ color: "var(--fan-text-2)" }}>
+      <h3 className="text-xs uppercase mb-2 font-bold" style={{ color: "var(--fan-text-2)" }}>
         {label}
       </h3>
       {children}

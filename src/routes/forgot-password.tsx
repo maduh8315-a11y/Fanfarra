@@ -44,11 +44,11 @@ function ForgotPasswordPage() {
       {!sent ? (
         <>
           <div className="mt-10 flex flex-col items-center text-center">
-            <KeyRound size={48} color="var(--fan-pink-light)" />
+            <KeyRound size={48} color="var(--fan-icon-blue)" />
             <h1 className="mt-4 text-xl font-extrabold" style={{ color: "var(--fan-text)" }}>
               Redefinir senha
             </h1>
-            <p className="mt-2 text-[13px] max-w-xs" style={{ color: "var(--fan-text-2)" }}>
+            <p className="mt-2 text-sm max-w-xs" style={{ color: "var(--fan-text-2)" }}>
               Informe seu e-mail e enviaremos um link para criar uma nova senha.
             </p>
           </div>
@@ -74,7 +74,7 @@ function ForgotPasswordPage() {
               )}
             </button>
           </form>
-          <p className="mt-6 text-center text-[13px]" style={{ color: "var(--fan-text-2)" }}>
+          <p className="mt-6 text-center text-sm" style={{ color: "var(--fan-text-2)" }}>
             Lembrou a senha?{" "}
             <Link to="/login" style={{ color: "var(--fan-pink-light)", fontWeight: 700 }}>
               Entrar
@@ -87,7 +87,7 @@ function ForgotPasswordPage() {
           <h1 className="mt-4 text-xl font-extrabold" style={{ color: "var(--fan-text)" }}>
             Link enviado!
           </h1>
-          <p className="mt-2 text-[13px] max-w-xs" style={{ color: "var(--fan-text-2)" }}>
+          <p className="mt-2 text-sm max-w-xs" style={{ color: "var(--fan-text-2)" }}>
             Confira seu e-mail (inclusive spam) e siga as instruções para redefinir.
           </p>
           <button

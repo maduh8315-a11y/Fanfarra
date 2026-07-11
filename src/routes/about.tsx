@@ -31,15 +31,15 @@ function AboutPage() {
 
       <div className="flex flex-col items-center mt-6 px-4">
         <div className="flex items-center gap-2">
-          <Sparkles size={22} color="var(--fan-pink-light)" fill="var(--fan-pink-light)" />
+          <Sparkles size={22} color="var(--fan-icon-blue)" fill="var(--fan-icon-blue)"/>
           <span className="text-2xl font-bold" style={{ color: "var(--fan-pink-light)" }}>
             Fanfarra
           </span>
         </div>
-        <p className="text-[12px] mt-1" style={{ color: "var(--fan-text-2)" }}>
+        <p className="text-sm mt-1" style={{ color: "var(--fan-text-2)" }}>
           Versão 1.0.0
         </p>
-        <p className="text-[13px] mt-4 text-center" style={{ color: "var(--fan-text-3)" }}>
+        <p className="text-sm mt-4 text-center" style={{ color: "var(--fan-text-3)" }}>
           Seu universo fandom em um só lugar.
         </p>
       </div>
@@ -62,7 +62,7 @@ function AboutPage() {
                   className="flex items-center justify-between px-4 py-3"
                   style={itemStyle}
                 >
-                  <span className="text-[13px]" style={{ color: "var(--fan-text)" }}>
+                  <span className="text-sm" style={{ color: "var(--fan-text)" }}>
                     {l.label}
                   </span>
                 </Link>
@@ -74,7 +74,7 @@ function AboutPage() {
                   className="flex items-center justify-between px-4 py-3"
                   style={itemStyle}
                 >
-                  <span className="text-[13px]" style={{ color: "var(--fan-text)" }}>
+                  <span className="text-sm" style={{ color: "var(--fan-text)" }}>
                     {l.label}
                   </span>
                   <ExternalLink size={14} color="var(--fan-text-2)" />
@@ -85,7 +85,7 @@ function AboutPage() {
         })}
       </ul>
 
-      <p className="text-center text-[12px] mt-8 mb-8" style={{ color: "var(--fan-text-2)" }}>
+      <p className="text-center text-sm mt-8 mb-8" style={{ color: "var(--fan-text-2)" }}>
         Desenvolvido com 💜 pela equipe Fanfarra
       </p>
     </AppShell>

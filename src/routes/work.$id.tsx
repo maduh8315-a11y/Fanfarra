@@ -119,11 +119,12 @@ function WorkDetail() {
             <ArrowLeft size={20} color="var(--fan-text-2)" />
           </button>
           <div className="flex items-center gap-2">
-            <Link
+           <Link
               to="/work/$id/edit"
               params={{ id: work.id }}
               className="w-9 h-9 rounded-full flex items-center justify-center"
               style={{ background: "rgba(13,0,8,0.6)" }}
+              aria-label="Editar"
             >
               <Pencil size={16} color="var(--fan-text-2)" />
             </Link>
@@ -136,8 +137,9 @@ function WorkDetail() {
                   nav({ to: "/library" });
                 }
               }}
+              aria-label="Excluir"
             >
-              <Trash2 size={16} color="var(--fan-pink)" />
+              <Trash2 size={16} color="var(--fan-icon-blue)" />
             </button>
           </div>
         </div>
@@ -167,13 +169,13 @@ function WorkDetail() {
           <div className="flex-1 min-w-0 pb-1">
             <div className="flex flex-wrap gap-1.5 mb-2">
               <span
-                className="text-[9px] font-bold px-2.5 py-1 rounded-full"
+                className="text-[11px] font-bold px-2.5 py-1 rounded-full"
                 style={{ background: "var(--fan-tag)", color: "var(--fan-pink-light)" }}
               >
                 {work.type}
               </span>
               <span
-                className="text-[9px] font-bold px-2.5 py-1 rounded-full"
+                className="text-[11px] font-bold px-2.5 py-1 rounded-full"
                 style={{ background: sc.bg, color: sc.fg }}
               >
                 {work.status}
@@ -191,17 +193,18 @@ function WorkDetail() {
                   onMouseLeave={() => setHoverRating(0)}
                   onClick={() => updateWork(work.id, { rating: n })}
                   className="p-0.5"
+                  aria-label={`Avaliar com ${n} estrela${n > 1 ? "s" : ""}`}
                 >
                   <Star
                     size={18}
-                    color={(hoverRating || work.rating) >= n ? "var(--fan-pink-light)" : "var(--fan-rose-mid)"}
+                    color={(hoverRating || work.rating) >= n ? "var(--fan-pink-light)" : "var(--fan-text-2)"}
                     fill={(hoverRating || work.rating) >= n ? "var(--fan-pink-light)" : "transparent"}
                   />
                 </button>
               ))}
               {work.rating > 0 && (
                 <span
-                  className="text-[11px] ml-1 self-center"
+                  className="text-sm ml-1 self-center"
                   style={{ color: "var(--fan-text-2)" }}
                 >
                   {work.rating}/5
@@ -220,12 +223,12 @@ function WorkDetail() {
         >
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-1.5">
-              <TrendingUp size={14} color="var(--fan-pink-light)" />
-              <span className="text-[11px] font-bold" style={{ color: "var(--fan-text-3)" }}>
+              <TrendingUp size={14} color="var(--fan-icon-blue)" />
+              <span className="text-sm font-bold" style={{ color: "var(--fan-text-3)" }}>
                 Progresso
               </span>
             </div>
-            <span className="text-[11px] font-bold" style={{ color: "var(--fan-pink)" }}>
+            <span className="text-sm font-bold" style={{ color: "var(--fan-pink)" }}>
               {Math.round(pct)}%
             </span>
           </div>
@@ -238,7 +241,7 @@ function WorkDetail() {
               style={{ width: `${pct}%`, background: "linear-gradient(90deg, var(--fan-pink), var(--fan-pink-light))" }}
             />
           </div>
-          <p className="text-[11px] mt-2" style={{ color: "var(--fan-text-2)" }}>
+          <p className="text-sm mt-2" style={{ color: "var(--fan-text-2)" }}>
             {progressLabel()}
           </p>
 
@@ -248,7 +251,7 @@ function WorkDetail() {
                 setProgressInput(String(work.current));
                 setEditing(true);
               }}
-              className="fan-btn-primary mt-3 text-[12px] w-full flex items-center justify-center gap-1.5"
+              className="fan-btn-primary mt-3 text-sm w-full flex items-center justify-center gap-1.5"
               style={{ height: 40 }}
             >
               <BookOpen size={14} color="white" />
@@ -273,14 +276,14 @@ function WorkDetail() {
                   updateWork(work.id, { current: parseInt(progressInput) || 0 });
                   setEditing(false);
                 }}
-                className="fan-btn-primary text-[12px] px-4"
+                className="fan-btn-primary text-sm px-4"
                 style={{ height: 42, borderRadius: 10 }}
               >
                 Salvar
               </button>
               <button
                 onClick={() => setEditing(false)}
-                className="px-3 rounded-[10px] text-[12px]"
+                className="px-3 rounded-[10px] text-sm"
                 style={{
                   background: "var(--fan-bg)",
                   border: "0.5px solid var(--fan-rose-mid)",
@@ -303,26 +306,26 @@ function WorkDetail() {
           <div className="px-4 pt-3 pb-1 flex items-center gap-1.5">
             <Hash size={12} color="var(--fan-text-2)" />
             <span
-              className="text-[10px] font-bold uppercase tracking-wider"
+              className="text-xs font-bold uppercase tracking-wider"
               style={{ color: "var(--fan-text-2)" }}
             >
               Informações
             </span>
           </div>
-          <InfoRow icon={<BookOpen size={13} color="var(--fan-pink-light)" />} label="Tipo" value={work.type} />
-          <InfoRow icon={<Clock size={13} color="var(--fan-pink-light)" />} label="Status" value={work.status} />
+          <InfoRow icon={<BookOpen size={13} color="var(--fan-icon-blue)" />} label="Tipo" value={work.type} />
+          <InfoRow icon={<Clock size={13} color="var(--fan-icon-blue)" />} label="Status" value={work.status} />
           <InfoRow
-            icon={<TrendingUp size={13} color="var(--fan-pink-light)" />}
+            icon={<TrendingUp size={13} color="var(--fan-icon-blue)" />}
             label="Progresso"
             value={`${work.current}${work.total ? ` / ${work.total}` : ""}`}
           />
           <InfoRow
-            icon={<Star size={13} color="var(--fan-pink-light)" />}
+            icon={<Star size={13} color="var(--fan-icon-blue)" />}
             label="Nota"
             value={work.rating ? `${work.rating}/5` : "—"}
           />
           <InfoRow
-            icon={<Calendar size={13} color="var(--fan-pink-light)" />}
+            icon={<Calendar size={13} color="var(--fan-icon-blue)" />}
             label="Adicionada em"
             value={new Date(work.createdAt).toLocaleDateString("pt-BR")}
             last
@@ -340,13 +343,13 @@ function WorkDetail() {
             <div className="flex items-center gap-1.5 mb-2">
               <StickyNote size={12} color="var(--fan-text-2)" />
               <span
-                className="text-[10px] font-bold uppercase tracking-wider"
+                className="text-xs font-bold uppercase tracking-wider"
                 style={{ color: "var(--fan-text-2)" }}
               >
                 Minhas notas
               </span>
             </div>
-            <p className="text-[12px] leading-relaxed" style={{ color: "var(--fan-text-3)" }}>
+            <p className="text-sm leading-relaxed" style={{ color: "var(--fan-text-3)" }}>
               {work.notes}
             </p>
           </div>
@@ -359,10 +362,10 @@ function WorkDetail() {
         style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
       >
         <div>
-          <p className="text-[13px] font-bold" style={{ color: "var(--fan-text)" }}>
+          <p className="text-sm font-bold" style={{ color: "var(--fan-text)" }}>
             Recomendar publicamente
           </p>
-          <p className="text-[11px] mt-0.5" style={{ color: "var(--fan-text-2)" }}>
+          <p className="text-sm mt-0.5" style={{ color: "var(--fan-text-2)" }}>
             {work.isPublicRec
               ? `Visível como @${profile.username}`
               : "Compartilhe com a comunidade Fanfarra"}
@@ -404,11 +407,11 @@ function InfoRow({
     >
       <div className="flex items-center gap-2">
         {icon}
-        <span className="text-[12px]" style={{ color: "var(--fan-text-2)" }}>
+        <span className="text-sm" style={{ color: "var(--fan-text-2)" }}>
           {label}
         </span>
       </div>
-      <span className="text-[12px] font-medium" style={{ color: "var(--fan-text-3)" }}>
+      <span className="text-sm font-medium" style={{ color: "var(--fan-text-3)" }}>
         {value}
       </span>
     </div>

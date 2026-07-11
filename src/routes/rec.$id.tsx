@@ -225,7 +225,7 @@ function RecDetail() {
           className="absolute top-4 left-4 z-10 w-9 h-9 rounded-full flex items-center justify-center"
           style={{ background: "rgba(13,0,8,0.7)", border: "1px solid var(--fan-border)" }}
         >
-          <ArrowLeft size={18} color="var(--fan-pink-light)" />
+          <ArrowLeft size={18} color="var(--fan-icon-blue)" />
         </button>
 
         {/* Capa em destaque, estilo pôster */}
@@ -246,8 +246,8 @@ function RecDetail() {
               <img src={item.cover} alt={item.title} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center gap-2">
-                <MediaIcon type={item.type as MediaType} size={44} color="var(--fan-pink-light)" />               
-                <span className="text-[10px] font-semibold" style={{ color: "var(--fan-text-2)" }}>
+                <MediaIcon type={item.type as MediaType} size={44} color="var(--fan-icon-blue)" />               
+                <span className="text-sm font-semibold" style={{ color: "var(--fan-text-2)" }}>
                   {item.type}
                 </span>
               </div>
@@ -260,14 +260,14 @@ function RecDetail() {
       <div className="px-5 mt-4 text-center">
         <div className="flex flex-wrap justify-center gap-1.5 mb-2">
           <span
-            className="text-[9px] font-bold px-2.5 py-1 rounded-full"
+            className="text-[11px] font-bold px-2.5 py-1 rounded-full"
             style={{ background: "var(--fan-tag)", color: "var(--fan-pink-light)" }}
           >
             {item.type}
           </span>
           {item.year > 0 && (
             <span
-              className="text-[9px] font-bold px-2.5 py-1 rounded-full"
+              className="text-[11px] font-bold px-2.5 py-1 rounded-full"
               style={{
                 background: "var(--fan-bg-2)",
                 color: "var(--fan-text-2)",
@@ -281,11 +281,11 @@ function RecDetail() {
         <h1 className="text-xl font-bold leading-tight" style={{ color: "var(--fan-text)" }}>
           {item.title}
         </h1>
-        <p className="text-[12px] mt-1" style={{ color: "var(--fan-text-2)" }}>
+        <p className="text-sm mt-1" style={{ color: "var(--fan-text-2)" }}>
           {item.author || "Autor não informado"}
         </p>
        {item.recommendedBy && (
-          <p className="text-[11px] font-semibold mt-1" style={{ color: "var(--fan-pink-light)" }}>
+          <p className="text-sm font-semibold mt-1" style={{ color: "var(--fan-pink-light)" }}>
             Recomendado por @{item.recommendedBy}
           </p>
         )}
@@ -298,10 +298,10 @@ function RecDetail() {
           >
             <Heart
               size={30}
-              color={myReaction === "like" ? "var(--fan-pink)" : "var(--fan-rose-mid)"}
+              color={myReaction === "like" ? "var(--fan-pink)" : "var(--fan-text-2)"}
               fill={myReaction === "like" ? "var(--fan-pink)" : "transparent"}
             />
-            <span className="text-[11px] font-semibold" style={{ color: "var(--fan-text-2)" }}>
+            <span className="text-sm font-semibold" style={{ color: "var(--fan-text-2)" }}>
               {reactionCounts.likes}
             </span>
           </button>
@@ -315,7 +315,7 @@ function RecDetail() {
               color={myReaction === "boo" ? "#9CA3AF" : "var(--fan-rose-mid)"}
               fill={myReaction === "boo" ? "#9CA3AF" : "transparent"}
             />
-            <span className="text-[11px] font-semibold" style={{ color: "var(--fan-text-2)" }}>
+            <span className="text-sm font-semibold" style={{ color: "var(--fan-text-2)" }}>
               {reactionCounts.boos}
             </span>
           </button>
@@ -324,7 +324,7 @@ function RecDetail() {
 
       {/* Avaliação */}
       <section className="mt-5 px-5">
-        <SectionCard icon={<Star size={13} color="var(--fan-pink-light)" />} title="Avaliação">
+        <SectionCard icon={<Star size={13} color="var(--fan-icon-blue)" />} title="Avaliação">
           {item.rating ? (
             <div className="flex items-center gap-1">
               {[1, 2, 3, 4, 5].map((n) => (
@@ -335,7 +335,7 @@ function RecDetail() {
                   fill={item.rating! >= n ? "var(--fan-pink-light)" : "transparent"}
                 />
               ))}
-              <span className="text-[12px] ml-1" style={{ color: "var(--fan-text-2)" }}>
+              <span className="text-sm ml-1" style={{ color: "var(--fan-text-2)" }}>
                 {item.rating}/5
               </span>
             </div>
@@ -347,7 +347,7 @@ function RecDetail() {
 
       {/* Ficha técnica */}
       <section className="mt-3 px-5">
-        <SectionCard icon={<Layers size={13} color="var(--fan-pink-light)" />} title="Ficha técnica">
+        <SectionCard icon={<Layers size={13} color="var(--fan-icon-blue)" />} title="Ficha técnica">
           <div className="grid grid-cols-2 gap-y-3 gap-x-2">
             {(FICHA_TECNICA_CONFIG[item.type] ?? FICHA_TECNICA_CONFIG.Anime).map((f) => (
               <Field
@@ -362,21 +362,21 @@ function RecDetail() {
 
       {/* Gêneros */}
       <section className="mt-3 px-5">
-        <SectionCard icon={<Tag size={13} color="var(--fan-pink-light)" />} title="Gênero">
+        <SectionCard icon={<Tag size={13} color="var(--fan-icon-blue)" />} title="Gênero">
           <ChipList items={item.genres} emptyText="Nenhum gênero informado" />
         </SectionCard>
       </section>
 
       {/* Tags */}
       <section className="mt-3 px-5">
-        <SectionCard icon={<Tag size={13} color="var(--fan-pink-light)" />} title="Tags">
+        <SectionCard icon={<Tag size={13} color="var(--fan-icon-blue)" />} title="Tags">
           <ChipList items={item.tags} emptyText="Nenhuma tag informada" />
         </SectionCard>
       </section>
 
       {/* Reação do usuário */}
       <section className="mt-3 px-5">
-        <SectionCard icon={<Heart size={13} color="var(--fan-pink-light)" />} title="Reação do usuário">
+        <SectionCard icon={<Heart size={13} color="var(--fan-icon-blue)" />} title="Reação do usuário">
           <ChipList items={item.reactions} emptyText="Nenhuma reação registrada" />
         </SectionCard>
       </section>
@@ -384,11 +384,11 @@ function RecDetail() {
       {/* Comentário / notas pessoais */}
       <section className="mt-3 px-5">
         <SectionCard
-          icon={<MessageSquare size={13} color="var(--fan-pink-light)" />}
+          icon={<MessageSquare size={13} color="var(--fan-icon-blue)" />}
           title="Comentário do usuário"
         >
           <p
-            className="text-[12px] leading-relaxed italic"
+            className="text-sm leading-relaxed italic"
             style={{ color: item.notes ? "var(--fan-text-3)" : "var(--fan-text-2)" }}
           >
             {item.notes ? `"${item.notes}"` : "Nenhum comentário adicionado."}
@@ -398,13 +398,13 @@ function RecDetail() {
 
       {/* Link */}
       <section className="mt-3 px-5">
-        <SectionCard icon={<LinkIcon size={13} color="var(--fan-pink-light)" />} title="Link">
+        <SectionCard icon={<LinkIcon size={13} color="var(--fan-icon-blue)" />} title="Link">
           {item.link ? (
             <a
               href={item.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-[12px] font-semibold break-all"
+              className="text-sm font-semibold break-all"
               style={{ color: "var(--fan-pink-light)" }}
             >
               {item.link}
@@ -418,7 +418,7 @@ function RecDetail() {
       {/* Obras relacionadas */}
       {/* Obras relacionadas */}
       <section className="mt-3 px-5 pb-6">
-        <SectionCard icon={<Users2 size={13} color="var(--fan-pink-light)" />} title="Obras relacionadas">
+        <SectionCard icon={<Users2 size={13} color="var(--fan-icon-blue)" />} title="Obras relacionadas">
           {related.length ? (
             <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
               {related.map((r) => (
@@ -439,16 +439,16 @@ function RecDetail() {
                     {r.cover ? (
                       <img src={r.cover} alt={r.title} className="w-full h-full object-cover" />
                     ) : (
-                      <MediaIcon type={r.type as any} size={20} color="var(--fan-pink-light)" />
+                      <MediaIcon type={r.type as any} size={20} color="var(--fan-icon-blue)" />
                     )}
                   </div>
                   <p
-                    className="mt-1 text-[9px] font-semibold line-clamp-2 leading-tight"
+                    className="mt-1 text-sm font-semibold line-clamp-2 leading-tight"
                     style={{ color: "var(--fan-text)" }}
                   >
                     {r.title}
                   </p>
-                  <p className="text-[8px] font-medium" style={{ color: "var(--fan-text-2)" }}>
+                  <p className="text-sm font-medium" style={{ color: "var(--fan-text-2)" }}>
                     {r.relation}
                   </p>
                 </Link>
@@ -464,7 +464,7 @@ function RecDetail() {
       <div className="px-5 pb-10">
         <Link
           to="/add"
-          className="block w-full py-3 rounded-[14px] text-center text-[13px] font-bold text-white"
+          className="block w-full py-3 rounded-[14px] text-center text-sm font-bold text-white"
           style={{ background: "linear-gradient(90deg, var(--fan-pink), var(--fan-pink-light))" }}
         >
           Adicionar à biblioteca
@@ -493,7 +493,7 @@ function SectionCard({
       <div className="flex items-center gap-1.5 mb-2.5">
         {icon}
         <span
-          className="text-[10px] font-bold uppercase tracking-wider"
+          className="text-xs font-bold uppercase tracking-wider"
           style={{ color: "var(--fan-text-2)" }}
         >
           {title}
@@ -507,11 +507,11 @@ function SectionCard({
 function Field({ label, value }: { label: string; value?: string }) {
   return (
     <div>
-      <p className="text-[9px] uppercase tracking-wide" style={{ color: "var(--fan-text-2)" }}>
+      <p className="text-xs uppercase tracking-wide" style={{ color: "var(--fan-text-2)" }}>
         {label}
       </p>
       <p
-        className="text-[12px] font-medium mt-0.5"
+        className="text-sm font-medium mt-0.5"
         style={{ color: value ? "var(--fan-text-3)" : "var(--fan-text-2)" }}
       >
         {value || "—"}
@@ -527,7 +527,7 @@ function ChipList({ items, emptyText }: { items?: string[]; emptyText: string })
       {items.map((g) => (
         <span
           key={g}
-          className="text-[10px] px-2 py-0.5 rounded-full"
+          className="text-[11px] px-2 py-0.5 rounded-full"
           style={{ background: "var(--fan-bg-2)", color: "var(--fan-text-2)", border: "1px solid var(--fan-border)" }}
         >
           {g}
@@ -539,7 +539,7 @@ function ChipList({ items, emptyText }: { items?: string[]; emptyText: string })
 
 function EmptyValue({ text }: { text: string }) {
   return (
-    <p className="text-[12px]" style={{ color: "var(--fan-text-2)" }}>
+    <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
       {text}
     </p>
   );

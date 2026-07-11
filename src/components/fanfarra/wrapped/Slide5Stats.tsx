@@ -43,7 +43,7 @@ export default function Slide5Stats({ data }: { data: WrappedData }) {
           {items.map((it) => (
             <div key={it.label} className="stat-card">
               <div style={{ display: "flex", justifyContent: "center" }}>
-                <it.Icon size={32} color="var(--fan-pink)" />
+                <it.Icon size={32} color="var(--fan-icon-blue)" />
               </div>
               <div
                 style={{

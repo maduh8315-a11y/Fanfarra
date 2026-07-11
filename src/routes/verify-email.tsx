@@ -42,11 +42,11 @@ function VerifyEmailPage() {
       className="min-h-screen flex flex-col items-center justify-center px-6 text-center"
       style={{ background: "var(--fan-bg)" }}
     >
-      <Mail size={56} color="var(--fan-pink-light)" />
+      <Mail size={56} color="var(--fan-icon-blue)" />
       <h1 className="mt-4 text-xl font-extrabold" style={{ color: "var(--fan-text)" }}>
         Confirme seu e-mail
       </h1>
-      <p className="mt-2 text-[13px] max-w-xs" style={{ color: "var(--fan-text-2)" }}>
+      <p className="mt-2 text-sm max-w-xs" style={{ color: "var(--fan-text-2)" }}>
         Enviamos um link de confirmação para{" "}
         <span style={{ color: "var(--fan-text)" }}>{user?.email ?? "seu e-mail"}</span>
       </p>
@@ -59,7 +59,7 @@ function VerifyEmailPage() {
         Já confirmei — Continuar
       </button>
       {notYet && (
-        <p className="mt-3 text-[12px]" style={{ color: "#F87171" }}>
+        <p className="mt-3 text-sm" style={{ color: "#F87171" }}>
           Ainda não encontramos a confirmação. Clique no link do e-mail e tente de novo.
         </p>
       )}
@@ -68,7 +68,7 @@ function VerifyEmailPage() {
 
       <div className="w-full max-w-sm my-6 h-px" style={{ background: "var(--fan-border)" }} />
 
-      <p className="text-[12px]" style={{ color: "var(--fan-text-2)" }}>
+      <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
         Não recebeu?
       </p>
       <button
@@ -86,7 +86,7 @@ function VerifyEmailPage() {
         {cooldown > 0 ? `Reenviar em ${cooldown}s…` : "Reenviar e-mail"}
       </button>
 
-      <Link to="/register" className="mt-5 text-[12px]" style={{ color: "var(--fan-pink-light)" }}>
+      <Link to="/register" className="mt-5 text-sm" style={{ color: "var(--fan-pink-light)" }}>
         Usar outro e-mail
       </Link>
     </div>

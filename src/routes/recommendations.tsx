@@ -103,7 +103,7 @@ function RecPage() {
         </h1>
         <button
           onClick={() => setFilterOpen(true)}
-          className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-semibold"
+          className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold"
           style={{
             background: hasActiveFilters ? "var(--fan-pink)" : "var(--fan-bg-2)",
             color: hasActiveFilters ? "#fff" : "var(--fan-text-2)",
@@ -114,7 +114,7 @@ function RecPage() {
           Filtrar
           {hasActiveFilters && (
             <span
-              className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-[9px] font-bold flex items-center justify-center"
+              className="absolute -top-1 -right-1 w-4 h-4 rounded-full text-sm font-bold flex items-center justify-center"
               style={{ background: "#fff", color: "var(--fan-pink)" }}
             >
               ●
@@ -126,18 +126,18 @@ function RecPage() {
       {/* Modo filtrado */}
       {filteredResults ? (
         <section className="pb-32 px-4 mt-2">
-          <p className="text-[11px] mb-3" style={{ color: "var(--fan-text-3)" }}>
+          <p className="text-sm mb-3" style={{ color: "var(--fan-text-3)" }}>
             {filteredResults.length} resultado{filteredResults.length !== 1 ? "s" : ""} encontrado
             {filteredResults.length !== 1 ? "s" : ""}
           </p>
           {filteredResults.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-3">
-              <p className="text-[13px]" style={{ color: "var(--fan-text-2)" }}>
+              <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
                 Nenhuma obra encontrada
               </p>
               <button
                 onClick={() => setFilters(DEFAULT_REC_FILTERS)}
-                className="text-[12px]"
+                className="text-sm"
                 style={{ color: "var(--fan-pink)" }}
               >
                 Limpar filtros
@@ -157,7 +157,7 @@ function RecPage() {
           <section className="mt-4 px-4">
             <div className="flex items-center gap-2 mb-3">
               <span style={{ color: "var(--fan-pink-light)" }}>👥</span>
-              <h2 className="text-[12px] font-bold" style={{ color: "var(--fan-text-3)" }}>
+              <h2 className="text-sm font-bold" style={{ color: "var(--fan-text-3)" }}>
                 Da comunidade
               </h2>
             </div>
@@ -167,10 +167,10 @@ function RecPage() {
                 style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
               >
                 <span className="text-2xl">🌐</span>
-                <p className="text-[12px] font-semibold" style={{ color: "var(--fan-text)" }}>
+                <p className="text-sm font-semibold" style={{ color: "var(--fan-text)" }}>
                   Nenhuma recomendação ainda
                 </p>
-                <p className="text-[11px]" style={{ color: "var(--fan-text-2)" }}>
+                <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
                   Marque uma obra sua como "Recomendar publicamente" para ser a primeira pessoa a
                   aparecer aqui.
                 </p>
@@ -187,8 +187,8 @@ function RecPage() {
           {/* Trending */}
           <section className="mt-2">
             <div className="flex items-center gap-2 px-4 mb-3">
-              <Flame size={15} color="var(--fan-pink-light)" />
-              <h2 className="text-[12px] font-bold" style={{ color: "var(--fan-text-3)" }}>
+              <Flame size={15} color="var(--fan-icon-blue)" />
+              <h2 className="text-sm font-bold" style={{ color: "var(--fan-text-3)" }}>
                 Mais populares
               </h2>
             </div>
@@ -206,8 +206,8 @@ function RecPage() {
           {topTypes.length > 0 && (
             <section className="mt-5">
               <div className="flex items-center gap-2 px-4 mb-3">
-                <Sparkles size={15} color="var(--fan-pink-light)" />
-                <h2 className="text-[12px] font-bold" style={{ color: "var(--fan-text-3)" }}>
+                <Sparkles size={15} color="var(--fan-icon-blue)" />
+                <h2 className="text-sm font-bold" style={{ color: "var(--fan-text-3)" }}>
                   Baseado no seu gosto
                 </h2>
               </div>
@@ -216,7 +216,7 @@ function RecPage() {
                 if (!items.length) return null;
                 return (
                   <div key={type} className="mb-4">
-                    <p className="px-4 text-[11px] mb-2" style={{ color: "var(--fan-text-2)" }}>
+                    <p className="px-4 text-sm mb-2" style={{ color: "var(--fan-text-2)" }}>
                       {type}
                     </p>
                     <div
@@ -236,8 +236,8 @@ function RecPage() {
           {/* Explorar por tipo */}
           <section className="mt-5 pb-32">
             <div className="flex items-center gap-2 px-4 mb-3">
-              <BookOpen size={15} color="var(--fan-pink-light)" />
-              <h2 className="text-[12px] font-bold" style={{ color: "var(--fan-text-3)" }}>
+              <BookOpen size={15} color="var(--fan-icon-blue)" />
+              <h2 className="text-sm font-bold" style={{ color: "var(--fan-text-3)" }}>
                 Explorar
               </h2>
             </div>
@@ -298,33 +298,42 @@ function CatalogCard({ item, grid = false }: { item: RecommendationItem; grid?: 
           <img src={item.cover} alt={item.title} className="w-full h-full object-cover" />
         ) : (
           <>
-            <MediaIcon type={item.type as MediaType} size={28} color="var(--fan-pink-light)" />
+            <MediaIcon type={item.type as MediaType} size={28} color="var(--fan-icon-blue)" />
             <span
-              className="text-[9px] mt-1 text-center px-1 font-semibold line-clamp-2"
+              className="text-sm mt-1 text-center px-1 font-semibold line-clamp-2"
               style={{ color: "var(--fan-text-2)" }}
             >
               {item.type}
             </span>
           </>
         )}
+        {item.cover && (
+          <div
+            className="absolute top-0 left-0 right-0 h-10 pointer-events-none"
+            style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.55), rgba(0,0,0,0))" }}
+          />
+        )}
         <div
-          className="absolute top-1 left-1 px-1.5 py-0.5 rounded-full text-[8px] font-bold"
-          style={{ background: "rgba(13,0,8,0.75)", color: "var(--fan-pink-light)" }}
+          className="absolute top-1 left-1 px-1.5 py-0.5 rounded-full text-[11px] font-bold shadow-sm"
+          style={{ background: "rgba(13,0,8,0.85)", color: "var(--fan-pink-light)" }}
         >
           ★ {item.popularity}
         </div>
       </div>
       <p
-        className="mt-1 text-[10px] font-semibold line-clamp-2 leading-tight"
+        className="mt-1 text-sm font-semibold line-clamp-2 leading-tight"
         style={{ color: "var(--fan-text)" }}
       >
         {item.title}
       </p>
-      <p className="text-[9px] line-clamp-1" style={{ color: "var(--fan-text-2)" }}>
+      <p className="text-sm line-clamp-1" style={{ color: "var(--fan-text-2)" }}>
         {item.author}
       </p>
-      {item.recommendedBy && (
-        <p className="text-[8px] font-semibold mt-0.5" style={{ color: "var(--fan-pink-light)" }}>
+     {item.recommendedBy && (
+        <p
+          className="text-sm font-semibold mt-0.5 truncate"
+          style={{ color: "var(--fan-pink-light)" }}
+        >
           @{item.recommendedBy}
         </p>
       )}

@@ -19,8 +19,8 @@ export const Route = createFileRoute("/stats")({
 
 // ─── Paleta fixa para gráficos ────────────────────────────────────────────
 const PALETTE = [
-  "#FF0066",
-  "#FF4D94",
+  "#DC2626",
+  "#F26B5E",
   "#C084FC",
   "#818CF8",
   "#34D399",
@@ -142,10 +142,10 @@ function Donut({ data }: { data: { name: string; value: number }[] }) {
             <span
               style={{ width: 8, height: 8, borderRadius: 9999, background: PALETTE[i % PALETTE.length] }}
             />
-            <span className="text-[10px]" style={{ color: "var(--fan-text-3)" }}>
+            <span className="text-sm" style={{ color: "var(--fan-text-3)" }}>
               {d.name}
             </span>
-            <span className="text-[10px]" style={{ color: "var(--fan-text-2)" }}>
+            <span className="text-sm" style={{ color: "var(--fan-text-2)" }}>
               ({d.value})
             </span>
           </div>
@@ -161,13 +161,13 @@ function HBars({ data, color = "var(--fan-pink)" }: { data: { name: string; valu
     <div className="space-y-2">
       {data.map((d) => (
         <div key={d.name} className="flex items-center gap-2">
-          <span className="text-[10px] w-24 truncate" style={{ color: "var(--fan-text-3)" }}>
+          <span className="text-sm w-24 truncate" style={{ color: "var(--fan-text-3)" }}>
             {d.name}
           </span>
           <div className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: "var(--fan-tag)" }}>
             <div className="h-full rounded-full" style={{ width: `${(d.value / max) * 100}%`, background: color }} />
           </div>
-          <span className="text-[10px] w-6 text-right" style={{ color: "var(--fan-text-2)" }}>
+          <span className="text-sm w-6 text-right" style={{ color: "var(--fan-text-2)" }}>
             {d.value}
           </span>
         </div>
@@ -211,11 +211,11 @@ function VBars({ data, color = "var(--fan-pink-light)" }: { data: { label: strin
     <div className="flex items-end gap-3" style={{ height: 110 }}>
       {data.map((d) => (
         <div key={d.label} className="flex flex-col items-center gap-1 flex-1">
-          <span className="text-[10px]" style={{ color: "var(--fan-text-2)" }}>
+          <span className="text-sm" style={{ color: "var(--fan-text-2)" }}>
             {d.value}
           </span>
           <div style={{ width: "100%", height: `${(d.value / max) * 70}px`, background: color, borderRadius: 6 }} />
-          <span className="text-[9px]" style={{ color: "var(--fan-text-2)" }}>
+          <span className="text-sm" style={{ color: "var(--fan-text-3)" }}>
             {d.label}
           </span>
         </div>
@@ -235,32 +235,52 @@ function GroupedBars({
 }) {
   const max = Math.max(1, ...data.flatMap((d) => [d.a, d.b]));
   return (
-    <div className="space-y-4">
-      {data.map((d) => (
-        <div key={d.name}>
-          <p className="text-[10px] mb-1" style={{ color: "var(--fan-text-3)" }}>
-            {d.name}
-          </p>
-          <div className="flex items-end gap-4" style={{ height: 70 }}>
-            <div className="flex-1 flex flex-col items-center gap-1">
-              <div
-                style={{ width: "60%", height: `${(d.a / max) * 55}px`, background: "var(--fan-rose-mid)", borderRadius: 6 }}
-              />
-              <span className="text-[9px]" style={{ color: "var(--fan-text-2)" }}>
-                {labelA}: {d.a}
+    <div>
+      <div className="flex items-center gap-3 mb-3">
+        <div className="flex items-center gap-1.5">
+          <span style={{ width: 8, height: 8, borderRadius: 9999, background: "var(--fan-rose-mid)" }} />
+          <span className="text-sm" style={{ color: "var(--fan-text-2)" }}>
+            {labelA}
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span style={{ width: 8, height: 8, borderRadius: 9999, background: "var(--fan-pink)" }} />
+          <span className="text-sm" style={{ color: "var(--fan-text-2)" }}>
+            {labelB}
+          </span>
+        </div>
+      </div>
+      <div className="space-y-3">
+        {data.map((d) => (
+          <div key={d.name}>
+            <p className="text-sm mb-1" style={{ color: "var(--fan-text-3)" }}>
+              {d.name}
+            </p>
+            <div className="flex items-center gap-1">
+              <div className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: "var(--fan-tag)" }}>
+                <div
+                  className="h-full rounded-full"
+                  style={{ width: `${(d.a / max) * 100}%`, background: "var(--fan-rose-mid)" }}
+                />
+              </div>
+              <span className="text-sm w-6 text-right" style={{ color: "var(--fan-text-2)" }}>
+                {d.a}
               </span>
             </div>
-            <div className="flex-1 flex flex-col items-center gap-1">
-              <div
-                style={{ width: "60%", height: `${(d.b / max) * 55}px`, background: "var(--fan-pink)", borderRadius: 6 }}
-              />
-              <span className="text-[9px]" style={{ color: "var(--fan-text-2)" }}>
-                {labelB}: {d.b}
+            <div className="flex items-center gap-1 mt-1">
+              <div className="flex-1 h-2.5 rounded-full overflow-hidden" style={{ background: "var(--fan-tag)" }}>
+                <div
+                  className="h-full rounded-full"
+                  style={{ width: `${(d.b / max) * 100}%`, background: "var(--fan-pink)" }}
+                />
+              </div>
+              <span className="text-sm w-6 text-right" style={{ color: "var(--fan-text-2)" }}>
+                {d.b}
               </span>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
@@ -295,7 +315,7 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
       className="rounded-[14px] p-4 mb-4"
       style={{ background: "var(--fan-bg-2)", border: "0.5px solid var(--fan-border)" }}
     >
-      <p className="text-[11px] font-bold uppercase tracking-wider mb-3" style={{ color: "var(--fan-text-2)" }}>
+      <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: "var(--fan-text-2)" }}>
         {title}
       </p>
       {children}
@@ -314,14 +334,14 @@ function ProGate({ locked, children }: { locked: boolean; children: React.ReactN
           className="w-10 h-10 rounded-full flex items-center justify-center"
           style={{ background: "var(--fan-active-chip)", border: "1px solid var(--fan-rose-mid)" }}
         >
-          <Lock size={16} color="var(--fan-pink-light)" />
+          <Lock size={16} color="var(--fan-icon-blue)" />
         </div>
-        <p className="text-[11px] text-center" style={{ color: "var(--fan-text)" }}>
+        <p className="text-sm text-center" style={{ color: "var(--fan-text)" }}>
           Gráfico exclusivo PRO
         </p>
         <button
           onClick={() => nav({ to: "/pro" })}
-          className="text-[11px] font-bold px-4 py-2 rounded-full text-white"
+          className="text-sm font-bold px-4 py-2 rounded-full text-white"
           style={{ background: "linear-gradient(90deg, var(--fan-pink), var(--fan-pink-light))" }}
         >
           Desbloquear PRO
@@ -337,7 +357,7 @@ function SummaryCard({ label, value }: { label: string; value: number }) {
       className="flex-1 rounded-[12px] p-3 min-w-0"
       style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
     >
-      <p className="text-[9px] font-bold uppercase tracking-wide mb-1" style={{ color: "var(--fan-text-2)" }}>
+      <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: "var(--fan-text-2)" }}>
         {label}
       </p>
       <p className="text-[18px] font-bold" style={{ color: "var(--fan-text)" }}>
@@ -373,8 +393,8 @@ function StatsPage() {
           <span className="w-6" />
         </header>
         <div className="px-4 py-10 text-center">
-          <BarChart3 size={32} color="var(--fan-pink-light)" className="mx-auto mb-3" />
-          <p className="text-[13px]" style={{ color: "var(--fan-text-2)" }}>
+          <BarChart3 size={32} color="var(--fan-icon-blue)" className="mx-auto mb-3" />
+          <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
             Adicione obras à sua biblioteca para ver suas estatísticas aqui.
           </p>
         </div>
@@ -411,8 +431,8 @@ function StatsPage() {
         </Card>
 
         <div className="flex items-center gap-2 mt-6 mb-3">
-          <Lock size={12} color="var(--fan-pink-light)" />
-          <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "var(--fan-pink-light)" }}>
+          <Lock size={12} color="var(--fan-icon-blue)" />
+          <p className="text-xs font-bold uppercase tracking-wider" style={{ color: "var(--fan-pink-light)" }}>
             Gráficos avançados — PRO
           </p>
         </div>
@@ -432,14 +452,14 @@ function StatsPage() {
         <ProGate locked={!isPro}>
           <Card title="Seus gêneros favoritos">
             {s.topGenres.length === 0 ? (
-              <p className="text-[11px]" style={{ color: "var(--fan-text-2)" }}>
+              <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
                 Nenhum gênero registrado ainda.
               </p>
             ) : (
               <div className="space-y-2">
                 {s.topGenres.map((g, i) => (
                   <div key={g.name} className="flex items-center gap-2">
-                    <span className="text-[11px] w-24 truncate" style={{ color: "var(--fan-text-3)" }}>
+                    <span className="text-sm w-24 truncate" style={{ color: "var(--fan-text-3)" }}>
                       {g.name}
                     </span>
                     <div className="flex-1 h-2 rounded-full overflow-hidden" style={{ background: "var(--fan-tag)" }}>
@@ -448,7 +468,7 @@ function StatsPage() {
                         style={{ width: `${g.pct}%`, background: PALETTE[i % PALETTE.length] }}
                       />
                     </div>
-                    <span className="text-[10px] w-8 text-right" style={{ color: "var(--fan-text-2)" }}>
+                    <span className="text-sm w-8 text-right" style={{ color: "var(--fan-text-2)" }}>
                       {g.pct}%
                     </span>
                   </div>

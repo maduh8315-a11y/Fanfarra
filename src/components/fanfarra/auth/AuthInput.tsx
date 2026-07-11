@@ -13,7 +13,7 @@ export const AuthInput = forwardRef<HTMLInputElement, Props>(
     const actualType = togglePassword ? (show ? "text" : "password") : type;
     return (
       <div className="w-full">
-        <label className="block text-[11px] mb-1.5" style={{ color: "var(--fan-text-2)" }}>
+        <label className="block text-sm mb-1.5" style={{ color: "var(--fan-text-2)" }}>
           {label}
         </label>
         <div className="relative">
@@ -48,7 +48,7 @@ export const AuthInput = forwardRef<HTMLInputElement, Props>(
           )}
         </div>
         {error && (
-          <p className="mt-1 text-[11px]" style={{ color: "#F87171" }}>
+          <p className="mt-1 text-sm" style={{ color: "#F87171" }}>
             {error}
           </p>
         )}

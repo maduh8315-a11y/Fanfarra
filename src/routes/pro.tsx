@@ -83,7 +83,7 @@ function ProPage() {
           style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-rose-mid)" }}
         >
           <Wrench size={14} color="var(--fan-text-2)" />
-          <span className="text-[11px]" style={{ color: "var(--fan-text-2)" }}>
+          <span className="text-sm" style={{ color: "var(--fan-text-2)" }}>
             Modo Dev — compras aqui são simuladas, sem cobrança real
           </span>
         </div>
@@ -91,7 +91,7 @@ function ProPage() {
 
       <div className="px-5 pt-2 pb-6 text-center">
         <span
-          className="inline-block text-[11px] font-extrabold px-4 py-1.5 rounded-full text-white mb-4"
+          className="inline-block text-sm font-extrabold px-4 py-1.5 rounded-full text-white mb-4"
           style={{ background: "linear-gradient(90deg, var(--fan-pink), var(--fan-pink-light))" }}
         >
           ✦ FANFARRA PRO
@@ -99,7 +99,7 @@ function ProPage() {
         <h2 className="text-[22px] font-extrabold" style={{ color: "var(--fan-text)" }}>
           {isPro ? "Você já é PRO! ✦" : "Leve seu fandom ao próximo nível"}
         </h2>
-        <p className="text-[13px] mt-2" style={{ color: "var(--fan-text-2)" }}>
+        <p className="text-sm mt-2" style={{ color: "var(--fan-text-2)" }}>
           {isPro
             ? "Aproveite todos os recursos exclusivos."
             : "Recursos exclusivos para os fãs mais dedicados."}
@@ -112,13 +112,13 @@ function ProPage() {
               border: "1px solid var(--fan-rose-mid)",
             }}
           >
-            <Sparkles size={36} color="var(--fan-pink-light)" fill="var(--fan-pink-light)" />
+            <Sparkles size={36} color="var(--fan-icon-blue)" fill="var(--fan-icon-blue)" />
           </div>
         </div>
       </div>
 
       <section className="px-4">
-        <h3 className="text-[13px] font-bold mb-3" style={{ color: "var(--fan-text-3)" }}>
+        <h3 className="text-sm font-bold mb-3" style={{ color: "var(--fan-text-3)" }}>
           O que está incluído
         </h3>
         <div className="space-y-2.5">
@@ -134,19 +134,19 @@ function ProPage() {
                   className="w-9 h-9 shrink-0 rounded-lg flex items-center justify-center"
                   style={{ background: "var(--fan-border)" }}
                 >
-                  <Icon size={18} color="var(--fan-pink-light)" />
+                  <Icon size={18} color="var(--fan-icon-blue)" />
                 </div>
                 <div className="flex-1 min-w-0 pr-10">
                   <div className="text-[14px] font-bold" style={{ color: "var(--fan-text)" }}>
                     {f.title}
                   </div>
-                  <div className="text-[12px] mt-0.5" style={{ color: "var(--fan-text-2)" }}>
+                  <div className="text-sm mt-0.5" style={{ color: "var(--fan-text-2)" }}>
                     {f.desc}
                   </div>
                 </div>
                 <span
-                  className="absolute top-2.5 right-2.5 text-[10px] font-bold px-1.5 py-0.5 rounded-md"
-                  style={{ background: "var(--fan-active-chip)", color: "var(--fan-pink-light)" }}
+                  className="absolute top-2.5 right-2.5 text-sm font-bold px-1.5 py-0.5 rounded-md"
+                  style={{ background: "var(--fan-gold-bg)", color: "var(--fan-gold)" }}
                 >
                   PRO
                 </span>
@@ -162,12 +162,12 @@ function ProPage() {
             className="p-4 rounded-[14px] flex flex-col items-center text-center"
             style={{ background: "var(--fan-bg-2)", border: "2px solid var(--fan-pink)" }}
           >
-            <div className="text-[13px] font-bold" style={{ color: "var(--fan-text)" }}>
+            <div className="text-sm font-bold" style={{ color: "var(--fan-text)" }}>
               Sua assinatura está ativa
             </div>
             <button
               onClick={handleManage}
-              className="mt-3 py-2 px-6 rounded-full text-[12px] font-bold text-white"
+              className="mt-3 py-2 px-6 rounded-full text-sm font-bold text-white"
               style={{ background: "var(--fan-pink)" }}
             >
               Cancelar assinatura
@@ -175,7 +175,7 @@ function ProPage() {
           </div>
         ) : (
           <>
-            <h3 className="text-[13px] font-bold mb-3" style={{ color: "var(--fan-text-3)" }}>
+            <h3 className="text-sm font-bold mb-3" style={{ color: "var(--fan-text-3)" }}>
               Escolha seu plano
             </h3>
             <div className="grid grid-cols-2 gap-3">
@@ -183,18 +183,18 @@ function ProPage() {
                 className="p-4 rounded-[14px] flex flex-col"
                 style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-rose-mid)" }}
               >
-                <div className="text-[11px] font-bold uppercase tracking-wide" style={{ color: "var(--fan-text-2)" }}>
+                <div className="text-xs font-bold uppercase tracking-wide" style={{ color: "var(--fan-text-2)" }}>
                   Mensal
                 </div>
                 <div className="mt-2 text-[18px] font-extrabold" style={{ color: "var(--fan-text)" }}>
                   R$ 8,90
-                  <span className="text-[11px] font-normal" style={{ color: "var(--fan-text-2)" }}>
+                  <span className="text-sm font-normal" style={{ color: "var(--fan-text-2)" }}>
                     /mês
                   </span>
                 </div>
                 <button
                   onClick={handleSubscribe}
-                  className="mt-4 py-2 rounded-full text-[12px] font-bold text-white"
+                  className="mt-4 py-2 rounded-full text-sm font-bold text-white"
                   style={{ background: "var(--fan-pink)" }}
                 >
                   Assinar agora
@@ -206,26 +206,26 @@ function ProPage() {
                 style={{ background: "var(--fan-bg-2)", border: "2px solid var(--fan-pink)" }}
               >
                 <span
-                  className="absolute -top-2 right-3 text-[8px] font-bold px-2 py-0.5 rounded-full text-white"
+                  className="absolute -top-2 right-3 text-[11px] font-bold px-2 py-0.5 rounded-full text-white"
                   style={{ background: "linear-gradient(90deg, var(--fan-pink), var(--fan-pink-light))" }}
                 >
                   MELHOR VALOR
                 </span>
-                <div className="text-[11px] font-bold uppercase tracking-wide" style={{ color: "var(--fan-pink-light)" }}>
+                <div className="text-xs font-bold uppercase tracking-wide" style={{ color: "var(--fan-pink-light)" }}>
                   Anual
                 </div>
                 <div className="mt-2 text-[18px] font-extrabold" style={{ color: "var(--fan-text)" }}>
                   R$ 69,90
-                  <span className="text-[11px] font-normal" style={{ color: "var(--fan-text-2)" }}>
+                  <span className="text-sm font-normal" style={{ color: "var(--fan-text-2)" }}>
                     /ano
                   </span>
                 </div>
-                <div className="text-[10px]" style={{ color: "var(--fan-text-2)" }}>
+                <div className="text-sm" style={{ color: "var(--fan-text-2)" }}>
                   equivale a R$ 5,83/mês
                 </div>
                 <button
                   onClick={handleSubscribe}
-                  className="mt-3 py-2 rounded-full text-[12px] font-bold text-white"
+                  className="mt-3 py-2 rounded-full text-sm font-bold text-white"
                   style={{ background: "linear-gradient(90deg, var(--fan-pink), var(--fan-pink-light))" }}
                 >
                   Assinar agora
@@ -235,10 +235,10 @@ function ProPage() {
           </>
         )}
 
-        <p className="text-[11px] text-center mt-4" style={{ color: "var(--fan-rose-mid)" }}>
+        <p className="text-sm text-center mt-4" style={{ color: "var(--fan-text-2)" }}>
           Cancele quando quiser. Sem fidelidade.
         </p>
-        <p className="text-[10px] text-center mt-1 mb-8" style={{ color: "var(--fan-rose-mid)" }}>
+        <p className="text-sm text-center mt-1 mb-8" style={{ color: "var(--fan-text-2)" }}>
           Pagamentos via Google Play · RevenueCat
         </p>
       </section>

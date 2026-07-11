@@ -47,7 +47,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <main className="flex-1 pb-20">{children}</main>
 
       <nav
-        className="fixed bottom-0 left-0 right-0 flex flex-row items-center justify-around px-2 pt-2 z-40"
+        className="fixed bottom-0 left-0 right-0 flex flex-row items-center justify-around px-0.5 pt-2 z-40"
         style={{
           background: "var(--fan-bg-3)",
           borderTop: "0.5px solid #1E0010",
@@ -62,7 +62,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Link
               key={t.to}
               to={t.to}
-              className="flex flex-col items-center gap-0.5 px-3 py-1 relative"
+              className="flex flex-col items-center gap-0.5 px-1 py-1 relative"
             >
               {isAdd ? (
                 <div
@@ -74,13 +74,13 @@ export function AppShell({ children }: { children: ReactNode }) {
               ) : (
                 <Icon size={22} color={active ? "var(--fan-pink-light)" : "var(--fan-rose-mid)"} strokeWidth={2} />
               )}
-              <span className="text-[9px]" style={{ color: active ? "var(--fan-pink-light)" : "var(--fan-rose-mid)" }}>
+              <span className="text-[10px] whitespace-nowrap" style={{ color: active ? "var(--fan-pink-light)" : "var(--fan-text-2)" }}>
                 {t.label}
               </span>
               {active && !isAdd && (
                 <span
                   className="absolute -bottom-1 w-1 h-1 rounded-full"
-                 style={{ background: "var(--fan-pink)" }}
+                  style={{ background: "var(--fan-pink)" }}
                 />
               )}
             </Link>
@@ -88,11 +88,11 @@ export function AppShell({ children }: { children: ReactNode }) {
         })}
         <button
           onClick={() => setDrawerOpen(true)}
-          className="flex flex-col items-center gap-0.5 px-3 py-1"
+          className="flex flex-col items-center gap-0.5 px-1 py-1"
           aria-label="Abrir menu"
         >
-          <Menu size={22} color="var(--fan-rose-mid)" />
-          <span className="text-[9px]" style={{ color: "var(--fan-rose-mid)" }}>
+          <Menu size={22} color="var(--fan-text-2)" />
+          <span className="text-[10px] whitespace-nowrap" style={{ color: "var(--fan-text-2)" }}>
             Menu
           </span>
         </button>
@@ -127,7 +127,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                       className="w-12 h-12 rounded-full flex items-center justify-center"
                       style={{ background: "var(--fan-red-dark)" }}
                     >
-                      <User size={22} color="var(--fan-pink-light)" />
+                      <User size={22} color="var(--fan-icon-blue)" />
                     </div>
                   )}
                   <div>
@@ -152,7 +152,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <DrawerLink to="/search" icon={Search} label="Buscar" />
 
               <DrawerSection label="Descobrir" />
-              <DrawerLink to="/stats" icon={BarChart3} label="Estatísticas Avançadas" />
+              <DrawerLink to="/stats" icon={BarChart3} label="Estatísticas Avançadas" iconColor="var(--fan-icon-blue)" />
               <DrawerLink to="/wrapped" icon={Sparkles} label="Wrapped Anual" pro />
 
               <DrawerSection label="Comunidade" />
@@ -173,12 +173,12 @@ export function AppShell({ children }: { children: ReactNode }) {
                 badge={unreadCount > 0 ? String(unreadCount) : undefined}
               />
               <DrawerLink to="/settings" icon={Settings} label="Configurações" />
-              <DrawerLink to="/about" icon={Info} label="Sobre o App" />
+              <DrawerLink to="/about" icon={Info} label="Sobre o App" iconColor="var(--fan-icon-blue)" />
               <button
                 onClick={handleLogout}
                 className="w-full flex items-center gap-3 px-3 py-3 rounded-lg"
               >
-                <LogOut size={18} color="var(--fan-pink)" />
+                <LogOut size={18} color="var(--fan-icon-blue)" />
                 <span className="text-sm flex-1 text-left" style={{ color: "var(--fan-text-3)" }}>
                   Sair
                 </span>
@@ -197,59 +197,52 @@ function DrawerLink({
   label,
   pro,
   badge,
-  highlight,
+  iconColor,
 }: {
- to:
-    | "/"
-    | "/library"
-    | "/search"
-    | "/add"
-    | "/recommendations"
-    | "/notifications"
-    | "/awards"
-    | "/challenges"
-    | "/collections"
-    | "/wrapped"
-    | "/profile"
-    | "/pro"
-    | "/settings"
-    | "/about"
-    | "/stats";
+  to:
+  | "/"
+  | "/library"
+  | "/search"
+  | "/add"
+  | "/recommendations"
+  | "/notifications"
+  | "/awards"
+  | "/challenges"
+  | "/collections"
+  | "/wrapped"
+  | "/profile"
+  | "/pro"
+  | "/settings"
+  | "/about"
+  | "/stats";
   icon: typeof Home;
   label: string;
   pro?: boolean;
   badge?: string;
-  highlight?: boolean;
+  iconColor?: string;
 }) {
   return (
     <Link to={to} className="w-full flex items-center gap-3 px-3 py-3 rounded-lg">
-      <Icon size={18} color="var(--fan-pink)" />
+      <Icon size={18} color={iconColor ?? "var(--fan-pink)"} />
       <span
         className="text-sm flex-1 text-left"
-        style={{ color: "var(--fan-text-3)", fontWeight: highlight ? 700 : 400 }}
+        style={{ color: "var(--fan-text-3)" }}
       >
         {label}
       </span>
       {badge && (
         <span
-          className="text-[9px] font-bold px-2 py-0.5 rounded-md"
+          className="text-[11px] font-bold px-2 py-0.5 rounded-md"
           style={{ background: "var(--fan-active-chip)", color: "var(--fan-pink)" }}
         >
           {badge}
         </span>
       )}
-      {highlight && (
-        <span
-          className="text-[9px] font-bold px-2 py-0.5 rounded-full text-white"
-          style={{ background: "linear-gradient(90deg, var(--fan-pink), var(--fan-pink-light))" }}
-        >
-          PRO
-        </span>
-      )}
+
       {pro && (
         <span
-          className="text-[9px] font-bold px-2 py-0.5 rounded-full"
-          style={{ background: "var(--fan-red-dark)", color: "var(--fan-pink-light)" }}
+          className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+          style={{ background: "var(--fan-gold-bg)", color: "var(--fan-gold)" }}
         >
           PRO
         </span>
@@ -261,7 +254,7 @@ function DrawerLink({
 function DrawerSection({ label }: { label: string }) {
   return (
     <div
-      className="text-[10px] font-bold uppercase tracking-wider px-3 pt-3 pb-1"
+      className="text-xs font-bold uppercase tracking-wider px-3 pt-3 pb-1"
       style={{ color: "var(--fan-text-2)" }}
     >
       {label}

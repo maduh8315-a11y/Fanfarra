@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ChevronRight, RefreshCw, Sun, Moon } from "lucide-react";
+import { ArrowLeft, ChevronRight, PanelBottomOpen, RefreshCw, Sun, Moon } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { ToggleField } from "@/components/fanfarra/forms/FormFields";
 import { updateSettings, useSettings } from "@/lib/fanfarra/extras";
@@ -39,11 +39,16 @@ function SettingsPage() {
       <div className="px-4 space-y-6 pb-8">
         <Group title="Conta">
           <Link to="/profile">
-            <Item label="Editar perfil" />
+            <Item label="Editar perfil" variant="navigate" />
           </Link>
-          <Item label="Alterar e-mail" onClick={() => setModal("email")} />
-          <Item label="Alterar senha" onClick={() => setModal("password")} />
-          <Item label="Excluir conta" destructive onClick={() => setModal("delete")} />
+          <Item label="Alterar e-mail" variant="modal" onClick={() => setModal("email")} />
+          <Item label="Alterar senha" variant="modal" onClick={() => setModal("password")} />
+          <Item
+            label="Excluir conta"
+            destructive
+            variant="modal"
+            onClick={() => setModal("delete")}
+          />
         </Group>
 
         <Group title="Notificações">
@@ -99,13 +104,13 @@ function SettingsPage() {
             style={{ background: "var(--fan-bg-2)", border: "0.5px solid var(--fan-rose-mid)" }}
           >
             <span
-              className="text-[13px] flex items-center gap-2"
+              className="text-sm flex items-center gap-2"
               style={{ color: "var(--fan-text-3)" }}
             >
-              <RefreshCw size={14} color="var(--fan-pink)" /> Forçar sincronização agora
+              <RefreshCw size={14} color="var(--fan-icon-blue)" /> Forçar sincronização agora
             </span>
           </button>
-          <p className="text-[11px] mt-1" style={{ color: "var(--fan-text-2)" }}>
+          <p className="text-sm mt-1" style={{ color: "var(--fan-text-2)" }}>
             Última sincronização: {s.lastSync ? new Date(s.lastSync).toLocaleString("pt-BR") : "—"}
           </p>
         </Group>
@@ -114,6 +119,7 @@ function SettingsPage() {
           <Item label={s.pro ? "Fanfarra PRO ativo ✦" : "Plano Gratuito"} />
           <Item
             label={s.pro ? "Gerenciar assinatura" : "Conhecer o Fanfarra PRO"}
+            variant="navigate"
             onClick={() => nav({ to: "/pro" })}
           />
           {DEV_MODE && (
@@ -134,7 +140,7 @@ function SettingsPage() {
             onChange={(v) => updateSettings({ animations: v })}
           />
           <div className="flex items-center justify-between py-2">
-            <span className="text-[13px]" style={{ color: "var(--fan-text-3)" }}>
+            <span className="text-sm" style={{ color: "var(--fan-text-3)" }}>
               Colunas da biblioteca
             </span>
             <div className="flex gap-2">
@@ -150,7 +156,7 @@ function SettingsPage() {
             </div>
           </div>
           <div className="pt-2">
-            <span className="text-[13px]" style={{ color: "var(--fan-text-3)" }}>
+            <span className="text-sm" style={{ color: "var(--fan-text-3)" }}>
               Aparência
             </span>
             <div className="flex gap-2 mt-2">
@@ -173,7 +179,7 @@ function SettingsPage() {
                     }}
                   >
                     <Icon size={16} color={selected ? "var(--fan-pink-light)" : "var(--fan-text-2)"} />
-                    <span className="text-[12px]" style={{ color: "var(--fan-text-3)" }}>
+                    <span className="text-sm" style={{ color: "var(--fan-text-3)" }}>
                       {m.label}
                     </span>
                   </button>
@@ -183,13 +189,13 @@ function SettingsPage() {
           </div>
 
           <div className="pt-2">
-            <span className="text-[13px]" style={{ color: "var(--fan-text-3)" }}>
+            <span className="text-sm" style={{ color: "var(--fan-text-3)" }}>
               Tema
             </span>
             <div className="flex gap-2 mt-2">
               {(
                 [
-                  { id: "default", label: "Fanfarra", color: "#FF0066", pro: false },
+                  { id: "default", label: "Fanfarra", color: "#E63946", pro: false },
                   { id: "lunar", label: "Lunar", color: "#7C5CFF", pro: true },
                   { id: "aurora", label: "Aurora", color: "#10B981", pro: true },
                 ] as const
@@ -215,13 +221,13 @@ function SettingsPage() {
                     <span
                       style={{ width: 20, height: 20, borderRadius: "50%", background: t.color }}
                     />
-                    <span className="text-[10px]" style={{ color: "var(--fan-text-3)" }}>
+                    <span className="text-sm" style={{ color: "var(--fan-text-3)" }}>
                       {t.label}
                     </span>
                     {t.pro && (
                       <span
-                        className="absolute -top-1.5 -right-1.5 text-[8px] font-bold px-1 py-0.5 rounded-md"
-                        style={{ background: "var(--fan-active-chip)", color: "var(--fan-pink-light)" }}
+                        className="absolute -top-1.5 -right-1.5 text-sm font-bold px-1 py-0.5 rounded-md"
+                        style={{ background: "var(--fan-gold-bg)", color: "var(--fan-gold)" }}
                       >
                         PRO
                       </span>
@@ -252,7 +258,7 @@ function SettingsPage() {
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="text-[11px] uppercase font-bold mb-2" style={{ color: "var(--fan-text-2)" }}>
+      <h3 className="text-xs uppercase font-bold mb-2" style={{ color: "var(--fan-text-2)" }}>
         {title}
       </h3>
       <div className="space-y-1">{children}</div>
@@ -264,10 +270,14 @@ function Item({
   label,
   onClick,
   destructive,
+  variant = "navigate",
 }: {
   label: string;
   onClick?: () => void;
   destructive?: boolean;
+  // "navigate" = leva pra outra tela (seta pra frente).
+  // "modal" = abre um modal/sheet na própria tela (ícone de painel).
+  variant?: "navigate" | "modal";
 }) {
   return (
     <button
@@ -276,12 +286,16 @@ function Item({
       style={{ borderBottom: "0.5px solid var(--fan-border)" }}
     >
       <span
-        className="text-[13px]"
-        style={{ color: destructive ? "#CC0022" : "var(--fan-text-3)" }}
+        className="text-sm"
+        style={{ color: destructive ? "#CC2000" : "var(--fan-text-3)" }}
       >
         {label}
       </span>
-      <ChevronRight size={16} color="var(--fan-rose-mid)" />
+      {variant === "modal" ? (
+        <PanelBottomOpen size={16} color="var(--fan-rose-mid)" />
+      ) : (
+        <ChevronRight size={16} color="var(--fan-rose-mid)" />
+      )}
     </button>
   );
 }
@@ -300,7 +314,7 @@ function Toggle({
       className="flex items-center justify-between py-2.5"
       style={{ borderBottom: "0.5px solid var(--fan-border)" }}
     >
-      <span className="text-[13px]" style={{ color: "var(--fan-text-3)" }}>
+      <span className="text-sm" style={{ color: "var(--fan-text-3)" }}>
         {label}
       </span>
       <ToggleField value={value} onChange={onChange} />

@@ -22,6 +22,7 @@ let cache: Work[] = [];
 let unsubscribeSnapshot: (() => void) | null = null;
 const listeners = new Set<() => void>();
 const SERVER_SNAPSHOT: Work[] = [];
+let loading = true;
 
 function notify() {
   listeners.forEach((l) => l());
@@ -34,8 +35,13 @@ onAuthStateChanged(auth, (user) => {
     unsubscribeSnapshot = null;
   }
   cache = [];
+  loading = true;        // ADICIONE ESTA LINHA
   notify();
-  if (!user) return;
+  if (!user) {
+    loading = false;     // ADICIONE ESTE BLOCO
+    notify();
+    return;
+  }
 
   const q = query(
     collection(db, COLLECTION),
@@ -46,9 +52,14 @@ onAuthStateChanged(auth, (user) => {
     q,
     (snap) => {
       cache = snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Work, "id">) }));
+      loading = false;    // ADICIONE ESTA LINHA
       notify();
     },
-    (err) => console.error("Erro ao sincronizar obras:", err),
+    (err) => {
+      console.error("Erro ao sincronizar obras:", err);
+      loading = false;    // ADICIONE ESTA LINHA
+      notify();
+    },
   );
 });
 
@@ -66,6 +77,14 @@ export function useWorks(): Work[] {
     () => SERVER_SNAPSHOT,
   );
   return mounted ? data : SERVER_SNAPSHOT;
+}
+
+export function useWorksLoading(): boolean {
+  return useSyncExternalStore(
+    subscribe,
+    () => loading,
+    () => true, // no servidor, sempre considera "carregando"
+  );
 }
 
 export function useWork(id: string): Work | undefined {

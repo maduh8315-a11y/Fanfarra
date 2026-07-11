@@ -5,11 +5,16 @@ import { AppShell } from "@/components/fanfarra/AppShell";
 import { WorkForm, formValuesToWork } from "@/components/fanfarra/forms/WorkForm";
 import { addWork } from "@/lib/fanfarra/store";
 import { addWorkToShelf } from "@/lib/fanfarra/bookcaseStore";
-import { MEDIA_TYPES, type MediaType } from "@/lib/fanfarra/types";
+import { MEDIA_TYPES, DEFAULT_STATUS_FOR_TYPE, type MediaType } from "@/lib/fanfarra/types";
 import { ClientOnly } from "@/components/fanfarra/ClientOnly";
 
 export const Route = createFileRoute("/add/$type")({
   head: () => ({ meta: [{ title: "Adicionar obra — Fanfarra" }] }),
+  validateSearch: (search: Record<string, unknown>): { title?: string } => {
+    return typeof search.title === "string" && search.title.trim()
+      ? { title: search.title }
+      : {};
+  },
   component: AddTypePage,
 });
 
@@ -20,8 +25,25 @@ const VIDEO_PAGES: { type: MediaType; label: string }[] = [
   { type: "Gacha Videos", label: "Gacha Videos" },
 ];
 
+// Monta os valores iniciais do formulário já com o título vindo da busca,
+// evitando que o usuário precise digitar o nome da obra de novo.
+function buildInitialFromTitle(type: MediaType, title?: string) {
+  if (!title) return undefined;
+  return {
+    title,
+    status: DEFAULT_STATUS_FOR_TYPE(type),
+    cover: "",
+    rating: 0,
+    notes: "",
+    genres: [],
+    details: {},
+    shelfEntries: [],
+  };
+}
+
 function AddTypePage() {
   const { type } = Route.useParams();
+  const { title } = Route.useSearch();
   const nav = useNavigate();
   const valid = (MEDIA_TYPES as readonly string[]).includes(type);
 
@@ -56,6 +78,7 @@ function AddTypePage() {
       <ClientOnly>
         <WorkForm
           type={mediaType}
+          initial={buildInitialFromTitle(mediaType, title)}
           submitLabel="Salvar obra"
           onSubmit={(v) => {
             const w = addWork(formValuesToWork(mediaType, v));
@@ -74,6 +97,7 @@ function AddTypePage() {
 
 function VideosAddPager({ initialType }: { initialType: MediaType }) {
   const nav = useNavigate();
+  const { title } = Route.useSearch();
   const [idx, setIdx] = useState(() => {
     const found = VIDEO_PAGES.findIndex((p) => p.type === initialType);
     return found === -1 ? 0 : found;
@@ -123,7 +147,7 @@ function VideosAddPager({ initialType }: { initialType: MediaType }) {
         ))}
       </div>
       {idx === 0 && (
-        <p className="text-center text-[10px] pb-2" style={{ color: "var(--fan-text-2)" }}>
+        <p className="text-center text-sm pb-2" style={{ color: "var(--fan-text-2)" }}>
           ◀ Deslize para o lado pra ver Gacha Videos
         </p>
       )}
@@ -133,6 +157,7 @@ function VideosAddPager({ initialType }: { initialType: MediaType }) {
           <WorkForm
             key={current.type}
             type={current.type}
+            initial={buildInitialFromTitle(current.type, title)}
             submitLabel="Salvar obra"
             onSubmit={(v) => {
               const w = addWork(formValuesToWork(current.type, v));

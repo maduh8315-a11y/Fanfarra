@@ -50,7 +50,7 @@ function ChallengesPage() {
         <span className="w-6" />
       </header>
 
-      <p className="px-4 text-[12px] mb-4" style={{ color: "var(--fan-text-2)" }}>
+      <p className="px-4 text-sm mb-4" style={{ color: "var(--fan-text-2)" }}>
         Complete metas mensais e ganhe selos exclusivos.
       </p>
 
@@ -75,9 +75,9 @@ function ChallengesPage() {
                     <h3 className="text-[14px] font-bold" style={{ color: "var(--fan-text)" }}>
                       {c.title}
                     </h3>
-                    {completed && <CheckCircle2 size={14} color="var(--fan-pink)" />}
+                    {completed && <CheckCircle2 size={14} color="var(--fan-gold)" />}
                   </div>
-                  <p className="text-[11px] mt-0.5" style={{ color: "var(--fan-text-2)" }}>
+                  <p className="text-sm mt-0.5" style={{ color: "var(--fan-text-2)" }}>
                     {c.description}
                   </p>
                 </div>
@@ -85,7 +85,7 @@ function ChallengesPage() {
 
               <div className="mt-3">
                 <div
-                  className="flex justify-between text-[10px] mb-1"
+                  className="flex justify-between text-sm mb-1"
                   style={{ color: "var(--fan-text-3)" }}
                 >
                   <span>
@@ -109,7 +109,7 @@ function ChallengesPage() {
 
               <button
                 onClick={() => toggleChallenge(c.id)}
-                className="w-full mt-3 py-2 rounded-[8px] text-[12px] font-bold"
+                className="w-full mt-3 py-2 rounded-[8px] text-sm font-bold"
                 style={{
                   background: c.joined ? "transparent" : "var(--fan-pink)",
                   color: c.joined ? "var(--fan-pink-light)" : "var(--fan-text)",
@@ -124,7 +124,7 @@ function ChallengesPage() {
 
         <div className="text-center pt-4">
           <Target size={28} color="var(--fan-rose-mid)" className="mx-auto" />
-          <p className="text-[11px] mt-2" style={{ color: "var(--fan-text-2)" }}>
+          <p className="text-sm mt-2" style={{ color: "var(--fan-text-2)" }}>
             Novos desafios todo mês
           </p>
         </div>

@@ -58,7 +58,7 @@ export default function Slide7Achievements({ data }: { data: WrappedData }) {
               }}
             >
               <div style={{ fontSize: "2.25rem", display: "flex", justifyContent: "center" }}>
-                <a.Icon size={36} color="var(--fan-pink-light)" />
+                <a.Icon size={36} color="var(--fan-icon-blue)" />
               </div>
               <div
                 style={{

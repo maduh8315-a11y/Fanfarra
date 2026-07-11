@@ -32,7 +32,8 @@ import {
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { TypeChips, type TypeFilter } from "@/components/fanfarra/Chips";
 import { WorkCard } from "@/components/fanfarra/WorkCard";
-import { useWorks } from "@/lib/fanfarra/store";
+import { useWorks, useWorksLoading } from "@/lib/fanfarra/store";
+import { WorkGridSkeleton } from "@/components/fanfarra/WorkCardSkeleton";
 import { useAuthUser } from "@/lib/fanfarra/auth";
 import { COMPLETED_STATUSES, IN_PROGRESS_STATUSES, WISHLIST_STATUSES } from "@/lib/fanfarra/types";
 import type { Work } from "@/lib/fanfarra/types";
@@ -172,7 +173,7 @@ function StatCard({
       <div className="flex items-center gap-1.5 mb-0.5">
         <Icon size={12} color={color} />
         <span
-          className="text-[9px] font-bold uppercase tracking-wide truncate"
+          className="text-xs font-bold uppercase tracking-wide truncate"
           style={{ color: "var(--fan-text-2)" }}
         >
           {label}
@@ -181,7 +182,7 @@ function StatCard({
       <span className="text-[15px] font-bold" style={{ color: "var(--fan-pink)" }}>
         {total}
       </span>
-      <span className="text-[9px]" style={{ color: "var(--fan-text-2)" }}>
+      <span className="text-sm" style={{ color: "var(--fan-text-2)" }}>
         <span style={{ color: color }}>{month}</span> este mês
       </span>
     </div>
@@ -202,7 +203,7 @@ function StatsSection({ works }: { works: Work[] }) {
   return (
     <div className="px-4 mt-5">
       <p
-        className="text-[10px] font-bold uppercase tracking-wider mb-2"
+        className="text-xs font-bold uppercase tracking-wider mb-2"
         style={{ color: "var(--fan-text-2)" }}
       >
         Suas estatísticas
@@ -214,7 +215,7 @@ function StatsSection({ works }: { works: Work[] }) {
             label="Palavras lidas"
             total={fmt(s.totalWords, 1)}
             month={fmt(s.monthWords, 1)}
-            color="var(--fan-pink-light)"
+            color="var(--fan-icon-blue)"
           />
         )}
         {hasWatch && (
@@ -241,13 +242,13 @@ function StatsSection({ works }: { works: Work[] }) {
             label="Páginas lidas"
             total={fmt(s.totalPages)}
             month={fmt(s.monthPages)}
-            color="var(--fan-pink-light)"
+            color="var(--fan-icon-blue)"
           />
         )}
       </div>
       <Link
         to="/stats"
-        className="block text-center text-[11px] font-bold mt-3"
+        className="block text-center text-sm font-bold mt-3"
         style={{ color: "var(--fan-pink)" }}
       >
         Ver estatísticas avançadas →
@@ -269,12 +270,12 @@ function EmptyHome() {
             border: "1px solid var(--fan-rose-mid)",
           }}
         >
-          <Sparkles size={28} color="var(--fan-pink-light)" fill="var(--fan-pink-light)" />
+          <Sparkles size={28} color="var(--fan-icon-blue)" fill="var(--fan-icon-blue)" />
         </div>
         <h1 className="text-xl font-bold mb-1" style={{ color: "var(--fan-text)" }}>
           Olá, {name}! ✨
         </h1>
-        <p className="text-[13px] leading-relaxed" style={{ color: "var(--fan-text-2)" }}>
+        <p className="text-sm leading-relaxed" style={{ color: "var(--fan-text-2)" }}>
           Sua biblioteca fandom começa aqui.{"\n"}Adicione a primeira obra e comece sua jornada!
         </p>
       </div>
@@ -293,7 +294,7 @@ function EmptyHome() {
         style={{ background: "var(--fan-bg-2)", border: "0.5px solid var(--fan-rose-mid)" }}
       >
         <p
-          className="text-[10px] font-bold uppercase tracking-wider mb-3"
+          className="text-xs font-bold uppercase tracking-wider mb-3"
           style={{ color: "var(--fan-text-2)" }}
         >
           O que você pode registrar
@@ -305,9 +306,9 @@ function EmptyHome() {
                 className="w-12 h-12 rounded-[12px] flex items-center justify-center"
                 style={{ background: "var(--fan-tag)", border: "0.5px solid var(--fan-border)" }}
               >
-                <Icon size={20} color="var(--fan-pink-light)" />
+                <Icon size={20} color="var(--fan-icon-blue)" />
               </div>
-              <span className="text-[9px] text-center" style={{ color: "var(--fan-text-2)" }}>
+              <span className="text-sm text-center" style={{ color: "var(--fan-text-2)" }}>
                 {label}
               </span>
             </Link>
@@ -317,11 +318,11 @@ function EmptyHome() {
               className="w-12 h-12 rounded-[12px] flex items-center justify-center"
               style={{ background: "var(--fan-tag)", border: "0.5px dashed var(--fan-rose-mid)" }}
             >
-              <span className="text-[10px] font-bold" style={{ color: "var(--fan-text-2)" }}>
+              <span className="text-sm font-bold" style={{ color: "var(--fan-text-2)" }}>
                 +6
               </span>
             </div>
-            <span className="text-[9px] text-center" style={{ color: "var(--fan-text-2)" }}>
+            <span className="text-sm text-center" style={{ color: "var(--fan-text-2)" }}>
               e mais
             </span>
           </Link>
@@ -338,13 +339,13 @@ function EmptyHome() {
             className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0"
             style={{ background: "var(--fan-tag)" }}
           >
-            <Library size={18} color="var(--fan-pink-light)" />
+            <Library size={18} color="var(--fan-icon-blue)" />
           </div>
           <div>
-            <p className="text-[12px] font-bold" style={{ color: "var(--fan-text)" }}>
+            <p className="text-sm font-bold" style={{ color: "var(--fan-text)" }}>
               Biblioteca
             </p>
-            <p className="text-[10px]" style={{ color: "var(--fan-text-2)" }}>
+            <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
               Todas as obras
             </p>
           </div>
@@ -358,13 +359,13 @@ function EmptyHome() {
             className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0"
             style={{ background: "var(--fan-tag)" }}
           >
-            <Wand2 size={18} color="var(--fan-pink-light)" />
+            <Wand2 size={18} color="var(--fan-icon-blue)" />
           </div>
           <div>
-            <p className="text-[12px] font-bold" style={{ color: "var(--fan-text)" }}>
+            <p className="text-sm font-bold" style={{ color: "var(--fan-text)" }}>
               Para você
             </p>
-            <p className="text-[10px]" style={{ color: "var(--fan-text-2)" }}>
+            <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
               Recomendações
             </p>
           </div>
@@ -378,8 +379,8 @@ function EmptyHome() {
           border: "0.5px solid color-mix(in srgb, var(--fan-pink) 20%, transparent)",
         }}
       >
-        <Sparkles size={14} color="var(--fan-pink-light)" className="mt-0.5 shrink-0" />
-        <p className="text-[11px] leading-relaxed" style={{ color: "var(--fan-text-2)" }}>
+        <Sparkles size={14} color="var(--fan-icon-blue)" className="mt-0.5 shrink-0" />
+        <p className="text-sm leading-relaxed" style={{ color: "var(--fan-text-2)" }}>
           <span className="font-bold" style={{ color: "var(--fan-pink-light)" }}>
             Dica:{" "}
           </span>
@@ -392,6 +393,7 @@ function EmptyHome() {
 }
 function Index() {
   const works = useWorks();
+  const worksLoading = useWorksLoading();
   const profile = useProfile();
   const settings = useSettings();
   const notifications = useNotifications();
@@ -437,7 +439,7 @@ function Index() {
     <AppShell>
       <header className="flex items-center justify-between px-4 pt-4 pb-3">
         <div className="flex items-center gap-1.5">
-          <Sparkles size={18} color="var(--fan-pink-light)" fill="var(--fan-pink-light)" />
+          <Sparkles size={18} color="var(--fan-icon-blue)" fill="var(--fan-pink-light)" />
           <span className="text-lg font-bold" style={{ color: "var(--fan-pink-light)" }}>
             Fanfarra
           </span>
@@ -447,7 +449,7 @@ function Index() {
             <Bell size={18} color="var(--fan-text-2)" />
             {unreadCount > 0 && (
               <span
-                className="absolute -top-1.5 -right-1.5 min-w-[15px] h-[15px] px-[3px] rounded-full flex items-center justify-center text-[9px] font-bold text-white"
+                className="absolute -top-1.5 -right-1.5 min-w-[15px] h-[15px] px-[3px] rounded-full flex items-center justify-center text-sm font-bold text-white"
                 style={{ background: "var(--fan-pink)" }}
               >
                 {unreadCount > 9 ? "9+" : unreadCount}
@@ -463,12 +465,16 @@ function Index() {
             style={{ background: "var(--fan-red-dark)" }}
             aria-label="Perfil"
           >
-            <User size={14} color="var(--fan-pink-light)" />
+            <User size={14} color="var(--fan-icon-blue)" />
           </Link>
         </div>
       </header>
 
-      {works.length === 0 ? (
+      {worksLoading ? (
+        <div className="px-4 mt-5">
+          <WorkGridSkeleton />
+        </div>
+      ) : works.length === 0 ? (
         <EmptyHome />
       ) : (
         <>
@@ -489,7 +495,7 @@ function Index() {
               }}
             >
               <span
-                className="inline-block text-[9px] font-bold px-2 py-1 rounded-full mb-3"
+                className="inline-block text-[11px] font-bold px-2 py-1 rounded-full mb-3"
                 style={{ background: "var(--fan-tag)", color: "var(--fan-pink-light)" }}
               >
                 EM ANDAMENTO
@@ -497,7 +503,7 @@ function Index() {
               <h2 className="text-base font-bold" style={{ color: "var(--fan-text)" }}>
                 {featured.title}
               </h2>
-              <p className="text-[11px] mt-1" style={{ color: "var(--fan-text-2)" }}>
+              <p className="text-sm mt-1" style={{ color: "var(--fan-text-2)" }}>
                 {featured.type === "Anime" ||
                   featured.type === "Série" ||
                   featured.type === "Donghua" ||
@@ -508,7 +514,7 @@ function Index() {
                     : `Capítulo ${featured.current}${featured.total ? ` de ${featured.total}` : ""}`}
               </p>
               <div className="mt-4">
-                <span className="fan-btn-primary inline-block text-[11px]">Continuar →</span>
+                <span className="fan-btn-primary inline-block text-sm">Continuar →</span>
               </div>
             </Link>
           )}
@@ -536,13 +542,13 @@ function Section({
   return (
     <section className="mt-6">
       <div className="flex items-center justify-between px-4 mb-3">
-        <h3 className="text-[13px] font-bold" style={{ color: "var(--fan-text-3)" }}>
+        <h3 className="text-sm font-bold" style={{ color: "var(--fan-text-3)" }}>
           {title}
         </h3>
         <Link
           to="/library"
           search={group ? { group } : {}}
-          className="text-[10px]"
+          className="text-sm"
           style={{ color: "var(--fan-pink)" }}
         >
           Ver tudo

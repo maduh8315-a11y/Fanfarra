@@ -162,13 +162,13 @@ export function RecFilterSheet({
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3">
           <div className="flex items-center gap-2">
-            <SlidersHorizontal size={15} color="var(--fan-pink-light)" />
+            <SlidersHorizontal size={15} color="var(--fan-icon-blue)" />
             <h2 className="text-base font-bold" style={{ color: "var(--fan-text)" }}>
               Filtrar recomendações
             </h2>
             {activeCount > 0 && (
               <span
-                className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
+                className="text-[11px] font-bold px-1.5 py-0.5 rounded-full"
                 style={{ background: "var(--fan-pink)", color: "#fff" }}
               >
                 {activeCount}
@@ -177,7 +177,7 @@ export function RecFilterSheet({
           </div>
           <button
             onClick={() => setF(DEFAULT_REC_FILTERS)}
-            className="text-[12px]"
+            className="text-sm"
             style={{ color: "var(--fan-pink)" }}
           >
             Limpar tudo
@@ -260,7 +260,7 @@ export function RecFilterSheet({
                 placeholder="De"
                 value={f.yearMin}
                 onChange={(e) => set("yearMin", e.target.value)}
-                className="flex-1 px-3 py-2 rounded-[10px] text-[12px] outline-none"
+                className="flex-1 px-3 py-2 rounded-[10px] text-sm outline-none"
                 style={{
                   background: "var(--fan-bg-2)",
                   border: "1px solid var(--fan-border)",
@@ -269,7 +269,7 @@ export function RecFilterSheet({
                 min={1900}
                 max={2030}
               />
-              <span className="text-[11px]" style={{ color: "var(--fan-text-3)" }}>
+              <span className="text-sm" style={{ color: "var(--fan-text-3)" }}>
                 –
               </span>
               <input
@@ -277,7 +277,7 @@ export function RecFilterSheet({
                 placeholder="Até"
                 value={f.yearMax}
                 onChange={(e) => set("yearMax", e.target.value)}
-                className="flex-1 px-3 py-2 rounded-[10px] text-[12px] outline-none"
+                className="flex-1 px-3 py-2 rounded-[10px] text-sm outline-none"
                 style={{
                   background: "var(--fan-bg-2)",
                   border: "1px solid var(--fan-border)",
@@ -320,9 +320,10 @@ export function RecFilterSheet({
             <div className="flex items-center gap-3">
               <div className="flex gap-1">
                 {[1, 2, 3, 4, 5].map((n) => (
-                  <button
+                 <button
                     key={n}
                     onClick={() => set("minPopularity", n === f.minPopularity ? 0 : n)}
+                    aria-label={`Popularidade mínima ${n} estrela${n > 1 ? "s" : ""}`}
                   >
                     <Star
                       size={22}
@@ -333,7 +334,7 @@ export function RecFilterSheet({
                 ))}
               </div>
               {f.minPopularity > 0 && (
-                <span className="text-[11px]" style={{ color: "var(--fan-text-3)" }}>
+                <span className="text-sm" style={{ color: "var(--fan-text-3)" }}>
                   ≥ {f.minPopularity * 20}/100
                 </span>
               )}
@@ -423,7 +424,7 @@ function CollapsibleSection({
         style={{ background: "var(--fan-bg-2)" }}
       >
         <div className="flex items-center gap-2">
-          <span className="text-[12px] font-semibold" style={{ color: "var(--fan-text)" }}>
+          <span className="text-sm font-semibold" style={{ color: "var(--fan-text)" }}>
             {label}
           </span>
           {hasValue && <span className="w-2 h-2 rounded-full" style={{ background: "var(--fan-pink)" }} />}
@@ -462,7 +463,7 @@ function TextInput({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full py-2 rounded-[10px] text-[12px] outline-none"
+        className="w-full py-2 rounded-[10px] text-sm outline-none"
         style={{
           paddingLeft: icon ? "2rem" : "0.75rem",
           paddingRight: value ? "2rem" : "0.75rem",
@@ -472,7 +473,7 @@ function TextInput({
         }}
       />
       {value && (
-        <button onClick={() => onChange("")} className="absolute right-2">
+        <button onClick={() => onChange("")} className="absolute right-2" aria-label="Limpar busca">
           <X size={12} color="var(--fan-text-2)" />
         </button>
       )}
