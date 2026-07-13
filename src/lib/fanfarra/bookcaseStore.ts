@@ -15,6 +15,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "./firebase";
 import { generateId } from "./uuid";
 import type { MediaType, Status } from "./types";
+import { toast } from "sonner";
 import { stripUndefined } from "./firestoreUtils.ts";
 
 const COLLECTION = "bookcases";
@@ -157,6 +158,7 @@ export function addBookcase(data: Omit<Bookcase, "id" | "createdAt" | "updatedAt
     // Se a gravação falhar, desfaz a criação otimista.
     cache = cache.filter((b) => b.id !== bc.id);
     notify();
+    toast.error("Não foi possível criar a estante. Verifique sua conexão e tente de novo.");
   });
   return bc;
 }
@@ -164,7 +166,10 @@ export function addBookcase(data: Omit<Bookcase, "id" | "createdAt" | "updatedAt
 export function updateBookcase(id: string, patch: Partial<Omit<Bookcase, "shelves">>): void {
   const { id: _omit, ...rest } = patch;
   updateDoc(doc(db, COLLECTION, id), stripUndefined({ ...rest, updatedAt: Date.now() })).catch(
-    (err) => console.error("Erro ao atualizar estante:", err),
+    (err) => {
+      console.error("Erro ao atualizar estante:", err);
+      toast.error("Não foi possível salvar as alterações da estante. Tente de novo.");
+    },
   );
 }
 
@@ -176,6 +181,7 @@ export function deleteBookcase(id: string): void {
     console.error("Erro ao excluir estante:", err);
     cache = previous;
     notify();
+    toast.error("Não foi possível excluir a estante. Verifique sua conexão e tente de novo.");
   });
 }
 
@@ -189,14 +195,30 @@ function cleanShelf(shelf: Shelf): Shelf {
   return clean as unknown as Shelf;
 }
 
+// Atualiza as prateleiras de uma estante de forma otimista: já mostra na
+// tela, e se o Firestore recusar a escrita, desfaz a mudança visual e avisa
+// com um toast — em vez de deixar a tela "mentindo" pro usuário.
 function patchShelves(bookcaseId: string, nextShelves: Shelf[]): void {
+  const bc = getBookcase(bookcaseId);
+  const previousShelves = bc?.shelves;
+
+  cache = cache.map((b) => (b.id === bookcaseId ? { ...b, shelves: nextShelves } : b));
+  notify();
+
   updateDoc(
     doc(db, COLLECTION, bookcaseId),
     stripUndefined({
       shelves: nextShelves,
       updatedAt: Date.now(),
     }),
-  ).catch((err) => console.error("Erro ao atualizar prateleiras:", err));
+  ).catch((err) => {
+    console.error("Erro ao atualizar prateleiras:", err);
+    if (previousShelves) {
+      cache = cache.map((b) => (b.id === bookcaseId ? { ...b, shelves: previousShelves } : b));
+      notify();
+    }
+    toast.error("Não foi possível salvar essa alteração na estante. Tente de novo.");
+  });
 }
 
 function getBookcase(bookcaseId: string): Bookcase | undefined {
@@ -211,10 +233,7 @@ export function addShelf(
   const s: Shelf = { ...shelf, id: generateId(), createdAt: now, updatedAt: now };
   const bc = getBookcase(bookcaseId);
   if (bc) {
-    const nextShelves = [...bc.shelves, s];
-    cache = cache.map((b) => (b.id === bookcaseId ? { ...b, shelves: nextShelves } : b));
-    notify();
-    patchShelves(bookcaseId, nextShelves);
+    patchShelves(bookcaseId, [...bc.shelves, s]);
   }
   return s;
 }
@@ -226,18 +245,13 @@ export function updateShelf(bookcaseId: string, shelfId: string, patch: Partial<
   const nextShelves = bc.shelves.map((s) =>
     s.id === shelfId ? { ...s, ...patch, updatedAt: now } : s,
   );
-  cache = cache.map((b) => (b.id === bookcaseId ? { ...b, shelves: nextShelves } : b));
-  notify();
   patchShelves(bookcaseId, nextShelves);
 }
 
 export function deleteShelf(bookcaseId: string, shelfId: string): void {
   const bc = getBookcase(bookcaseId);
   if (!bc) return;
-  const nextShelves = bc.shelves.filter((s) => s.id !== shelfId);
-  cache = cache.map((b) => (b.id === bookcaseId ? { ...b, shelves: nextShelves } : b));
-  notify();
-  patchShelves(bookcaseId, nextShelves);
+  patchShelves(bookcaseId, bc.shelves.filter((s) => s.id !== shelfId));
 }
 
 export function addWorkToShelf(bookcaseId: string, shelfId: string, workId: string): void {
@@ -265,7 +279,6 @@ export function removeWorkFromShelf(bookcaseId: string, shelfId: string, workId:
     ),
   );
 }
-
 export function getShelvesForWork(workId: string): { bookcaseId: string; shelfId: string }[] {
   const result: { bookcaseId: string; shelfId: string }[] = [];
   for (const bc of cache) {

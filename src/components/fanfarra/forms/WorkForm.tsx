@@ -1342,7 +1342,8 @@ export function WorkForm({
         </div>
       </div>
 
-      {step === 0 && (
+     <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+      
       <>
       <ImportSection
         type={type}
@@ -1396,7 +1397,7 @@ export function WorkForm({
         />
      </Field>
       </>
-      )}
+      </div>
 
       {step === 1 && (
       <>
@@ -1546,7 +1547,7 @@ export function WorkForm({
       )}
 
       {step === 2 && (
-      <>
+      <div className="animate-in fade-in slide-in-from-right-4 duration-300">
       <RelatedWorksSection
         currentType={type}
         value={(values.details.related as RelatedWork[] | undefined) ?? []}
@@ -1570,8 +1571,10 @@ export function WorkForm({
           maxTags={50}
         />
       </Field>
-      </>
+       </div>
       )}
+      
+    
 
       {step === 3 && (
       <>

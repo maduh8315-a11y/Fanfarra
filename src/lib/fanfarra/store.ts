@@ -15,6 +15,7 @@ import { stripUndefined } from "./firestoreUtils.ts";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "./firebase";
 import type { Work } from "./types";
+import { toast } from "sonner";
 
 const COLLECTION = "works";
 
@@ -97,23 +98,35 @@ export function addWork(w: Omit<Work, "id" | "createdAt" | "updatedAt">): Work {
   const now = Date.now();
   const ref = doc(collection(db, COLLECTION));
   const work: Work = { ...w, id: ref.id, createdAt: now, updatedAt: now };
-  setDoc(ref, stripUndefined({ ...w, uid, createdAt: now, updatedAt: now })).catch((err) =>
-    console.error("Erro ao salvar obra:", err),
-  );
+  setDoc(ref, stripUndefined({ ...w, uid, createdAt: now, updatedAt: now })).catch((err) => {
+    console.error("Erro ao salvar obra:", err);
+    toast.error("Não foi possível salvar a obra. Verifique sua conexão e tente de novo.");
+  });
   return work;
 }
 
 export function updateWork(id: string, patch: Partial<Work>): void {
   const { id: _omit, ...rest } = patch;
   updateDoc(doc(db, COLLECTION, id), stripUndefined({ ...rest, updatedAt: Date.now() })).catch(
-    (err) => console.error("Erro ao atualizar obra:", err),
+    (err) => {
+      console.error("Erro ao atualizar obra:", err);
+      toast.error("Não foi possível salvar essa alteração. Tente de novo.");
+    },
   );
 }
 
-export function deleteWork(id: string): void {
-  deleteDoc(doc(db, COLLECTION, id)).catch((err) => console.error("Erro ao excluir obra:", err));
+// Agora é async e propaga o erro: quem chama pode aguardar o resultado
+// antes de navegar pra outra tela (evita sair da página achando que
+// excluiu quando na real a escrita falhou).
+export async function deleteWork(id: string): Promise<void> {
+  try {
+    await deleteDoc(doc(db, COLLECTION, id));
+  } catch (err) {
+    console.error("Erro ao excluir obra:", err);
+    toast.error("Não foi possível excluir a obra. Verifique sua conexão e tente de novo.");
+    throw err;
+  }
 }
-
 // Apaga todas as obras do usuário no Firestore. Usada ao excluir a conta.
 export async function deleteAllWorksForUser(uid: string): Promise<void> {
   const q = query(collection(db, COLLECTION), where("uid", "==", uid));

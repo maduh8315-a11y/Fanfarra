@@ -3,7 +3,7 @@
 // Resolve os dois "crons preguiçosos" do awardsStore.ts / recReactions.ts
 // sem precisar do plano Blaze.
 import { initializeApp, cert } from "firebase-admin/app";
-import { getFirestore, Timestamp } from "firebase-admin/firestore";
+import { getFirestore, Timestamp, FieldValue } from "firebase-admin/firestore";
 
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
 initializeApp({ credential: cert(serviceAccount) });
@@ -25,29 +25,34 @@ function todayKeyBR(date = new Date()) {
 }
 
 // ───────────────────────────────────────────────────────────
-// 1) Virada de fase do Fanfarra Awards
-// (mesma lógica de checkAndAdvanceAwardsPhase, portada pro Admin SDK)
+// 1) Virada de fase do Fanfarra Awards (+ abertura/fechamento agendados)
+// (mesma lógica do awardsStore.ts, portada pro Admin SDK)
 // ───────────────────────────────────────────────────────────
 async function advanceAwardsPhase() {
   const configRef = db.collection("awards_config").doc("current");
   const configSnap = await configRef.get();
   if (!configSnap.exists) return console.log("[awards] sem config, ignorando.");
   const config = configSnap.data();
-  // Blindagem: campos numéricos podem ter sido salvos como texto (string) no
-  // Console do Firebase — isso faz "prazo + WEEK_MS" virar concatenação de
-  // texto em vez de soma numérica.
+  // Blindagem: campos numéricos podem ter sido salvos como texto no Console.
   config.year = Number(config.year);
-  if (config.recomendacaoDeadline !== undefined) config.recomendacaoDeadline = Number(config.recomendacaoDeadline);
-  if (config.indicacaoDeadline !== undefined) config.indicacaoDeadline = Number(config.indicacaoDeadline);
-  if (config.finalDeadline !== undefined) config.finalDeadline = Number(config.finalDeadline);
+  for (const key of ["recomendacaoDeadline", "indicacaoDeadline", "finalDeadline", "scheduledStartAt", "scheduledEndAt"]) {
+    if (config[key] !== undefined) config[key] = Number(config[key]);
+  }
   const now = Date.now();
 
   const catalogSnap = await db.collection("awards_catalog").get();
   const categories = catalogSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
   if (categories.length === 0) return console.log("[awards] sem categorias, ignorando.");
 
- console.log("[debug] chaves do documento:", JSON.stringify(Object.keys(config)));
-  console.log("[debug] documento inteiro:", JSON.stringify(config));
+// Abertura automática agendada — roda sozinha mesmo com o app fechado,
+  // já que este script é disparado pelo GitHub Actions. Não importa em que
+  // fase o Awards está agora (antes só funcionava se já estivesse em
+  // "resultado", por isso o agendamento nunca abria quando a fase atual
+  // era "indicacao", "final" etc).
+  if (config.scheduledStartAt && config.scheduledEndAt && now >= config.scheduledStartAt) {
+    await openScheduledCycle(categories, config.scheduledEndAt);
+    return;
+  }
 
   if (config.phase === "recomendacao") {
     if (!config.recomendacaoDeadline || now < config.recomendacaoDeadline) return;
@@ -65,43 +70,78 @@ function slugifyType(type) {
   return type.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim().replace(/\s+/g, "-");
 }
 
+// Mesma regra do cliente: themeId pode listar vários tipos (separados por
+// vírgula/barra) ou ser um coringa ("*", "todos", "all").
+function themeIdMatches(themeId, typeSlug) {
+  const normalized = slugifyType(themeId ?? "");
+  if (normalized === "*" || normalized === "todos" || normalized === "all") return true;
+  return (themeId ?? "").split(/[,/]/).map((part) => slugifyType(part)).includes(typeSlug);
+}
+
+// Só conta reações com createdAt <= prazo — igual ao getRecReactionCountsAsOf do cliente.
+async function getReactionCountsAsOf(deadline) {
+  const snap = await db.collection("rec_reactions").where("createdAt", "<=", deadline).get();
+  const result = new Map();
+  snap.docs.forEach((d) => {
+    const data = d.data();
+    if (!data.itemId || !data.reaction) return;
+    const current = result.get(data.itemId) ?? { likes: 0, boos: 0 };
+    if (data.reaction === "like") current.likes += 1;
+    else if (data.reaction === "boo") current.boos += 1;
+    result.set(data.itemId, current);
+  });
+  return result;
+}
+
 async function freezeNominationsAndAdvance(categories, config) {
-  const [recsSnap, countsSnap] = await Promise.all([
+  const freezeDeadline = config.recomendacaoDeadline ?? Date.now();
+  const [recsSnap, countsById] = await Promise.all([
     db.collection("communityRecs").get(),
-    db.collection("rec_reaction_counts").get(),
+    getReactionCountsAsOf(freezeDeadline),
   ]);
-  const countsById = new Map();
-  countsSnap.docs.forEach((d) => countsById.set(d.id, d.data()));
 
   const byTheme = new Map();
   recsSnap.docs.forEach((d) => {
     const r = d.data();
     if (!r.title || !r.type) return;
-    const counts = countsById.get(`community_${d.id}`) ?? { likes: 0, boos: 0 };
-    const themeId = slugifyType(r.type);
-    if (!byTheme.has(themeId)) byTheme.set(themeId, []);
-    byTheme.get(themeId).push({ title: r.title, likes: counts.likes ?? 0, boos: counts.boos ?? 0 });
+    const itemId = `community_${d.id}`;
+    const counts = countsById.get(itemId) ?? { likes: 0, boos: 0 };
+    const typeSlug = slugifyType(r.type);
+    if (!byTheme.has(typeSlug)) byTheme.set(typeSlug, []);
+    byTheme.get(typeSlug).push({ itemId, title: r.title, type: r.type, cover: r.cover ?? null, likes: counts.likes, boos: counts.boos });
   });
 
   const batch = db.batch();
   categories.forEach((c) => {
-    const items = byTheme.get(c.themeId) ?? [];
+    const kind = c.kind ?? "melhor"; // mesmo fallback do cliente
+    const items = [];
+    byTheme.forEach((list, typeSlug) => {
+      if (themeIdMatches(c.themeId, typeSlug)) items.push(...list);
+    });
     const ranked = items
-      .filter((i) => (c.kind === "melhor" ? i.likes > 0 : i.boos > 0))
-      .sort((a, b) => (c.kind === "melhor" ? b.likes - a.likes : b.boos - a.boos));
-    batch.set(db.collection("awards_catalog").doc(c.id), { nominees: ranked.slice(0, 10).map((i) => i.title) }, { merge: true });
+      .filter((i) => (kind === "melhor" ? i.likes > 0 : i.boos > 0))
+      .sort((a, b) => (kind === "melhor" ? b.likes - a.likes : b.boos - a.boos))
+      .slice(0, 10);
+    batch.set(
+      db.collection("awards_catalog").doc(c.id),
+      { nominees: ranked.map((i) => i.title), nomineeDetails: ranked },
+      { merge: true },
+    );
   });
   batch.set(db.collection("awards_config").doc("current"), {
     phase: "indicacao",
-    indicacaoDeadline: (config.recomendacaoDeadline ?? Date.now()) + WEEK_MS,
+    indicacaoDeadline: freezeDeadline + WEEK_MS,
   }, { merge: true });
   await batch.commit();
   console.log("[awards] fase avançada: recomendacao → indicacao");
 }
 
 async function advanceIndicacaoToFinal(categories, config) {
+  const deadline = config.indicacaoDeadline ?? Date.now();
   const snap = await db.collection("award_votes_indicacao").where("confirmed", "==", true).get();
-  const allVotes = snap.docs.map((d) => d.data());
+  const allVotes = snap.docs
+    .map((d) => d.data())
+    .filter((v) => v.confirmedAt === undefined || v.confirmedAt <= deadline);
 
   const batch = db.batch();
   categories.forEach((c) => {
@@ -111,11 +151,13 @@ async function advanceIndicacaoToFinal(categories, config) {
       if (nominee) counts[nominee] = (counts[nominee] ?? 0) + 1;
     });
     const top5 = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([n]) => n);
-    batch.set(db.collection("awards_catalog").doc(c.id), { nominees: top5, finalists: top5 }, { merge: true });
+    const detailsByTitle = new Map((c.nomineeDetails ?? []).map((d) => [d.title, d]));
+    const top5Details = top5.map((title) => detailsByTitle.get(title) ?? { itemId: title, title, likes: 0, boos: 0 });
+    batch.set(db.collection("awards_catalog").doc(c.id), { nominees: top5, finalists: top5, finalistDetails: top5Details }, { merge: true });
   });
   batch.set(db.collection("awards_config").doc("current"), {
     phase: "final",
-    finalDeadline: (config.indicacaoDeadline ?? Date.now()) + WEEK_MS,
+    finalDeadline: deadline + WEEK_MS,
   }, { merge: true });
   await batch.commit();
   console.log("[awards] fase avançada: indicacao → final");
@@ -124,6 +166,28 @@ async function advanceIndicacaoToFinal(categories, config) {
 async function advanceFinalToResultado() {
   await db.collection("awards_config").doc("current").set({ phase: "resultado" }, { merge: true });
   console.log("[awards] fase avançada: final → resultado");
+}
+
+// Abre a próxima edição agendada — zera indicados/finalistas da edição
+// anterior e já entra em "recomendacao" com o prazo de fechamento certo.
+async function openScheduledCycle(categories, recomendacaoDeadline) {
+  const batch = db.batch();
+  categories.forEach((c) => {
+    batch.set(db.collection("awards_catalog").doc(c.id), {
+      nominees: [],
+      nomineeDetails: [],
+      finalists: [],
+      finalistDetails: [],
+    }, { merge: true });
+  });
+  batch.set(db.collection("awards_config").doc("current"), {
+    phase: "recomendacao",
+    recomendacaoDeadline,
+    scheduledStartAt: FieldValue.delete(),
+    scheduledEndAt: FieldValue.delete(),
+  }, { merge: true });
+  await batch.commit();
+  console.log("[awards] edição agendada aberta automaticamente.");
 }
 
 // ───────────────────────────────────────────────────────────

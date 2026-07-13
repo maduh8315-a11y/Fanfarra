@@ -64,17 +64,25 @@ export function AppShell({ children }: { children: ReactNode }) {
               to={t.to}
               className="flex flex-col items-center gap-0.5 px-1 py-1 relative"
             >
-              {isAdd ? (
+             {isAdd ? (
                 <div
-                  className="w-9 h-9 rounded-full flex items-center justify-center"
+                  className="w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-200"
                   style={{ background: active ? "var(--fan-pink)" : "var(--fan-active-chip)" }}
                 >
                   <Icon size={20} color="white" strokeWidth={2} />
                 </div>
               ) : (
-                <Icon size={22} color={active ? "var(--fan-pink-light)" : "var(--fan-rose-mid)"} strokeWidth={2} />
+                <Icon
+                  size={22}
+                  color={active ? "var(--fan-pink-light)" : "var(--fan-rose-mid)"}
+                  strokeWidth={2}
+                  className="transition-colors duration-200"
+                />
               )}
-              <span className="text-[10px] whitespace-nowrap" style={{ color: active ? "var(--fan-pink-light)" : "var(--fan-text-2)" }}>
+              <span
+                className="text-[10px] whitespace-nowrap transition-colors duration-200"
+                style={{ color: active ? "var(--fan-pink-light)" : "var(--fan-text-2)" }}
+              >
                 {t.label}
               </span>
               {active && !isAdd && (
@@ -98,17 +106,22 @@ export function AppShell({ children }: { children: ReactNode }) {
         </button>
       </nav>
 
-      {drawerOpen && (
-        <div className="fixed inset-0 z-50 flex">
-          <div
-            className="flex-1"
-            style={{ background: "rgba(0,0,0,0.6)" }}
-            onClick={() => setDrawerOpen(false)}
-          />
-          <aside
-            className="w-[80%] max-w-[320px] h-full overflow-y-auto"
-            style={{ background: "var(--fan-bg)", paddingTop: "var(--sat)" }}
-          >
+      <div
+        className={`fixed inset-0 z-50 flex transition-opacity duration-300 ${
+          drawerOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        <div
+          className="flex-1"
+          style={{ background: "rgba(0,0,0,0.6)" }}
+          onClick={() => setDrawerOpen(false)}
+        />
+        <aside
+          className={`w-[80%] max-w-[320px] h-full overflow-y-auto transition-transform duration-300 ease-out ${
+            drawerOpen ? "translate-x-0" : "translate-x-full"
+          }`}
+          style={{ background: "var(--fan-bg)", paddingTop: "var(--sat)" }}
+        >
             <div className="p-5 flex items-center justify-between">
               {user ? (
                 <Link
@@ -185,8 +198,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </button>
             </nav>
           </aside>
-        </div>
-      )}
+      </div>
     </div>
   );
 }

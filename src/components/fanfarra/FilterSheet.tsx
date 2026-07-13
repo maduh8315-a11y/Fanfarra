@@ -53,15 +53,15 @@ export function FilterSheet({
       types: p.types.includes(t) ? p.types.filter((x) => x !== t) : [...p.types, t],
     }));
 
-  return (
+return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center"
+      className="fixed inset-0 z-50 flex items-end justify-center animate-in fade-in duration-200"
       style={{ background: "rgba(0,0,0,0.6)" }}
       onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md max-h-[85vh] overflow-y-auto rounded-t-2xl p-5"
+        className="w-full max-w-md max-h-[85vh] overflow-y-auto rounded-t-2xl p-5 animate-in slide-in-from-bottom duration-300"
         style={{ background: "var(--fan-bg)", border: "0.5px solid var(--fan-rose-mid)" }}
       >
         <div className="flex justify-center mb-3">

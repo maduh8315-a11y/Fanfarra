@@ -266,14 +266,29 @@ export function useRecommenderLeaderboard(): RecommenderRankRow[] {
   const [rows, setRows] = useState<RecommenderRankRow[]>([]);
   useEffect(() => {
     let cancelled = false;
-    getDocs(collection(db, NOMINATIONS_COLLECTION)).then((snap) => {
+    // Fonte real: obras postadas em /recommendations (communityRecs) +
+    // aplausos/vaias reais que elas recebem (rec_reaction_counts), com o
+    // mesmo prefixo "community_" usado pelo funil do Awards.
+    Promise.all([
+      getDocs(collection(db, "communityRecs")),
+      getDocs(collection(db, "rec_reaction_counts")),
+    ]).then(([recsSnap, countsSnap]) => {
       if (cancelled) return;
+
+      const countsById = new Map<string, { likes: number; boos: number }>();
+      countsSnap.docs.forEach((d) => {
+        const data = d.data() as { likes?: number; boos?: number };
+        countsById.set(d.id, { likes: data.likes ?? 0, boos: data.boos ?? 0 });
+      });
+
       const byUser = new Map<string, RecommenderRankRow>();
-      snap.docs.forEach((d) => {
-        const n = d.data() as Omit<AwardNomination, "id">;
-        const row = byUser.get(n.uid) ?? {
-          uid: n.uid,
-          username: n.username,
+      recsSnap.docs.forEach((d) => {
+        const rec = d.data() as { uid?: string; username?: string };
+        if (!rec.uid || !rec.username) return;
+        const counts = countsById.get(`community_${d.id}`) ?? { likes: 0, boos: 0 };
+        const row = byUser.get(rec.uid) ?? {
+          uid: rec.uid,
+          username: rec.username,
           nominations: 0,
           applause: 0,
           boos: 0,
@@ -281,10 +296,11 @@ export function useRecommenderLeaderboard(): RecommenderRankRow[] {
           score: 0,
         };
         row.nominations += 1;
-        row.applause += n.applause ?? 0;
-        row.boos += n.boos ?? 0;
-        byUser.set(n.uid, row);
+        row.applause += counts.likes;
+        row.boos += counts.boos;
+        byUser.set(rec.uid, row);
       });
+
       const list = Array.from(byUser.values()).map((row) => {
         const total = row.applause + row.boos;
         const approvalRate = total > 0 ? row.applause / total : 0;
@@ -324,8 +340,9 @@ export async function deleteNominationsAndReactionsForUser(uid: string): Promise
  *   allow update: if request.auth != null;
  *   allow delete: if request.auth != null && request.auth.uid == resource.data.uid;
  * }
- * match /award_reactions/{id} {
+* match /award_reactions/{id} {
  *   allow read: if request.auth != null;
- *   allow create, update, delete: if request.auth != null && request.auth.uid == request.resource.data.uid;
+ *   allow create, update: if request.auth != null && request.auth.uid == request.resource.data.uid;
+ *   allow delete: if request.auth != null && request.auth.uid == resource.data.uid;
  * }
  */

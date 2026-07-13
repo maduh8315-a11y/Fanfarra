@@ -1,6 +1,7 @@
+import { ADMIN_UIDS } from "@/lib/fanfarra/config";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import type { MediaType } from "@/lib/fanfarra/types";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   ArrowLeft,
   Star,
@@ -12,6 +13,7 @@ import {
   Link as LinkIcon,
   Layers,
   Users2,
+  Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/fanfarra/AppShell";
@@ -24,10 +26,14 @@ import {
 import { usePublicRecommendations } from "@/lib/fanfarra/communityStore";
 import { useRecReactionCounts, useMyRecReaction, reactToRecItem } from "@/lib/fanfarra/recReactions";
 import type { RelatedWork } from "@/lib/fanfarra/formConfig";
+import { useAuthUser } from "@/lib/fanfarra/auth";
+import { useRecComments, postRecComment, deleteRecComment } from "@/lib/fanfarra/recComments";
 
 export const Route = createFileRoute("/rec/$id")({
   component: RecDetail,
 });
+
+
 
 function buildTotals(item: RecommendationItem): string[] {
   const t: string[] = [];
@@ -167,12 +173,43 @@ function RecDetail() {
   const reactionCounts = useRecReactionCounts(item?.id ?? "");
   const myReaction = useMyRecReaction(item?.id ?? "");
 
-  const handleReact = async (reaction: "like" | "boo") => {
+  const user = useAuthUser();
+  const comments = useRecComments(item?.id ?? "");
+  const [commentText, setCommentText] = useState("");
+  const [posting, setPosting] = useState(false);
+
+  const handlePostComment = async () => {
     if (!item) return;
+    setPosting(true);
     try {
-      await reactToRecItem(item.id, reaction);
+      await postRecComment(item.id, user?.displayName || "Usuário", commentText);
+      setCommentText("");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Não foi possível comentar.");
+    } finally {
+      setPosting(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      await deleteRecComment(commentId);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Não foi possível apagar.");
+    }
+  };
+
+ const [reacting, setReacting] = useState(false);
+
+  const handleReact = async (reaction: "like" | "boo") => {
+    if (!item || reacting) return;
+    setReacting(true);
+    try {
+      await reactToRecItem(item.id, reaction, item.type);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Não foi possível reagir agora.");
+    } finally {
+      setReacting(false);
     }
   };
 
@@ -411,6 +448,64 @@ function RecDetail() {
             </a>
           ) : (
             <EmptyValue text="Nenhum link informado" />
+          )}
+        </SectionCard>
+      </section>
+
+      {/* Comentários da comunidade */}
+      <section className="mt-3 px-5">
+        <SectionCard
+          icon={<MessageSquare size={13} color="var(--fan-icon-blue)" />}
+          title="Comentários da comunidade"
+        >
+          <div className="flex gap-2 mb-3">
+            <input
+              type="text"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder="Deixe seu comentário sobre a obra..."
+              className="flex-1 rounded-[10px] px-3 py-2 text-sm"
+              style={{ background: "var(--fan-bg)", border: "1px solid var(--fan-border)", color: "var(--fan-text)" }}
+            />
+            <button
+              onClick={handlePostComment}
+              disabled={posting || !commentText.trim()}
+              className="px-3 py-2 rounded-[10px] text-sm font-bold shrink-0 disabled:opacity-50"
+              style={{ background: "var(--fan-pink)", color: "#1a0a12" }}
+            >
+              Enviar
+            </button>
+          </div>
+
+          {comments.length === 0 ? (
+            <EmptyValue text="Nenhum comentário ainda. Seja o primeiro!" />
+          ) : (
+            <div className="space-y-3">
+              {comments.map((c) => {
+                const canDelete = !!user && (user.uid === c.uid || ADMIN_UIDS.includes(user.uid));
+                return (
+                  <div key={c.id} className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-semibold" style={{ color: "var(--fan-pink-light)" }}>
+                        @{c.username}
+                      </p>
+                      <p className="text-sm mt-0.5" style={{ color: "var(--fan-text-3)" }}>
+                        {c.text}
+                      </p>
+                    </div>
+                    {canDelete && (
+                      <button
+                        onClick={() => handleDeleteComment(c.id)}
+                        aria-label="Apagar comentário"
+                        className="shrink-0 mt-1"
+                      >
+                        <Trash2 size={15} color="var(--fan-text-2)" />
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           )}
         </SectionCard>
       </section>

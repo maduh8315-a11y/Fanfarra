@@ -1,7 +1,9 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
+
 import {
   doc,
   deleteDoc,
+  deleteField,
   getDoc,
   getDocs,
   onSnapshot,
@@ -11,17 +13,18 @@ import {
   query,
   where,
   orderBy,
+  writeBatch,
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "./firebase";
 import { stripUndefined } from "./firestoreUtils";
 import { pushNotification } from "./extras";
 import { getRecReactionCountsAsOf } from "./recReactions";
+import { CATALOG } from "./recommendations";
 
 // ===== Configuração da edição (ano/título/fase/prazos) — editável no Console do Firebase =====
 const CONFIG_COLLECTION = "awards_config";
 const CONFIG_DOC_ID = "current";
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
 // Fases do funil: recomendação → indicação → final → resultado
 export type AwardsPhase = "recomendacao" | "indicacao" | "final" | "resultado";
@@ -30,10 +33,20 @@ export interface AwardsConfig {
   year: number;
   title: string;
   phase: AwardsPhase;
-  // Timestamps (Date.now()) — quando cada fase deve virar automaticamente.
+ // Timestamps (Date.now()) definidos MANUALMENTE por você no painel admin
+  // — quando cada fase deve virar automaticamente.
   recomendacaoDeadline?: number;
   indicacaoDeadline?: number;
   finalDeadline?: number;
+  // Abertura de cada fase (quando a votação passa a ficar liberada pro
+  // usuário votar). Se não for definida, a fase já entra liberada assim
+  // que virar.
+  recomendacaoOpen?: number;
+  indicacaoOpen?: number;
+  finalOpen?: number;
+  // Marca quando a edição atual começou (gravado por startNewCycle). Usado
+  // pra ignorar aplausos/vaias de edições anteriores ao recontar indicados.
+  cycleStart?: number;
 }
 
 const DEFAULT_CONFIG: AwardsConfig = {
@@ -56,6 +69,13 @@ function normalizeAwardsConfig(raw: Partial<AwardsConfig> | undefined): AwardsCo
       merged.indicacaoDeadline !== undefined ? Number(merged.indicacaoDeadline) : undefined,
     finalDeadline:
       merged.finalDeadline !== undefined ? Number(merged.finalDeadline) : undefined,
+    recomendacaoOpen:
+      merged.recomendacaoOpen !== undefined ? Number(merged.recomendacaoOpen) : undefined,
+    indicacaoOpen:
+      merged.indicacaoOpen !== undefined ? Number(merged.indicacaoOpen) : undefined,
+    finalOpen:
+      merged.finalOpen !== undefined ? Number(merged.finalOpen) : undefined,
+    cycleStart: merged.cycleStart !== undefined ? Number(merged.cycleStart) : undefined,
   };
 }
 
@@ -114,20 +134,118 @@ export async function setAwardsPhase(phase: AwardsPhase): Promise<void> {
   await setDoc(doc(db, CONFIG_COLLECTION, CONFIG_DOC_ID), { phase }, { merge: true });
 }
 
-// Ação administrativa: (re)inicia uma edição do Awards — abre a fase de
-// recomendação e define quando ela fecha (vira "indicacao" automaticamente).
-export async function setRecomendacaoDeadline(timestamp: number): Promise<void> {
-  await setDoc(
-    doc(db, CONFIG_COLLECTION, CONFIG_DOC_ID),
-    { phase: "recomendacao", recomendacaoDeadline: timestamp },
-    { merge: true },
-  );
+// Ação administrativa: define/edita manualmente o prazo de UMA fase
+// específica. Não mexe na fase atual nem nas outras — só grava o horário
+// exato em que aquela fase deve fechar. Você decide a data; o app só fica
+// de olho e vira sozinho quando o relógio passa desse valor (ou você força
+// pelo botão "Forçar verificação de fase agora").
+// Ação administrativa: define/edita manualmente a ABERTURA de UMA fase
+// específica (quando a votação passa a ficar liberada pro usuário votar).
+export async function setPhaseOpen(
+  phase: "recomendacao" | "indicacao" | "final",
+  timestamp: number,
+): Promise<void> {
+  const field =
+    phase === "recomendacao"
+      ? "recomendacaoOpen"
+      : phase === "indicacao"
+        ? "indicacaoOpen"
+        : "finalOpen";
+  await setDoc(doc(db, CONFIG_COLLECTION, CONFIG_DOC_ID), { [field]: timestamp }, { merge: true });
+}
+
+// Ação administrativa: define/edita manualmente o PRAZO (deadline) de UMA
+// fase específica — quando ela deve virar automaticamente para a próxima.
+export async function setPhaseDeadline(
+  phase: "recomendacao" | "indicacao" | "final",
+  timestamp: number,
+): Promise<void> {
+  const field =
+    phase === "recomendacao"
+      ? "recomendacaoDeadline"
+      : phase === "indicacao"
+        ? "indicacaoDeadline"
+        : "finalDeadline";
+  await setDoc(doc(db, CONFIG_COLLECTION, CONFIG_DOC_ID), { [field]: timestamp }, { merge: true });
+}
+
+// Ação administrativa: (re)inicia uma edição do Awards do zero — abre a fase
+// de recomendação (zerando indicados/finalistas da edição anterior) e grava
+// o prazo dela. Os prazos de "indicacao" e "final" continuam sendo o que
+// você já tiver definido com setPhaseDeadline (ou undefined, até você
+// definir manualmente antes de a fase chegar lá).
+// Apaga TODOS os documentos de uma coleção de votos (todos os usuários).
+// Usada só pelo startNewCycle, pra zerar os votos da edição anterior.
+async function deleteAllDocsInCollection(collectionName: string): Promise<void> {
+  const snap = await getDocs(collection(db, collectionName));
+  const docs = snap.docs;
+  const CHUNK = 400; // limite do writeBatch é 500 operações
+  for (let i = 0; i < docs.length; i += CHUNK) {
+    const batch = writeBatch(db);
+    docs.slice(i, i + CHUNK).forEach((d) => batch.delete(d.ref));
+    await batch.commit();
+  }
+}
+
+export async function startNewCycle(categories: AwardCategory[], recomendacaoDeadline: number): Promise<void> {
+  // Zera os votos de TODO MUNDO nas duas fases — os votos de uma edição
+  // não podem valer pra próxima. Feito fora da transação porque pode ser
+  // uma quantidade grande de documentos (um por usuário que já votou).
+  await Promise.all([
+    deleteAllDocsInCollection("award_votes_indicacao"),
+    deleteAllDocsInCollection("award_votes_final"),
+  ]);
+
+  const cycleStart = Date.now();
+
+  await runTransaction(db, async (tx) => {
+    const configRef = doc(db, CONFIG_COLLECTION, CONFIG_DOC_ID);
+    await tx.get(configRef);
+
+    const catRefs = categories.map((c) => doc(db, CATALOG_COLLECTION, c.id));
+    for (const ref of catRefs) await tx.get(ref);
+
+    categories.forEach((c) => {
+      tx.set(
+        doc(db, CATALOG_COLLECTION, c.id),
+        { nominees: [], nomineeDetails: [], finalists: [], finalistDetails: [] },
+        { merge: true },
+      );
+    });
+
+    // Limpa os prazos/aberturas das fases seguintes da edição anterior —
+    // senão eles continuam "vencidos" e o app avança tudo de uma vez até
+    // "resultado" de novo, assim que a fase de recomendação virar.
+    tx.set(
+      configRef,
+      {
+        phase: "recomendacao",
+        recomendacaoDeadline,
+        cycleStart,
+        recomendacaoOpen: deleteField(),
+        indicacaoOpen: deleteField(),
+        indicacaoDeadline: deleteField(),
+        finalOpen: deleteField(),
+        finalDeadline: deleteField(),
+      },
+      { merge: true },
+    );
+  });
 }
 
 // ===== Catálogo de categorias/indicados — editável no Console do Firebase =====
 const CATALOG_COLLECTION = "awards_catalog";
 
 export type AwardCategoryKind = "melhor" | "pior";
+
+export interface AwardNomineeDetail {
+  itemId: string; // mesmo id usado em /rec/$id (community_xxx ou id do catálogo)
+  title: string;
+  type?: string;
+  cover?: string;
+  likes: number;
+  boos: number;
+}
 
 export interface AwardCategory {
   id: string;
@@ -139,6 +257,8 @@ export interface AwardCategory {
   kind: AwardCategoryKind;
   themeId: string; // liga a categoria ao "type" das recomendações (slugificado)
   finalists?: string[]; // preenchido automaticamente na virada Fase 1 → Fase 2
+  nomineeDetails?: AwardNomineeDetail[]; // capa/tipo/aplausos-vaias dos indicados, pro card
+  finalistDetails?: AwardNomineeDetail[]; // idem, pros finalistas
 }
 
 let categoriesCache: AwardCategory[] = [];
@@ -167,6 +287,8 @@ function connectCategories() {
           kind: data.kind ?? "melhor",
           themeId: data.themeId ?? d.id,
           finalists: data.finalists,
+          nomineeDetails: data.nomineeDetails,
+          finalistDetails: data.finalistDetails,
         } as AwardCategory;
       });
       notifyCategories();
@@ -374,15 +496,21 @@ function createPhaseVoteStore(phaseCollection: string) {
     );
   }
 
-  function confirm(notifyText: string): void {
+  async function confirm(notifyText: string): Promise<void> {
     const uid = auth.currentUser?.uid;
-    if (!uid) throw new Error("Usuário não autenticado.");
+    if (!uid) throw new Error("Você precisa estar logado para confirmar os votos.");
+    const previous = cache;
     const next: AwardVoteDoc = { ...cache, confirmed: true, confirmedAt: Date.now(), year: configCache.year };
     cache = next;
     notify();
-    setDoc(doc(db, phaseCollection, uid), stripUndefined(next), { merge: true }).catch((err) =>
-      console.error(`Erro ao confirmar votos (${phaseCollection}):`, err),
-    );
+    try {
+      await setDoc(doc(db, phaseCollection, uid), stripUndefined(next), { merge: true });
+    } catch (err) {
+      cache = previous;
+      notify();
+      console.error(`Erro ao confirmar votos (${phaseCollection}):`, err);
+      throw err;
+    }
     pushNotification({ icon: "vote", text: notifyText });
   }
 
@@ -411,9 +539,9 @@ export function useAllConfirmedAwardVotes(phase: VotePhase) {
 export function voteAward(phase: VotePhase, categoryId: string, nominee: string) {
   storeFor(phase).vote(categoryId, nominee);
 }
-export function confirmAwardVotes(phase: VotePhase): void {
+export async function confirmAwardVotes(phase: VotePhase): Promise<void> {
   const label = phase === "indicacao" ? "indicados" : "finalistas";
-  storeFor(phase).confirm(`Seu voto nos ${label} do ${configCache.title} foi registrado! 🏆`);
+  await storeFor(phase).confirm(`Seu voto nos ${label} do ${configCache.title} foi registrado! 🏆`);
 }
 
 export function getAwardResults(categoryId: string, allVotes: AwardVoteRecord[]): AwardResultRow[] {
@@ -454,6 +582,35 @@ function slugifyType(type: string): string {
     .replace(/\s+/g, "-");
 }
 
+// Compara o themeId da categoria com o slug do tipo de uma obra. Normaliza os
+// dois lados (evita bug de acento/maiúscula no Console) e aceita themeId com
+// vários tipos juntos, separados por vírgula ou barra — ex: categoria "Pior
+// Manga/Manhwa/Manhua" pode ter themeId = "manga,manhwa,manhua".
+function themeIdMatches(themeId: string, typeSlug: string): boolean {
+  const normalized = slugifyType(themeId);
+  if (normalized === "*" || normalized === "todos" || normalized === "all") return true;
+  return themeId
+    .split(/[,/]/)
+    .map((part) => slugifyType(part))
+    .includes(typeSlug);
+}
+
+// Diz se a fase atual ainda está "rodando" de verdade — ou seja, tem um
+// prazo próprio e esse prazo ainda não passou. Enquanto isso for verdade,
+// o agendamento da PRÓXIMA edição não pode atropelar o ciclo em andamento.
+function isCycleActive(config: AwardsConfig, now: number): boolean {
+  if (config.phase === "recomendacao") {
+    return !!config.recomendacaoDeadline && now < config.recomendacaoDeadline;
+  }
+  if (config.phase === "indicacao") {
+    return !!config.indicacaoDeadline && now < config.indicacaoDeadline;
+  }
+  if (config.phase === "final") {
+    return !!config.finalDeadline && now < config.finalDeadline;
+  }
+  return false; // "resultado" já terminou — pode abrir a próxima
+}
+
 export async function checkAndAdvanceAwardsPhase(
   categories: AwardCategory[],
   opts: { force?: boolean } = {},
@@ -464,17 +621,17 @@ export async function checkAndAdvanceAwardsPhase(
   const config = normalizeAwardsConfig(configSnap.exists() ? (configSnap.data() as Partial<AwardsConfig>) : undefined);
   const now = Date.now();
 
-  if (config.phase === "recomendacao") {
+ if (config.phase === "recomendacao") {
     const deadline = config.recomendacaoDeadline;
-    if (!deadline || (!opts.force && now < deadline)) return;
+    if (!opts.force && (!deadline || now < deadline)) return;
     await freezeNominationsAndAdvance(categories, config);
   } else if (config.phase === "indicacao") {
     const deadline = config.indicacaoDeadline;
-    if (!deadline || (!opts.force && now < deadline)) return;
+    if (!opts.force && (!deadline || now < deadline)) return;
     await advanceIndicacaoToFinal(categories, config);
   } else if (config.phase === "final") {
     const deadline = config.finalDeadline;
-    if (!deadline || (!opts.force && now < deadline)) return;
+    if (!opts.force && (!deadline || now < deadline)) return;
     await advanceFinalToResultado();
   }
 }
@@ -491,36 +648,39 @@ async function freezeNominationsAndAdvance(categories: AwardCategory[], config: 
   // Prazo real da fase de recomendação — é o corte que decide o que conta ou não.
   const freezeDeadline = config.recomendacaoDeadline ?? Date.now();
 
-  const [recsSnap, countsById] = await Promise.all([
+ const [recsSnap, countsById] = await Promise.all([
     getDocs(collection(db, "communityRecs")),
-    getRecReactionCountsAsOf(freezeDeadline), // só reações com createdAt <= prazo
+    // conta TODOS os aplausos/vaias já feitos até o prazo, mesmo de
+    // edições anteriores — não tem corte por edição, só pelo prazo mesmo.
+    getRecReactionCountsAsOf(freezeDeadline),
   ]);
 
-  const byTheme = new Map<string, { title: string; likes: number; boos: number }[]>();
+  // Foco 100% nas recomendações postadas por usuários reais.
+  const byTheme = new Map<string, AwardNomineeDetail[]>();
   recsSnap.docs.forEach((d) => {
-    const r = d.data() as { title?: string; type?: string };
+    const r = d.data() as { title?: string; type?: string; cover?: string };
     if (!r.title || !r.type) return;
-    const counts = countsById.get(`community_${d.id}`) ?? { likes: 0, boos: 0 };
-    const themeId = slugifyType(r.type);
-    if (!byTheme.has(themeId)) byTheme.set(themeId, []);
-    byTheme.get(themeId)!.push({ title: r.title, likes: counts.likes, boos: counts.boos });
+    const itemId = `community_${d.id}`;
+    const counts = countsById.get(itemId) ?? { likes: 0, boos: 0 };
+    const typeSlug = slugifyType(r.type);
+    if (!byTheme.has(typeSlug)) byTheme.set(typeSlug, []);
+    byTheme.get(typeSlug)!.push({ itemId, title: r.title, type: r.type, cover: r.cover, likes: counts.likes, boos: counts.boos });
   });
 
-  const nomineesByCategoryId = new Map<string, string[]>();
+  const nomineesByCategoryId = new Map<string, AwardNomineeDetail[]>();
   for (const c of categories) {
-    const items = byTheme.get(c.themeId) ?? [];
+    const items: AwardNomineeDetail[] = [];
+    byTheme.forEach((list, typeSlug) => {
+      if (themeIdMatches(c.themeId, typeSlug)) items.push(...list);
+    });
     const ranked = items
+      // mesmo com poucos aplausos/vaias (1 já basta), a obra entra na disputa
       .filter((i) => (c.kind === "melhor" ? i.likes > 0 : i.boos > 0))
       .sort((a, b) => (c.kind === "melhor" ? b.likes - a.likes : b.boos - a.boos));
-    nomineesByCategoryId.set(
-      c.id,
-      ranked.slice(0, 10).map((i) => i.title),
-    );
+    nomineesByCategoryId.set(c.id, ranked.slice(0, 10));
   }
 
-  const nextIndicacaoDeadline = freezeDeadline + WEEK_MS;
-
-  await runTransaction(db, async (tx) => {
+ await runTransaction(db, async (tx) => {
     const configRef = doc(db, CONFIG_COLLECTION, CONFIG_DOC_ID);
     const freshSnap = await tx.get(configRef);
     const fresh = freshSnap.exists()
@@ -532,13 +692,14 @@ async function freezeNominationsAndAdvance(categories: AwardCategory[], config: 
     for (const ref of catRefs) await tx.get(ref); // Firestore exige ler antes de escrever
 
     categories.forEach((c) => {
+      const details = nomineesByCategoryId.get(c.id) ?? [];
       tx.set(
         doc(db, CATALOG_COLLECTION, c.id),
-        { nominees: nomineesByCategoryId.get(c.id) ?? [] },
+        stripUndefined({ nominees: details.map((d) => d.title), nomineeDetails: details }),
         { merge: true },
       );
     });
-    tx.set(configRef, { phase: "indicacao", indicacaoDeadline: nextIndicacaoDeadline }, { merge: true });
+    tx.set(configRef, { phase: "indicacao" }, { merge: true });
   });
 }
 
@@ -553,16 +714,17 @@ async function advanceIndicacaoToFinal(categories: AwardCategory[], config: Awar
     .filter((v) => v.confirmedAt === undefined || v.confirmedAt <= deadline);
 
   const top5ByCategoryId = new Map<string, string[]>();
+  const top5DetailsByCategoryId = new Map<string, AwardNomineeDetail[]>();
   categories.forEach((c) => {
-    top5ByCategoryId.set(
+    const top5 = getAwardResults(c.id, allVotes).slice(0, 5).map((r) => r.nominee);
+    top5ByCategoryId.set(c.id, top5);
+
+    const detailsByTitle = new Map((c.nomineeDetails ?? []).map((d) => [d.title, d]));
+    top5DetailsByCategoryId.set(
       c.id,
-      getAwardResults(c.id, allVotes)
-        .slice(0, 5)
-        .map((r) => r.nominee),
+      top5.map((title) => detailsByTitle.get(title) ?? { itemId: title, title, likes: 0, boos: 0 }),
     );
   });
-
-  const nextFinalDeadline = deadline + WEEK_MS;
 
   await runTransaction(db, async (tx) => {
     const configRef = doc(db, CONFIG_COLLECTION, CONFIG_DOC_ID);
@@ -577,9 +739,14 @@ async function advanceIndicacaoToFinal(categories: AwardCategory[], config: Awar
 
     categories.forEach((c) => {
       const top5 = top5ByCategoryId.get(c.id) ?? [];
-      tx.set(doc(db, CATALOG_COLLECTION, c.id), { nominees: top5, finalists: top5 }, { merge: true });
+      const top5Details = top5DetailsByCategoryId.get(c.id) ?? [];
+      tx.set(
+        doc(db, CATALOG_COLLECTION, c.id),
+        stripUndefined({ nominees: top5, finalists: top5, finalistDetails: top5Details }),
+        { merge: true },
+      );
     });
-    tx.set(configRef, { phase: "final", finalDeadline: nextFinalDeadline }, { merge: true });
+    tx.set(configRef, { phase: "final" }, { merge: true });
   });
 }
 

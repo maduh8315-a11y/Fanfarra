@@ -21,6 +21,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { stripUndefined } from "./firestoreUtils.ts";
 import { auth, db } from "./firebase";
 import type { Work } from "./types";
+import { toast } from "sonner";
 
 const COLLECTION = "communityRecs";
 
@@ -152,14 +153,18 @@ export function postWorkAsRecommendation(work: Work, username: string): void {
       createdAt: now,
       updatedAt: now,
     }),
-  ).catch((err) => console.error("Erro ao publicar recomendação:", err));
+  ).catch((err) => {
+    console.error("Erro ao publicar recomendação:", err);
+    toast.error("Não foi possível publicar na comunidade. Tente de novo.");
+  });
 }
 
 // Remove a publicação pública. A obra continua normalmente na biblioteca do usuário.
 export function removeRecommendationPost(workId: string): void {
-  deleteDoc(doc(db, COLLECTION, workId)).catch((err) =>
-    console.error("Erro ao remover recomendação:", err),
-  );
+  deleteDoc(doc(db, COLLECTION, workId)).catch((err) => {
+    console.error("Erro ao remover recomendação:", err);
+    toast.error("Não foi possível remover a publicação. Tente de novo.");
+  });
 }
 
 // Apaga todas as recomendações públicas do usuário. Usada ao excluir a conta.

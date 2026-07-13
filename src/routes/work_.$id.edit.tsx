@@ -50,9 +50,13 @@ function EditWork() {
             updateWork(work.id, formValuesToWork(work.type, v));
             nav({ to: "/work/$id", params: { id } });
           }}
-          onDelete={() => {
-            deleteWork(work.id);
-            nav({ to: "/library" });
+          onDelete={async () => {
+            try {
+              await deleteWork(work.id);
+              nav({ to: "/library" });
+            } catch {
+              // erro já mostrado via toast dentro de deleteWork
+            }
           }}
         />
       </ClientOnly>

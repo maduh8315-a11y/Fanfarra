@@ -1,4 +1,5 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { ADMIN_UIDS } from "@/lib/fanfarra/config";
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
@@ -25,7 +26,9 @@ import {
   confirmAwardVotes,
   forceAdvanceAwardsPhase,
   getAwardResults,
-  setRecomendacaoDeadline,
+  setPhaseDeadline,
+  setPhaseOpen,
+  startNewCycle,
   useAllConfirmedAwardVotes,
   useAwardCategories,
   useAwardConfirmed,
@@ -33,19 +36,21 @@ import {
   useAwardVotes,
   voteAward,
   type AwardCategory,
+  type AwardNomineeDetail,
   type AwardResultRow,
   type AwardsConfig,
   type AwardsPhase,
 } from "@/lib/fanfarra/awardsStore";
 import { useRecommenderLeaderboard } from "@/lib/fanfarra/nominationsStore";
 
+
 export const Route = createFileRoute("/awards")({
   head: () => ({ meta: [{ title: "Fanfarra Awards 2025" }] }),
   component: AwardsPage,
 });
 
-// ⚠️ Troque pelo seu UID (Console do Firebase → Authentication).
-const ADMIN_UIDS = ["ikvASYa9kgQknCrZeiiupirGGef1"];
+
+
 
 const ICONS: Record<string, LucideIcon> = {
   tv: Tv,
@@ -73,6 +78,48 @@ const PHASE_TAB_LABEL: Record<AwardsPhase, string> = {
   resultado: "Resultado",
 };
 
+const AWARD_STEPS: { key: AwardsPhase; label: string }[] = [
+  { key: "indicacao", label: "Recomendações" },
+  { key: "final", label: "Classificados" },
+  { key: "resultado", label: "Obra Premiada" },
+];
+
+function AwardsStepper({ phase }: { phase: AwardsPhase }) {
+  // Enquanto phase === "recomendacao" (coleta ao longo do ano), nenhum passo
+  // do stepper fica ativo ainda — a barra some/fica "neutra".
+  const activeIndex = AWARD_STEPS.findIndex((s) => s.key === phase);
+
+  return (
+    <div className="flex items-center justify-center flex-wrap gap-1 px-2 mt-4">
+      {AWARD_STEPS.map((step, i) => {
+        const isDone = activeIndex > i;
+        const isActive = activeIndex === i;
+        return (
+          <div key={step.key} className="flex items-center">
+            <div
+              className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold whitespace-nowrap"
+              style={{
+                background: isActive ? "var(--fan-pink)" : isDone ? "var(--fan-active-chip)" : "transparent",
+                border: `1px solid ${isActive || isDone ? "var(--fan-pink)" : "var(--fan-border)"}`,
+                color: isActive ? "#1a0a12" : isDone ? "var(--fan-pink-light)" : "var(--fan-text-2)",
+              }}
+            >
+              {isDone && <Check size={11} />}
+              {step.label}
+            </div>
+            {i < AWARD_STEPS.length - 1 && (
+              <div
+                className="w-3 h-[2px] mx-0.5"
+                style={{ background: isDone ? "var(--fan-pink)" : "var(--fan-border)" }}
+              />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function AwardsPage() {
   const nav = useNavigate();
   const categories = useAwardCategories();
@@ -80,12 +127,22 @@ function AwardsPage() {
   const phase = config.phase;
   const [view, setView] = useState<"participar" | "leaderboard">("participar");
 
-  useEffect(() => {
+useEffect(() => {
     if (categories.length === 0) return;
-    checkAndAdvanceAwardsPhase(categories);
-    const id = setInterval(() => checkAndAdvanceAwardsPhase(categories), 5 * 60_000);
+    const runCheck = () => {
+      checkAndAdvanceAwardsPhase(categories).catch((err) =>
+        console.error("Falha ao verificar/avançar fase do Awards:", err),
+      );
+    };
+    runCheck();
+    const id = setInterval(runCheck, 15_000); // checagem mais frequente
     return () => clearInterval(id);
-  }, [categories, phase]);
+    // Propositalmente NÃO dependemos do array "categories" inteiro nem de "phase":
+    // como checkAndAdvanceAwardsPhase reescreve as categorias, usar o array como
+    // dependência recria esse efeito toda vez que o Firestore manda a atualização
+    // de volta, criando um loop de transações concorrentes (erros "failed-precondition").
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [categories.length]);
 
   return (
     <AppShell>
@@ -143,14 +200,7 @@ function AwardsPage() {
           </button>
         </div>
 
-        <div className="flex justify-center mt-3">
-          <span
-            className="text-[11px] font-bold px-3.5 py-1 rounded-full"
-            style={{ background: "var(--fan-active-chip)", border: "1px solid var(--fan-pink)", color: "var(--fan-pink-light)" }}
-          >
-            {PHASE_BADGE[phase]}
-          </span>
-        </div>
+        <AwardsStepper phase={phase} />
       </div>
 
       <AdminPanel categories={categories} config={config} />
@@ -164,9 +214,9 @@ function AwardsPage() {
       ) : phase === "recomendacao" ? (
         <RecommendationPhase config={config} />
       ) : phase === "indicacao" ? (
-        <VotingPhase categories={categories} phase="indicacao" />
+        <VotingPhase categories={categories} phase="indicacao" config={config} />
       ) : phase === "final" ? (
-        <VotingPhase categories={categories} phase="final" />
+        <VotingPhase categories={categories} phase="final" config={config} />
       ) : (
         <ResultsPhase categories={categories} config={config} />
       )}
@@ -177,6 +227,7 @@ function AwardsPage() {
 // ===== Fase 0 — Recomendações (baseada nas reações reais do app) =====
 
 function RecommendationPhase({ config }: { config: AwardsConfig }) {
+  const open = config.recomendacaoOpen;
   const deadline = config.recomendacaoDeadline;
   const [now, setNow] = useState(() => Date.now());
 
@@ -185,6 +236,8 @@ function RecommendationPhase({ config }: { config: AwardsConfig }) {
     return () => clearInterval(id);
   }, []);
 
+  const notOpenYet = !!open && now < open;
+  const openCountdown = notOpenYet ? formatCountdown(open! - now) : null;
   const countdown = deadline ? formatCountdown(deadline - now) : null;
 
   return (
@@ -199,6 +252,11 @@ function RecommendationPhase({ config }: { config: AwardsConfig }) {
           <span style={{ color: "var(--fan-text)", fontWeight: 700 }}>Para você</span>, ao longo do ano. 👏 e 👎
           contam pra valer!
         </p>
+        {notOpenYet && (
+          <p className="mt-3 text-[16px] font-extrabold" style={{ color: "var(--fan-pink-light)" }}>
+            {openCountdown ? `Abre em ${openCountdown}` : "Abrindo..."}
+          </p>
+        )}
         {deadline ? (
           <p className="mt-3 text-[16px] font-extrabold" style={{ color: "var(--fan-pink-light)" }}>
             {countdown ? `Fecha em ${countdown}` : "Fechando as indicações..."}
@@ -268,30 +326,88 @@ function LeaderboardView() {
 }
 
 // ===== Fase 1 e 2 — Votação (indicados / finalistas) =====
-
-function VotingPhase({ categories, phase }: { categories: AwardCategory[]; phase: "indicacao" | "final" }) {
+function VotingPhase({
+  categories,
+  phase,
+  config,
+}: {
+  categories: AwardCategory[];
+  phase: "indicacao" | "final";
+  config: AwardsConfig;
+}) {
   const votes = useAwardVotes(phase);
   const { confirmed } = useAwardConfirmed(phase);
   const [confirming, setConfirming] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
 
-  const nomineesFor = (c: AwardCategory) => (phase === "final" ? c.finalists ?? c.nominees : c.nominees);
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
 
-  const totalCategories = categories.length;
-  const votedCount = categories.filter((c) => votes[c.id]).length;
+  const open = phase === "indicacao" ? config.indicacaoOpen : config.finalOpen;
+  const deadline = phase === "indicacao" ? config.indicacaoDeadline : config.finalDeadline;
+  const notOpenYet = !!open && now < open;
+  const openCountdown = notOpenYet ? formatCountdown(open! - now) : null;
+  const closeCountdown = deadline ? formatCountdown(deadline - now) : null;
+
+  const nomineesFor = (c: AwardCategory): AwardNomineeDetail[] => {
+    const titles = phase === "final" ? c.finalists ?? c.nominees : c.nominees;
+    const details = phase === "final" ? c.finalistDetails : c.nomineeDetails;
+    const byTitle = new Map((details ?? []).map((d) => [d.title, d]));
+    return titles.map((title) => byTitle.get(title) ?? { itemId: title, title, likes: 0, boos: 0 });
+  };
+
+ const votableCategories = categories.filter((c) => nomineesFor(c).length > 0);
+  const totalCategories = votableCategories.length;
+  const votedCount = votableCategories.filter((c) => votes[c.id]).length;
   const allVoted = totalCategories > 0 && votedCount === totalCategories;
 
-  const handleConfirm = async () => {
+const handleConfirm = async () => {
     setConfirming(true);
     try {
-      confirmAwardVotes(phase);
+      await confirmAwardVotes(phase);
       toast.success("Voto confirmado!");
+    } catch (err) {
+      console.error("Erro ao confirmar votos:", err);
+      toast.error(
+        err instanceof Error ? err.message : "Não foi possível confirmar seus votos. Tente de novo.",
+      );
     } finally {
       setConfirming(false);
     }
   };
 
+  if (notOpenYet) {
+    return (
+      <div className="px-4 pb-10">
+        <div
+          className="rounded-[14px] p-4 text-center"
+          style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-rose-mid)" }}
+        >
+          <p className="text-[16px] font-extrabold" style={{ color: "var(--fan-pink-light)" }}>
+            {openCountdown ? `Votação abre em ${openCountdown}` : "Abrindo a votação..."}
+          </p>
+          <p className="mt-1 text-sm" style={{ color: "var(--fan-text-2)" }}>
+            Volte quando abrir para votar nesta fase.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="px-4 pb-10 space-y-3">
+      {deadline ? (
+        <p className="text-center text-sm font-bold" style={{ color: "var(--fan-pink-light)" }}>
+          {closeCountdown ? `Fecha em ${closeCountdown}` : "Fechando..."}
+        </p>
+      ) : (
+        <p className="text-center text-sm" style={{ color: "var(--fan-text-2)" }}>
+          Data de corte ainda não configurada pelo time do Fanfarra.
+        </p>
+      )}
+
       {confirmed && (
         <div
           className="rounded-[12px] p-3 text-center text-sm font-bold flex items-center justify-center gap-1.5"
@@ -314,28 +430,69 @@ function VotingPhase({ categories, phase }: { categories: AwardCategory[]; phase
                 {c.emoji} {c.name}
               </span>
             </div>
-            {nominees.length === 0 ? (
+           {nominees.length === 0 ? (
               <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
                 Nenhum indicado nesta categoria ainda.
               </p>
             ) : (
               <div className="space-y-1.5">
                 {nominees.map((nominee) => {
-                  const isSelected = selected === nominee;
+                  const isSelected = selected === nominee.title;
+                  const hasDetail = nominee.itemId !== nominee.title;
                   return (
-                    <button
-                      key={nominee}
-                      onClick={() => voteAward(phase, c.id, nominee)}
-                      className="w-full flex items-center justify-between rounded-[10px] px-3 py-2 text-left text-sm"
+                    <div
+                      key={nominee.itemId}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => voteAward(phase, c.id, nominee.title)}
+                      onKeyDown={(e) => e.key === "Enter" && voteAward(phase, c.id, nominee.title)}
+                      className="w-full flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 text-left cursor-pointer"
                       style={{
                         background: isSelected ? "var(--fan-active-chip)" : "transparent",
                         border: `1px solid ${isSelected ? "var(--fan-pink)" : "var(--fan-border)"}`,
-                        color: isSelected ? "var(--fan-pink-light)" : "var(--fan-text)",
                       }}
                     >
-                      <span>{nominee}</span>
-                      {isSelected && <Check size={14} />}
-                    </button>
+                      <div
+                        className="w-9 h-12 rounded-[6px] overflow-hidden shrink-0 flex items-center justify-center"
+                        style={{
+                          background: "linear-gradient(135deg, var(--fan-bg-2), var(--fan-active-chip))",
+                          border: "1px solid var(--fan-rose-mid)",
+                        }}
+                      >
+                        {nominee.cover ? (
+                          <img src={nominee.cover} alt={nominee.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <Star size={14} color="var(--fan-icon-blue)" />
+                        )}
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className="text-sm font-semibold line-clamp-1"
+                          style={{ color: isSelected ? "var(--fan-pink-light)" : "var(--fan-text)" }}
+                        >
+                          {nominee.title}
+                        </p>
+                        <p className="text-sm flex items-center gap-2" style={{ color: "var(--fan-text-2)" }}>
+                          <span>👏 {nominee.likes}</span>
+                          <span>👎 {nominee.boos}</span>
+                        </p>
+                      </div>
+
+                      {hasDetail && (
+                        <Link
+                          to="/rec/$id"
+                          params={{ id: nominee.itemId }}
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-sm font-semibold shrink-0 px-2 py-1 rounded-full"
+                          style={{ color: "var(--fan-pink-light)", border: "1px solid var(--fan-rose-mid)" }}
+                        >
+                          Ver obra
+                        </Link>
+                      )}
+
+                      {isSelected && <Check size={14} color="var(--fan-pink-light)" />}
+                    </div>
                   );
                 })}
               </div>
@@ -386,6 +543,10 @@ function ResultsPhase({ categories, config }: { categories: AwardCategory[]; con
       {categories.map((c) => {
         const results: AwardResultRow[] = getAwardResults(c.id, allVotes);
         const winner = results[0];
+        const winnerDetail = winner
+          ? c.finalistDetails?.find((d) => d.title === winner.nominee)
+          : undefined;
+        const winnerHasDetail = !!winnerDetail && winnerDetail.itemId !== winnerDetail.title;
         const Icon = ICONS[c.icon] ?? Star;
         return (
           <div key={c.id} className="rounded-[14px] p-4" style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-rose-mid)" }}>
@@ -401,14 +562,50 @@ function ResultsPhase({ categories, config }: { categories: AwardCategory[]; con
               </p>
             ) : (
               <>
-                <div className="flex items-center gap-2 mb-2">
-                  <Crown size={16} color="#FFD24D" />
-                  <span className="text-sm font-extrabold" style={{ color: "#FFD24D" }}>
-                    {winner.nominee}
-                  </span>
-                  <span className="text-sm ml-auto" style={{ color: "var(--fan-text-2)" }}>
-                    {winner.count} voto(s) · {winner.pct}%
-                  </span>
+                <div
+                  className="w-full flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 mb-2"
+                  style={{ background: "var(--fan-active-chip)", border: "1px solid #FFD24D" }}
+                >
+                  <div
+                    className="relative w-9 h-12 rounded-[6px] overflow-hidden shrink-0 flex items-center justify-center"
+                    style={{
+                      background: "linear-gradient(135deg, var(--fan-bg-2), var(--fan-active-chip))",
+                      border: "1px solid var(--fan-rose-mid)",
+                    }}
+                  >
+                    {winnerDetail?.cover ? (
+                      <img src={winnerDetail.cover} alt={winner.nominee} className="w-full h-full object-cover" />
+                    ) : (
+                      <Star size={14} color="var(--fan-icon-blue)" />
+                    )}
+                    <div
+                      className="absolute -top-1.5 -right-1.5 rounded-full p-0.5 flex items-center justify-center"
+                      style={{ background: "#FFD24D" }}
+                    >
+                      <Crown size={10} color="#1a0a12" />
+                    </div>
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-extrabold line-clamp-1" style={{ color: "#FFD24D" }}>
+                      {winner.nominee}
+                    </p>
+                    <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
+                      {winner.count} voto(s) · {winner.pct}%
+                    </p>
+                  </div>
+
+                  {winnerHasDetail && (
+                    <Link
+                      to="/rec/$id"
+                      params={{ id: winnerDetail!.itemId }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-sm font-semibold shrink-0 px-2 py-1 rounded-full"
+                      style={{ color: "#FFD24D", border: "1px solid #FFD24D" }}
+                    >
+                      Ver obra
+                    </Link>
+                  )}
                 </div>
                 <div className="space-y-1">
                   {results.slice(1).map((r) => (
@@ -428,54 +625,232 @@ function ResultsPhase({ categories, config }: { categories: AwardCategory[]; con
 }
 
 // ===== Painel admin (só visível pro UID em ADMIN_UIDS) =====
-
 function AdminPanel({ categories, config }: { categories: AwardCategory[]; config: AwardsConfig }) {
   const user = useAuthUser();
-  const [days, setDays] = useState(7);
+  const [recomendacaoOpenInput, setRecomendacaoOpenInput] = useState("");
+  const [recomendacaoInput, setRecomendacaoInput] = useState("");
+  const [indicacaoOpenInput, setIndicacaoOpenInput] = useState("");
+  const [indicacaoInput, setIndicacaoInput] = useState("");
+  const [finalOpenInput, setFinalOpenInput] = useState("");
+  const [finalInput, setFinalInput] = useState("");
+  const [saving, setSaving] = useState<null | string>(null);
   if (!user || !ADMIN_UIDS.includes(user.uid)) return null;
 
-  const handleStartCycle = async () => {
-    const deadline = Date.now() + days * 24 * 60 * 60 * 1000;
-    await setRecomendacaoDeadline(deadline);
-    toast.success(`Nova edição iniciada — indicações fecham em ${days} dia(s).`);
+  const toLocalInputValue = (ts?: number) => {
+    if (!ts) return "";
+    const d = new Date(ts - new Date().getTimezoneOffset() * 60000);
+    return d.toISOString().slice(0, 16);
+  };
+
+  const handleSaveDeadline = async (phase: "recomendacao" | "indicacao" | "final", value: string) => {
+    if (!value) {
+      toast.error("Escolha uma data e hora.");
+      return;
+    }
+    const ts = new Date(value).getTime();
+    if (Number.isNaN(ts)) {
+      toast.error("Data inválida.");
+      return;
+    }
+    setSaving(`close-${phase}`);
+    try {
+      await setPhaseDeadline(phase, ts);
+      toast.success("Prazo de fechamento salvo!");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Não foi possível salvar.");
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  const handleSaveOpen = async (phase: "recomendacao" | "indicacao" | "final", value: string) => {
+    if (!value) {
+      toast.error("Escolha uma data e hora.");
+      return;
+    }
+    const ts = new Date(value).getTime();
+    if (Number.isNaN(ts)) {
+      toast.error("Data inválida.");
+      return;
+    }
+    setSaving(`open-${phase}`);
+    try {
+      await setPhaseOpen(phase, ts);
+      toast.success("Data de abertura salva!");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Não foi possível salvar.");
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  const handleStartNewCycle = async () => {
+    if (!recomendacaoInput) {
+      toast.error("Defina o prazo de fechamento de 'recomendacao' antes de iniciar uma nova edição.");
+      return;
+    }
+    const ts = new Date(recomendacaoInput).getTime();
+    if (Number.isNaN(ts)) {
+      toast.error("Data inválida.");
+      return;
+    }
+    setSaving("novaEdicao");
+    try {
+      await startNewCycle(categories, ts);
+      toast.success("Nova edição iniciada — indicados e finalistas anteriores foram zerados.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Não foi possível iniciar.");
+    } finally {
+      setSaving(null);
+    }
   };
 
   const handleForceAdvance = async () => {
-    await forceAdvanceAwardsPhase(categories);
-    toast.success("Fase verificada/avançada manualmente.");
+    setSaving("forcar");
+    try {
+      await forceAdvanceAwardsPhase(categories);
+      toast.success("Fase verificada/avançada manualmente.");
+    } catch (err) {
+      console.error("Erro ao forçar virada de fase:", err);
+      toast.error(err instanceof Error ? err.message : "Não foi possível avançar a fase.");
+    } finally {
+      setSaving(null);
+    }
   };
+
+  const rows: {
+    key: "recomendacao" | "indicacao" | "final";
+    label: string;
+    openTs?: number;
+    closeTs?: number;
+    openValue: string;
+    setOpenValue: (v: string) => void;
+    closeValue: string;
+    setCloseValue: (v: string) => void;
+  }[] = [
+    {
+      key: "indicacao",
+      label: "Recomendações (10 obras)",
+      openTs: config.indicacaoOpen,
+      closeTs: config.indicacaoDeadline,
+      openValue: indicacaoOpenInput,
+      setOpenValue: setIndicacaoOpenInput,
+      closeValue: indicacaoInput,
+      setCloseValue: setIndicacaoInput,
+    },
+    {
+      key: "final",
+      label: "Classificados (finalistas)",
+      openTs: config.finalOpen,
+      closeTs: config.finalDeadline,
+      openValue: finalOpenInput,
+      setOpenValue: setFinalOpenInput,
+      closeValue: finalInput,
+      setCloseValue: setFinalInput,
+    },
+  ];
 
   return (
     <div className="mx-4 mb-4 rounded-[14px] p-4" style={{ background: "var(--fan-bg)", border: "1px dashed var(--fan-pink)" }}>
       <p className="text-sm font-bold mb-2" style={{ color: "var(--fan-pink-light)" }}>
         Painel admin — fase atual: {config.phase}
       </p>
-      {config.phase === "recomendacao" && (
-        <div className="flex items-center gap-2 mb-2">
-          <input
-            type="number"
-            min={1}
-            value={days}
-            onChange={(e) => setDays(Number(e.target.value))}
-            className="w-16 rounded-[8px] px-2 py-1 text-sm bg-transparent"
-            style={{ border: "1px solid var(--fan-rose-mid)", color: "var(--fan-text)" }}
-          />
-          <button
-            onClick={handleStartCycle}
-            className="text-[11px] px-2 py-1 rounded-full"
-            style={{ border: "1px solid var(--fan-pink)", color: "var(--fan-pink-light)" }}
-          >
-            Fechar indicações em N dia(s)
-          </button>
+
+      <p className="text-[11px] mb-3" style={{ color: "var(--fan-text-2)" }}>
+        Defina abaixo, à mão, a abertura e o fechamento de cada fase. O app vira
+        sozinho pra fase seguinte quando o relógio passa do horário de
+        fechamento (ou clique em "Forçar verificação" pra pular na hora, sem
+        esperar). Importante: a abertura precisa ser ANTES do fechamento.
+      </p>
+
+      {rows.map((row) => (
+        <div key={row.key} className="mb-4 pb-3" style={{ borderBottom: "1px dashed var(--fan-rose-mid)" }}>
+          <p className="text-[12px] font-bold mb-2" style={{ color: "var(--fan-text)" }}>
+            {row.label}
+          </p>
+
+          <label className="text-[11px] block mb-1" style={{ color: "var(--fan-text-2)" }}>
+            Abre em
+            {row.openTs ? ` (atual: ${new Date(row.openTs).toLocaleString("pt-BR")})` : " (sem data definida)"}
+          </label>
+          <div className="flex items-center gap-2 mb-2">
+            <input
+              type="datetime-local"
+              value={row.openValue || toLocalInputValue(row.openTs)}
+              onChange={(e) => row.setOpenValue(e.target.value)}
+              className="flex-1 rounded-[8px] px-2 py-1 text-sm bg-transparent"
+              style={{ border: "1px solid var(--fan-rose-mid)", color: "var(--fan-text)" }}
+            />
+            <button
+              onClick={() => handleSaveOpen(row.key, row.openValue || toLocalInputValue(row.openTs))}
+              disabled={saving === `open-${row.key}`}
+              className="text-[11px] px-2 py-1 rounded-full shrink-0"
+              style={{ border: "1px solid var(--fan-pink)", color: "var(--fan-pink-light)" }}
+            >
+              Salvar
+            </button>
+          </div>
+
+          <label className="text-[11px] block mb-1" style={{ color: "var(--fan-text-2)" }}>
+            Fecha em
+            {row.closeTs ? ` (atual: ${new Date(row.closeTs).toLocaleString("pt-BR")})` : " (sem prazo definido)"}
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              type="datetime-local"
+              value={row.closeValue || toLocalInputValue(row.closeTs)}
+              onChange={(e) => row.setCloseValue(e.target.value)}
+              className="flex-1 rounded-[8px] px-2 py-1 text-sm bg-transparent"
+              style={{ border: "1px solid var(--fan-rose-mid)", color: "var(--fan-text)" }}
+            />
+            <button
+              onClick={() => handleSaveDeadline(row.key, row.closeValue || toLocalInputValue(row.closeTs))}
+              disabled={saving === `close-${row.key}`}
+              className="text-[11px] px-2 py-1 rounded-full shrink-0"
+              style={{ border: "1px solid var(--fan-pink)", color: "var(--fan-pink-light)" }}
+            >
+              Salvar
+            </button>
+          </div>
         </div>
-      )}
+      ))}
+
       <button
         onClick={handleForceAdvance}
+        disabled={saving === "forcar"}
         className="text-[11px] px-2 py-1 rounded-full"
         style={{ border: "1px solid var(--fan-pink)", color: "var(--fan-pink-light)" }}
       >
-        ⚡ Forçar verificação de fase agora
+        Forçar verificação de fase agora
       </button>
+
+      <div className="mt-3 pt-3" style={{ borderTop: "1px dashed var(--fan-pink)" }}>
+        <p className="text-sm font-bold mb-2" style={{ color: "var(--fan-pink-light)" }}>
+          Iniciar nova edição do zero
+        </p>
+        <p className="text-[11px] mb-2" style={{ color: "var(--fan-text-2)" }}>
+          Zera indicados/finalistas da edição anterior e reabre a fase
+          "recomendacao" com o prazo de fechamento definido abaixo.
+        </p>
+        <label className="text-[11px] block mb-1" style={{ color: "var(--fan-text-2)" }}>
+          Fecha as recomendações em
+        </label>
+        <input
+          type="datetime-local"
+          value={recomendacaoInput}
+          onChange={(e) => setRecomendacaoInput(e.target.value)}
+          className="w-full rounded-[8px] px-2 py-1 text-sm bg-transparent mb-2"
+          style={{ border: "1px solid var(--fan-rose-mid)", color: "var(--fan-text)" }}
+        />
+        <button
+          onClick={handleStartNewCycle}
+          disabled={saving === "novaEdicao"}
+          className="text-[11px] px-2 py-1 rounded-full"
+          style={{ border: "1px solid var(--fan-pink)", color: "var(--fan-pink-light)" }}
+        >
+          Iniciar nova edição
+        </button>
+      </div>
     </div>
   );
 }

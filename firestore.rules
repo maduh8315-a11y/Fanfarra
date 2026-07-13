@@ -1,8 +1,3 @@
-// Este arquivo é a cópia de referência das regras do Firestore.
-// Fonte da verdade: Firebase Console → Firestore Database → Regras.
-// Sempre que mudar uma regra por lá, atualize este arquivo também
-// (e vice-versa), pra manter os dois em sincronia.
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -25,11 +20,6 @@ service cloud.firestore {
         resource.data.uid == request.auth.uid;
     }
 
-    match /award_votes/{uid} {
-    allow read: if request.auth != null;
-    allow create, update, delete: if request.auth != null && request.auth.uid == uid;
-    }
-
     match /communityRecs/{recId} {
       allow read: if request.auth != null;
       allow create, update: if request.auth != null &&
@@ -46,6 +36,7 @@ service cloud.firestore {
       allow update, delete: if request.auth != null &&
         resource.data.uid == request.auth.uid;
     }
+
     match /settings/{uid} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
@@ -54,94 +45,83 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
 
+    // ⚠️ UID de admin hardcoded abaixo (7 ocorrências neste arquivo).
+    // Espelha ADMIN_UIDS em src/lib/fanfarra/config.ts — se trocar de conta
+    // admin, atualize os DOIS lugares e reimplante as regras no Firebase.
+
     match /challenges_catalog/{challengeId} {
       allow read: if request.auth != null;
       allow write: if request.auth != null &&
-        request.auth.uid in ["ikvASYa9kgQknCrZeiiupirGGef1"]; // troque/inclua os UIDs do(s) seu(s) admin(s)
+        request.auth.uid in ["ikvASYa9kgQknCrZeiiupirGGef1"];
     }
 
-   	match /user_challenges/{docId} {
-  		allow read: if request.auth != null &&
-    	resource.data.uid == request.auth.uid;
-  		allow create: if request.auth != null &&
-    	request.resource.data.uid == request.auth.uid;
-  		allow update, delete: if request.auth != null &&
-    	resource.data.uid == request.auth.uid;
-		}
-    
-  	match /awards_catalog/{categoryId} {
- 	 		allow read: if request.auth != null;
-			}
-		match /awards_config/{docId} {
+    match /user_challenges/{docId} {
+      allow read: if request.auth != null &&
+        resource.data.uid == request.auth.uid;
+      allow create: if request.auth != null &&
+        request.resource.data.uid == request.auth.uid;
+      allow update, delete: if request.auth != null &&
+        resource.data.uid == request.auth.uid;
+    }
+
+    // ── Fanfarra Awards ──────────────────────────────────────────────
+    match /awards_config/{docId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null &&
+        request.auth.uid in ["ikvASYa9kgQknCrZeiiupirGGef1"];
+    }
+
+    match /awards_catalog/{categoryId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null &&
+        request.auth.uid in ["ikvASYa9kgQknCrZeiiupirGGef1"];
+    }
+
+    match /award_votes_indicacao/{uid} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if request.auth != null &&
+    (request.auth.uid == uid || request.auth.uid == "ikvASYa9kgQknCrZeiiupirGGef1");
+    }
+
+   	match /award_votes_final/{uid} {
   		allow read: if request.auth != null;
-			}
-      match /awards_config/{docId} {
-  allow read: if request.auth != null;
-  allow write: if request.auth != null && request.auth.uid == "SEU_UID_AQUI";
-}
+  		allow create, update, delete: if request.auth != null &&
+    (request.auth.uid == uid || request.auth.uid == "ikvASYa9kgQknCrZeiiupirGGef1");
+		}
 
-match /awards_catalog/{categoryId} {
-  allow read: if request.auth != null;
-  allow write: if request.auth != null && request.auth.uid == "SEU_UID_AQUI";
-}
+    // ── Sistema antigo de sugestão manual (mantido só pra não quebrar a limpeza de conta) ──
+    match /award_nominations/{id} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.uid;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null &&
+        (request.auth.uid == resource.data.uid ||
+         request.auth.uid in ["ikvASYa9kgQknCrZeiiupirGGef1"]);
+    }
 
-match /award_votes_indicacao/{uid} {
-  allow read: if request.auth != null;
-  allow create, update, delete: if request.auth != null && request.auth.uid == uid;
-}
+   match /award_reactions/{id} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null &&
+        request.auth.uid == request.resource.data.uid;
+      allow delete: if request.auth != null &&
+        request.auth.uid == resource.data.uid;
+    }
 
-match /award_votes_final/{uid} {
-  allow read: if request.auth != null;
-  allow create, update, delete: if request.auth != null && request.auth.uid == uid;
-}
-
-match /award_nominations/{id} {
+    // ── Aplaudir/vaiar nas recomendações reais ──────────────────────
+    match /rec_reactions/{id} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null &&
+        request.auth.uid == request.resource.data.uid;
+      allow delete: if request.auth != null &&
+        request.auth.uid == resource.data.uid;
+    }
+    
+    match /rec_comments/{id} {
   allow read: if request.auth != null;
   allow create: if request.auth != null && request.auth.uid == request.resource.data.uid;
-  // "update" fica aberto pra qualquer autenticado porque quem incrementa o
-  // contador de aplausos/vaias é QUEM REAGE, não o dono da sugestão — sem
-  // Cloud Functions não dá pra restringir isso só ao campo applause/boos.
-  allow update: if request.auth != null;
   allow delete: if request.auth != null &&
     (request.auth.uid == resource.data.uid || request.auth.uid == "ikvASYa9kgQknCrZeiiupirGGef1");
 }
-
-match /award_reactions/{id} {
-  allow read: if request.auth != null;
-  allow create, update, delete: if request.auth != null && request.auth.uid == request.resource.data.uid;
-}
-
-// Já sugerida antes, repetindo aqui pra ficar tudo num lugar só:
-match /communityRecs/{recId} {
-  allow read: if request.auth != null;
-  allow create, update: if request.auth != null && request.auth.uid == request.resource.data.uid;
-  allow delete: if request.auth != null && request.auth.uid == resource.data.uid;
-}
-
-match /rec_reaction_counts/{itemId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-    }
-
-    match /rec_reactions/{id} {
-      allow read: if request.auth != null;
-      allow create, update, delete: if request.auth != null &&
-        request.auth.uid == request.resource.data.uid;
-    }
-    match /award_votes_indicacao/{uid} {
-      allow read: if request.auth != null;
-      allow create, update, delete: if request.auth != null && request.auth.uid == uid;
-    }
-
-    match /award_votes_final/{uid} {
-      allow read: if request.auth != null;
-      allow create, update, delete: if request.auth != null && request.auth.uid == uid;
-    }
-
-    match /rec_reactions/{id} {
-      allow read: if request.auth != null;
-      allow create, update, delete: if request.auth != null && request.auth.uid == request.resource.data.uid;
-    }
 
     match /rec_reaction_counts/{itemId} {
       allow read: if request.auth != null;

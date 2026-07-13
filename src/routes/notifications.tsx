@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { EmptyState } from "@/components/fanfarra/EmptyState";
 import {
   ArrowLeft,
   Bell,
@@ -70,12 +71,7 @@ function NotificationsPage() {
       </header>
 
       {notifs.length === 0 ? (
-        <div className="text-center py-24">
-          <Bell size={48} color="var(--fan-rose-mid)" className="mx-auto mb-3" />
-          <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
-            Nenhuma notificação por enquanto
-          </p>
-        </div>
+        <EmptyState icon={Bell} title="Nenhuma notificação por enquanto" />
       ) : (
         <ul>
           {notifs.map((n) => (

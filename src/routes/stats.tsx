@@ -1,6 +1,7 @@
 // src/routes/stats.tsx
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo } from "react";
+import { EmptyState } from "@/components/fanfarra/EmptyState";
 import { ArrowLeft, Lock, TrendingUp, BarChart3 } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { useWorks } from "@/lib/fanfarra/store";
@@ -392,12 +393,11 @@ function StatsPage() {
           </h1>
           <span className="w-6" />
         </header>
-        <div className="px-4 py-10 text-center">
-          <BarChart3 size={32} color="var(--fan-icon-blue)" className="mx-auto mb-3" />
-          <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
-            Adicione obras à sua biblioteca para ver suas estatísticas aqui.
-          </p>
-        </div>
+       <EmptyState
+          icon={BarChart3}
+          iconColor="var(--fan-icon-blue)"
+          title="Adicione obras à sua biblioteca para ver suas estatísticas aqui."
+        />
       </AppShell>
     );
   }

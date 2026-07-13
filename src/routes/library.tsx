@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState, useRef } from "react";
+import { EmptyState } from "@/components/fanfarra/EmptyState";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { Filter, BookMarked, LayoutGrid } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
@@ -219,9 +220,7 @@ function LibraryPage() {
         {worksLoading ? (
           <WorkGridSkeleton />
         ) : filtered.length === 0 ? (
-          <div className="text-center py-20 px-6" style={{ color: "var(--fan-text-2)" }}>
-            <p className="text-sm">Nada por aqui ainda.</p>
-          </div>
+          <EmptyState icon={BookMarked} title="Nada por aqui ainda." />
         ) : (
           <div
             ref={listRef}

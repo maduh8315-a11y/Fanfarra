@@ -1,9 +1,10 @@
+
 name: Fanfarra Cron
 
 on:
   schedule:
-    # Todo dia às 03:00 UTC = 00:00 em Brasília (horário de verão à parte)
-    - cron: "0 3 * * *"
+    # Roda a cada 15 min, pra abrir/fechar perto do horário exato marcado.
+    - cron: "*/15 * * * *"
   workflow_dispatch: {} # permite rodar manualmente pelo GitHub também
 
 jobs:

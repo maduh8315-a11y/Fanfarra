@@ -131,10 +131,15 @@ function WorkDetail() {
             <button
               className="w-9 h-9 rounded-full flex items-center justify-center"
               style={{ background: "rgba(13,0,8,0.6)" }}
-              onClick={() => {
+              onClick={async () => {
                 if (confirm(`Excluir "${work.title}"?`)) {
-                  deleteWork(work.id);
-                  nav({ to: "/library" });
+                  try {
+                    await deleteWork(work.id);
+                    nav({ to: "/library" });
+                  } catch {
+                    // erro já mostrado via toast dentro de deleteWork —
+                    // não navega, o usuário continua na tela pra tentar de novo
+                  }
                 }
               }}
               aria-label="Excluir"

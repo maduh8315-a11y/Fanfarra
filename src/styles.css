@@ -300,9 +300,13 @@
   border-radius: 9999px;
   font-weight: 700;
   padding: 10px 18px;
-  transition: filter 0.15s;
+  transition: filter 0.15s, transform 0.15s;
 }
 
+.fan-btn-primary:active {
+  filter: brightness(0.9);
+  transform: scale(0.97);
+}
 @utility fan-font-display {
   font-family: var(--font-display);
 }

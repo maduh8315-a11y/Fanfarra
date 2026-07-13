@@ -1,13 +1,30 @@
 // Aplaudir / Vaiar em obras da tela de Recomendações (catálogo e comunidade).
 // Mesmo padrão do "award_nominations", mas aqui qualquer RecommendationItem
 // pode receber reação — não só indicações de prêmio.
-import { collection, doc, getDocs, onSnapshot, query, runTransaction, where } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, onSnapshot, query, runTransaction, where } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "./firebase";
+import { checkClientCooldown } from "./clientCooldown";
 
 const REACTIONS_COLLECTION = "rec_reactions";
 const COUNTS_COLLECTION = "rec_reaction_counts";
+
+// Limite de quantas obras DIFERENTES um usuário pode aplaudir (👏) ou vaiar
+// (👎) dentro da mesma categoria (mesmo "type"). Aplausos e vaias contam
+// como limites independentes — 5 aplausos + 5 vaias é permitido.
+const MAX_REACTIONS_PER_CATEGORY = 5;
+
+// Agrupa o "type" da obra (ex: "Anime", "Light Novel") na mesma categoria,
+// ignorando acento/maiúscula — mesma lógica usada em awardsStore.ts.
+function slugifyReactionType(type: string): string {
+  return type
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-");
+}
 
 export type RecReaction = "like" | "boo";
 
@@ -72,8 +89,13 @@ export function useMyRecReaction(itemId: string): RecReaction | null {
 // de cada reação individual. Assim, mesmo que a virada de fase demore a
 // rodar, o resultado congelado é sempre o mesmo: o que valia na hora do
 // prazo, e nada que chegou depois.
-export async function getRecReactionCountsAsOf(deadline: number): Promise<Map<string, RecReactionCounts>> {
-  const snap = await getDocs(query(collection(db, REACTIONS_COLLECTION), where("createdAt", "<=", deadline)));
+export async function getRecReactionCountsAsOf(
+  deadline: number,
+  since?: number,
+): Promise<Map<string, RecReactionCounts>> {
+  const constraints = [where("createdAt", "<=", deadline)];
+  if (since) constraints.push(where("createdAt", ">=", since));
+  const snap = await getDocs(query(collection(db, REACTIONS_COLLECTION), ...constraints));
   const result = new Map<string, RecReactionCounts>();
   snap.docs.forEach((d) => {
     const data = d.data() as { itemId?: string; reaction?: RecReaction };
@@ -88,12 +110,37 @@ export async function getRecReactionCountsAsOf(deadline: number): Promise<Map<st
 
 // ── Aplaudir ou vaiar um item ────────────────────────────────────────────────
 // Clicar de novo na mesma reação remove o voto; clicar na outra troca.
-export async function reactToRecItem(itemId: string, reaction: RecReaction): Promise<void> {
+export async function reactToRecItem(itemId: string, reaction: RecReaction, itemType: string): Promise<void> {
   const uid = auth.currentUser?.uid;
   if (!uid) throw new Error("Você precisa estar logado para reagir.");
+  checkClientCooldown(`rec-reaction:${uid}`, 800);
 
+  const typeSlug = slugifyReactionType(itemType);
   const countsRef = doc(db, COUNTS_COLLECTION, itemId);
   const reactionRef = doc(db, REACTIONS_COLLECTION, reactionDocId(itemId, uid));
+
+  const currentSnap = await getDoc(reactionRef);
+  const currentReaction = currentSnap.exists() ? (currentSnap.data().reaction as RecReaction) : null;
+
+  // Só precisa checar o limite quando o usuário está adicionando um voto
+  // NOVO nessa direção (curtir/vaiar uma obra que ainda não tinha esse
+  // voto). Remover ou trocar o próprio voto num item já contado não conta
+  // como uma obra a mais.
+  if (currentReaction !== reaction) {
+    const limitQuery = query(
+      collection(db, REACTIONS_COLLECTION),
+      where("uid", "==", uid),
+      where("reaction", "==", reaction),
+      where("type", "==", typeSlug),
+    );
+    const existing = await getDocs(limitQuery);
+    const alreadyCountsThisItem = existing.docs.some((d) => d.id === reactionDocId(itemId, uid));
+    const distinctCount = existing.size - (alreadyCountsThisItem ? 1 : 0);
+    if (distinctCount >= MAX_REACTIONS_PER_CATEGORY) {
+      const label = reaction === "like" ? "aplaudir" : "vaiar";
+      throw new Error(`Você já pode ${label} no máximo ${MAX_REACTIONS_PER_CATEGORY} obras nesta categoria.`);
+    }
+  }
 
   await runTransaction(db, async (tx) => {
     const [countsSnap, reactionSnap] = await Promise.all([tx.get(countsRef), tx.get(reactionRef)]);
@@ -111,7 +158,7 @@ export async function reactToRecItem(itemId: string, reaction: RecReaction): Pro
       if (previous === "boo") boos = Math.max(0, boos - 1);
       if (reaction === "like") likes += 1;
       else boos += 1;
-      tx.set(reactionRef, { itemId, uid, reaction, createdAt: Date.now() });
+      tx.set(reactionRef, { itemId, uid, reaction, type: typeSlug, createdAt: Date.now() });
     }
 
     tx.set(countsRef, { likes, boos }, { merge: true });
@@ -128,6 +175,7 @@ export async function reactToRecItem(itemId: string, reaction: RecReaction): Pro
  * }
  * match /rec_reactions/{id} {
  *   allow read: if request.auth != null;
- *   allow create, update, delete: if request.auth != null && request.auth.uid == request.resource.data.uid;
+ *   allow create, update: if request.auth != null && request.auth.uid == request.resource.data.uid;
+ *   allow delete: if request.auth != null && request.auth.uid == resource.data.uid;
  * }
  */

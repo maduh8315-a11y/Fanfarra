@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { EmptyState } from "@/components/fanfarra/EmptyState";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Search as SearchIcon, SearchX } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
@@ -50,22 +51,17 @@ function SearchPage() {
       </header>
 
       {!q.trim() ? (
-        <div className="flex flex-col items-center justify-center py-24 px-6 text-center">
-          <SearchIcon size={48} color="var(--fan-rose-mid)" />
-          <p className="mt-4 text-sm" style={{ color: "var(--fan-text-2)" }}>
-            Busque por título, tipo ou status
-          </p>
-        </div>
+        <EmptyState icon={SearchIcon} title="Busque por título, tipo ou status" />
       ) : results.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
-          <SearchX size={48} color="var(--fan-rose-mid)" />
-          <p className="mt-4 text-sm" style={{ color: "var(--fan-text-2)" }}>
-            Nenhuma obra encontrada
-          </p>
-          <Link to="/add" search={{ title: q }} className="fan-btn-primary mt-5 text-sm">
-            Adicionar "{q}" como nova obra
-          </Link>
-        </div>
+        <EmptyState
+          icon={SearchX}
+          title="Nenhuma obra encontrada"
+          action={
+            <Link to="/add" search={{ title: q }} className="fan-btn-primary text-sm">
+              Adicionar "{q}" como nova obra
+            </Link>
+          }
+        />
       ) : (
         <ul className="mt-2">
           {results.map((w) => {

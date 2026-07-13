@@ -154,7 +154,7 @@ export function TagInput({
       {/* Dropdown de sugestões */}
       {showSuggestions && (
         <div
-          className="absolute top-full left-0 right-0 mt-1 rounded-[12px] overflow-hidden z-30"
+          className="absolute top-full left-0 right-0 mt-1 rounded-[12px] overflow-hidden z-30 animate-in fade-in slide-in-from-top-1 duration-150"
           style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
         >
           {suggestions.map((s) => (

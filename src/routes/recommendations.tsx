@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { EmptyState } from "@/components/fanfarra/EmptyState";
 import { Flame, Sparkles, BookOpen, SlidersHorizontal } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { useWorks } from "@/lib/fanfarra/store";
@@ -131,18 +132,19 @@ function RecPage() {
             {filteredResults.length !== 1 ? "s" : ""}
           </p>
           {filteredResults.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-3">
-              <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
-                Nenhuma obra encontrada
-              </p>
-              <button
-                onClick={() => setFilters(DEFAULT_REC_FILTERS)}
-                className="text-sm"
-                style={{ color: "var(--fan-pink)" }}
-              >
-                Limpar filtros
-              </button>
-            </div>
+            <EmptyState
+              icon={SlidersHorizontal}
+              title="Nenhuma obra encontrada"
+              action={
+                <button
+                  onClick={() => setFilters(DEFAULT_REC_FILTERS)}
+                  className="text-sm"
+                  style={{ color: "var(--fan-pink)" }}
+                >
+                  Limpar filtros
+                </button>
+              }
+            />
           ) : (
             <div className="grid grid-cols-3 gap-3">
               {filteredResults.map((item) => (
@@ -163,17 +165,15 @@ function RecPage() {
             </div>
             {communityItems.length === 0 ? (
               <div
-                className="rounded-[14px] p-4 flex flex-col items-center text-center gap-2"
+                className="rounded-[14px] p-4"
                 style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
               >
-                <span className="text-2xl">🌐</span>
-                <p className="text-sm font-semibold" style={{ color: "var(--fan-text)" }}>
-                  Nenhuma recomendação ainda
-                </p>
-                <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
-                  Marque uma obra sua como "Recomendar publicamente" para ser a primeira pessoa a
-                  aparecer aqui.
-                </p>
+                <EmptyState
+                  emoji="🌐"
+                  title="Nenhuma recomendação ainda"
+                  description='Marque uma obra sua como "Recomendar publicamente" para ser a primeira pessoa a aparecer aqui.'
+                  className="p-0"
+                />
               </div>
             ) : (
               <div className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
