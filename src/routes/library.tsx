@@ -8,6 +8,7 @@ import { ClientOnly } from "@/components/fanfarra/ClientOnly";
 import { TypeChips, type TypeFilter } from "@/components/fanfarra/Chips";
 import { useWorks, useWorksLoading } from "@/lib/fanfarra/store";
 import { WorkGridSkeleton } from "@/components/fanfarra/WorkCardSkeleton";
+import { AwardCrownBadge } from "@/components/fanfarra/AwardCrownBadge";
 import { useBookcases, addBookcase } from "@/lib/fanfarra/bookcaseStore";
 import {
   STATUSES,
@@ -258,9 +259,10 @@ function LibraryPage() {
                         className="fan-card overflow-hidden block active:scale-95 transition-transform"
                       >
                         <div
-                          className="aspect-[2/3] flex items-center justify-center"
+                          className="relative aspect-[2/3] flex items-center justify-center"
                           style={{ background: "var(--fan-border)" }}
                         >
+                          <AwardCrownBadge title={w.title} />
                           {w.cover ? (
                             <img
                               src={w.cover}

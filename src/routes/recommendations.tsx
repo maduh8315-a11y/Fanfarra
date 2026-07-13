@@ -5,6 +5,7 @@ import { Flame, Sparkles, BookOpen, SlidersHorizontal } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { useWorks } from "@/lib/fanfarra/store";
 import { MediaIcon } from "@/components/fanfarra/MediaIcon";
+import { AwardCrownBadge } from "@/components/fanfarra/AwardCrownBadge";
 import { Link } from "@tanstack/react-router";
 import {
   CATALOG,
@@ -294,6 +295,7 @@ function CatalogCard({ item, grid = false }: { item: RecommendationItem; grid?: 
           border: "1px solid var(--fan-rose-mid)",
         }}
       >
+       <AwardCrownBadge title={item.title} />
         {item.cover ? (
           <img src={item.cover} alt={item.title} className="w-full h-full object-cover" />
         ) : (

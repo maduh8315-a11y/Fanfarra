@@ -18,6 +18,7 @@ import {
 import { toast } from "sonner";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { MediaIcon } from "@/components/fanfarra/MediaIcon";
+import { AwardCrownBadge } from "@/components/fanfarra/AwardCrownBadge";
 import {
   CATALOG,
   communityToRecommendationItem,
@@ -271,7 +272,7 @@ function RecDetail() {
           style={{ background: "linear-gradient(160deg, #2A0018 0%, var(--fan-bg) 70%)" }}
         >
           <div
-            className="rounded-[18px] overflow-hidden shadow-2xl"
+            className="relative rounded-[18px] overflow-hidden shadow-2xl"
             style={{
               width: 190,
               aspectRatio: "2/3",
@@ -279,6 +280,7 @@ function RecDetail() {
               border: "1px solid var(--fan-rose-mid)",
             }}
           >
+            <AwardCrownBadge title={item.title} />
             {item.cover ? (
               <img src={item.cover} alt={item.title} className="w-full h-full object-cover" />
             ) : (
@@ -524,13 +526,14 @@ function RecDetail() {
                   className="w-20 shrink-0 block"
                 >
                   <div
-                    className="w-full rounded-[8px] flex items-center justify-center overflow-hidden"
+                    className="relative w-full rounded-[8px] flex items-center justify-center overflow-hidden"
                     style={{
                       aspectRatio: "2/3",
                       background: "linear-gradient(135deg, var(--fan-bg-2), var(--fan-active-chip))",
                       border: "1px solid var(--fan-rose-mid)",
                     }}
                   >
+                    <AwardCrownBadge title={r.title} />
                     {r.cover ? (
                       <img src={r.cover} alt={r.title} className="w-full h-full object-cover" />
                     ) : (

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { MediaIcon } from "@/components/fanfarra/MediaIcon";
+import { AwardCrownBadge } from "@/components/fanfarra/AwardCrownBadge";
 import { deleteWork, updateWork, useWork } from "@/lib/fanfarra/store";
 import { postWorkAsRecommendation, removeRecommendationPost } from "@/lib/fanfarra/communityStore";
 import { useProfile } from "@/lib/fanfarra/extras";
@@ -155,7 +156,7 @@ function WorkDetail() {
           style={{ minHeight: 160 }}
         >
           <div
-            className="shrink-0 rounded-[12px] overflow-hidden shadow-xl"
+            className="relative shrink-0 rounded-[12px] overflow-hidden shadow-xl"
             style={{
               width: 110,
               height: 155,
@@ -163,6 +164,7 @@ function WorkDetail() {
               border: "1px solid var(--fan-rose-mid)",
             }}
           >
+            <AwardCrownBadge title={work.title} />
             {work.cover ? (
               <img src={work.cover} alt={work.title} className="w-full h-full object-cover" />
             ) : (

@@ -21,6 +21,7 @@ import { stripUndefined } from "./firestoreUtils";
 import { pushNotification } from "./extras";
 import { getRecReactionCountsAsOf } from "./recReactions";
 import { CATALOG } from "./recommendations";
+import { recordAwardWin } from "./awardsHistoryStore";
 
 // ===== Configuração da edição (ano/título/fase/prazos) — editável no Console do Firebase =====
 const CONFIG_COLLECTION = "awards_config";
@@ -632,7 +633,7 @@ export async function checkAndAdvanceAwardsPhase(
   } else if (config.phase === "final") {
     const deadline = config.finalDeadline;
     if (!opts.force && (!deadline || now < deadline)) return;
-    await advanceFinalToResultado();
+    await advanceFinalToResultado(categories, config);
   }
 }
 
@@ -750,8 +751,31 @@ async function advanceIndicacaoToFinal(categories: AwardCategory[], config: Awar
   });
 }
 
-// Fase 2 → 3: só libera a tela de resultado (os votos finais já dão o vencedor).
-async function advanceFinalToResultado(): Promise<void> {
+// Fase 2 → 3: calcula o vencedor de cada categoria a partir dos votos finais
+// confirmados e grava cada vitória no histórico PERMANENTE (awards_history)
+// — é isso que faz a coroinha de "já foi vencedora" aparecer na obra em
+// qualquer lugar do app (biblioteca, comunidade, indicados...) mesmo depois
+// que essa edição do Awards terminar e o app voltar ao normal. Só depois
+// disso libera a tela de resultado.
+async function advanceFinalToResultado(categories: AwardCategory[], config: AwardsConfig): Promise<void> {
+  const deadline = config.finalDeadline ?? Date.now();
+  const snap = await getDocs(query(collection(db, "award_votes_final"), where("confirmed", "==", true)));
+  const allVotes = snap.docs
+    .map((d) => ({ uid: d.id, ...(d.data() as Omit<AwardVoteRecord, "uid">) }))
+    // mesmo princípio das outras viradas: voto confirmado depois do prazo não conta.
+    .filter((v) => v.confirmedAt === undefined || v.confirmedAt <= deadline);
+
+  for (const c of categories) {
+    const winner = getAwardResults(c.id, allVotes)[0];
+    if (!winner) continue; // categoria sem nenhum voto — ninguém venceu, nada a gravar
+    await recordAwardWin(winner.nominee, {
+      year: config.year,
+      categoryId: c.id,
+      categoryName: c.name,
+      emoji: c.emoji,
+    });
+  }
+
   await runTransaction(db, async (tx) => {
     const configRef = doc(db, CONFIG_COLLECTION, CONFIG_DOC_ID);
     const freshSnap = await tx.get(configRef);

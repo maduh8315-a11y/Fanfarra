@@ -42,6 +42,7 @@ import {
   type AwardsPhase,
 } from "@/lib/fanfarra/awardsStore";
 import { useRecommenderLeaderboard } from "@/lib/fanfarra/nominationsStore";
+import { AwardCrownBadge } from "@/components/fanfarra/AwardCrownBadge";
 
 
 export const Route = createFileRoute("/awards")({
@@ -452,13 +453,14 @@ const handleConfirm = async () => {
                         border: `1px solid ${isSelected ? "var(--fan-pink)" : "var(--fan-border)"}`,
                       }}
                     >
-                      <div
-                        className="w-9 h-12 rounded-[6px] overflow-hidden shrink-0 flex items-center justify-center"
+                     <div
+                        className="relative w-9 h-12 rounded-[6px] overflow-hidden shrink-0 flex items-center justify-center"
                         style={{
                           background: "linear-gradient(135deg, var(--fan-bg-2), var(--fan-active-chip))",
                           border: "1px solid var(--fan-rose-mid)",
                         }}
                       >
+                        <AwardCrownBadge title={nominee.title} />
                         {nominee.cover ? (
                           <img src={nominee.cover} alt={nominee.title} className="w-full h-full object-cover" />
                         ) : (
@@ -593,6 +595,7 @@ function ResultsPhase({ categories, config }: { categories: AwardCategory[]; con
                     <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
                       {winner.count} voto(s) · {winner.pct}%
                     </p>
+                    <AwardCrownBadge title={winner.nominee} variant="inline" />
                   </div>
 
                   {winnerHasDetail && (
