@@ -17,9 +17,11 @@ import {
   Wand2,
   Bell,
   BarChart3,
+  ShieldCheck,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useAuthUser, signOut } from "@/lib/fanfarra/auth";
+import { ADMIN_UIDS } from "@/lib/fanfarra/config";
 import { useNotifications } from "@/lib/fanfarra/extras";
 
 const TABS = [
@@ -33,6 +35,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [drawerOpen, setDrawerOpen] = useState(false);
   const user = useAuthUser();
+  const isAdmin = !!user && ADMIN_UIDS.includes(user.uid);
   const navigate = useNavigate();
   const notifications = useNotifications();
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -186,6 +189,14 @@ export function AppShell({ children }: { children: ReactNode }) {
                 badge={unreadCount > 0 ? String(unreadCount) : undefined}
               />
               <DrawerLink to="/settings" icon={Settings} label="Configurações" />
+              {isAdmin && (
+                <DrawerLink
+                  to="/admin"
+                  icon={ShieldCheck}
+                  label="Painel Admin"
+                  iconColor="var(--fan-icon-blue)"
+                />
+              )}
               <DrawerLink to="/about" icon={Info} label="Sobre o App" iconColor="var(--fan-icon-blue)" />
               <button
                 onClick={handleLogout}
@@ -226,7 +237,8 @@ function DrawerLink({
   | "/pro"
   | "/settings"
   | "/about"
-  | "/stats";
+  | "/stats"
+  | "/admin";
   icon: typeof Home;
   label: string;
   pro?: boolean;

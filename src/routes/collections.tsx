@@ -6,6 +6,9 @@ import { useWindowVirtualizer } from "@tanstack/react-virtual";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import {
   useBookcases,
+  useBookcasesHasMore,
+  useBookcasesLoadingMore,
+  loadMoreBookcases,
   addBookcase,
   addShelf,
   deleteBookcase,
@@ -209,6 +212,8 @@ function InnerHeader({
 function CollectionsPage() {
   const nav = useNavigate();
   const bookcases = useBookcases();
+  const hasMoreBookcases = useBookcasesHasMore();
+  const loadingMoreBookcases = useBookcasesLoadingMore();
   const allWorks = useWorks();
   const isPro = useIsPro();
 
@@ -320,6 +325,26 @@ function CollectionsPage() {
                 </button>
               ))}
             </div>
+            {hasMoreBookcases && (
+              <div style={{ padding: "0 16px 16px", display: "flex", justifyContent: "center" }}>
+                <button
+                  onClick={loadMoreBookcases}
+                  disabled={loadingMoreBookcases}
+                  style={{
+                    borderRadius: 999,
+                    padding: "10px 20px",
+                    fontSize: 14,
+                    fontWeight: 700,
+                    background: C.card,
+                    border: `1px solid ${C.pink}`,
+                    color: C.pinkLight,
+                    opacity: loadingMoreBookcases ? 0.6 : 1,
+                  }}
+                >
+                  {loadingMoreBookcases ? "Carregando..." : "Carregar mais"}
+                </button>
+              </div>
+            )}
           </>
         )}
 

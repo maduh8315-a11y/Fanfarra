@@ -29,6 +29,7 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as CollectionsRouteImport } from './routes/collections'
 import { Route as ChallengesRouteImport } from './routes/challenges'
 import { Route as AwardsRouteImport } from './routes/awards'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AddRouteImport } from './routes/add'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
@@ -138,6 +139,11 @@ const AwardsRoute = AwardsRouteImport.update({
   path: '/awards',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AddRoute = AddRouteImport.update({
   id: '/add',
   path: '/add',
@@ -183,6 +189,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/add': typeof AddRouteWithChildren
+  '/admin': typeof AdminRoute
   '/awards': typeof AwardsRoute
   '/challenges': typeof ChallengesRoute
   '/collections': typeof CollectionsRoute
@@ -212,6 +219,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admin': typeof AdminRoute
   '/awards': typeof AwardsRoute
   '/challenges': typeof ChallengesRoute
   '/collections': typeof CollectionsRoute
@@ -243,6 +251,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/add': typeof AddRouteWithChildren
+  '/admin': typeof AdminRoute
   '/awards': typeof AwardsRoute
   '/challenges': typeof ChallengesRoute
   '/collections': typeof CollectionsRoute
@@ -275,6 +284,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/add'
+    | '/admin'
     | '/awards'
     | '/challenges'
     | '/collections'
@@ -304,6 +314,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/admin'
     | '/awards'
     | '/challenges'
     | '/collections'
@@ -334,6 +345,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/add'
+    | '/admin'
     | '/awards'
     | '/challenges'
     | '/collections'
@@ -365,6 +377,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   AddRoute: typeof AddRouteWithChildren
+  AdminRoute: typeof AdminRoute
   AwardsRoute: typeof AwardsRoute
   ChallengesRoute: typeof ChallengesRoute
   CollectionsRoute: typeof CollectionsRoute
@@ -532,6 +545,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AwardsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/add': {
       id: '/add'
       path: '/add'
@@ -607,6 +627,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   AddRoute: AddRouteWithChildren,
+  AdminRoute: AdminRoute,
   AwardsRoute: AwardsRoute,
   ChallengesRoute: ChallengesRoute,
   CollectionsRoute: CollectionsRoute,

@@ -32,6 +32,24 @@ function WorkDetail() {
   const [editing, setEditing] = useState(false);
   const [progressInput, setProgressInput] = useState("");
   const [hoverRating, setHoverRating] = useState(0);
+  const [confirmDeleteWork, setConfirmDeleteWork] = useState(false);
+  const [deletingWork, setDeletingWork] = useState(false);
+
+  const handleDeleteWork = async () => {
+    if (!work) return;
+    setDeletingWork(true);
+    try {
+      await deleteWork(work.id);
+      nav({ to: "/library" });
+      return; // navegou embora — não precisa reabilitar o botão desta tela
+    } catch {
+      // erro já mostrado via toast dentro de deleteWork —
+      // não navega, o usuário continua na tela pra tentar de novo
+    } finally {
+      setDeletingWork(false);
+      setConfirmDeleteWork(false);
+    }
+  };
 
   function togglePublicRec() {
     if (!work) return;
@@ -132,17 +150,7 @@ function WorkDetail() {
             <button
               className="w-9 h-9 rounded-full flex items-center justify-center"
               style={{ background: "rgba(13,0,8,0.6)" }}
-              onClick={async () => {
-                if (confirm(`Excluir "${work.title}"?`)) {
-                  try {
-                    await deleteWork(work.id);
-                    nav({ to: "/library" });
-                  } catch {
-                    // erro já mostrado via toast dentro de deleteWork —
-                    // não navega, o usuário continua na tela pra tentar de novo
-                  }
-                }
-              }}
+              onClick={() => setConfirmDeleteWork(true)}
               aria-label="Excluir"
             >
               <Trash2 size={16} color="var(--fan-icon-blue)" />
@@ -392,6 +400,46 @@ function WorkDetail() {
           />
         </button>
       </div>
+
+      {/* Confirmação: excluir obra */}
+      {confirmDeleteWork && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center"
+          style={{ background: "rgba(0,0,0,0.6)" }}
+          onClick={() => setConfirmDeleteWork(false)}
+        >
+          <div
+            className="w-full max-w-sm rounded-t-[20px] p-5"
+            style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-base font-bold" style={{ color: "var(--fan-text)" }}>
+              Excluir "{work.title}"?
+            </h2>
+            <p className="text-sm mt-1.5" style={{ color: "var(--fan-text-2)" }}>
+              Essa ação não pode ser desfeita.
+            </p>
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={() => setConfirmDeleteWork(false)}
+                disabled={deletingWork}
+                className="flex-1 py-2.5 rounded-[10px] text-sm font-bold disabled:opacity-50"
+                style={{ background: "var(--fan-bg)", border: "1px solid var(--fan-border)", color: "var(--fan-text-2)" }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDeleteWork}
+                disabled={deletingWork}
+                className="flex-1 py-2.5 rounded-[10px] text-sm font-bold text-white disabled:opacity-50"
+                style={{ background: "#CC0022" }}
+              >
+                {deletingWork ? "Apagando..." : "Apagar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }

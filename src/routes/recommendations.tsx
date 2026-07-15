@@ -23,7 +23,12 @@ import {
   type RecFilters,
 } from "@/components/fanfarra/RecFilterSheet";
 import { useProfile } from "@/lib/fanfarra/extras";
-import { usePublicRecommendations } from "@/lib/fanfarra/communityStore";
+import {
+  usePublicRecommendations,
+  useCommunityHasMore,
+  useCommunityLoadingMore,
+  loadMoreCommunity,
+} from "@/lib/fanfarra/communityStore";
 
 export const Route = createFileRoute("/recommendations")({
   head: () => ({ meta: [{ title: "Recomendações — Fanfarra" }] }),
@@ -54,6 +59,8 @@ function RecPage() {
 
   // Recomendações postadas por qualquer usuário — visíveis para todo mundo
   const community = usePublicRecommendations();
+  const hasMoreCommunity = useCommunityHasMore();
+  const loadingMoreCommunity = useCommunityLoadingMore();
   const communityItems = useMemo<RecommendationItem[]>(
     () => community.map(communityToRecommendationItem),
     [community],
@@ -176,12 +183,31 @@ function RecPage() {
                   className="p-0"
                 />
               </div>
-            ) : (
-              <div className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
-                {communityItems.map((item) => (
-                  <CatalogCard key={item.id} item={item} />
-                ))}
-              </div>
+           ) : (
+              <>
+                <div className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
+                  {communityItems.map((item) => (
+                    <CatalogCard key={item.id} item={item} />
+                  ))}
+                </div>
+                {hasMoreCommunity && (
+                  <div className="flex justify-center mt-2">
+                    <button
+                      onClick={loadMoreCommunity}
+                      disabled={loadingMoreCommunity}
+                      className="rounded-full px-4 py-2 text-xs font-bold"
+                      style={{
+                        background: "var(--fan-bg-2)",
+                        border: "1px solid var(--fan-pink)",
+                        color: "var(--fan-pink-light)",
+                        opacity: loadingMoreCommunity ? 0.6 : 1,
+                      }}
+                    >
+                      {loadingMoreCommunity ? "Carregando..." : "Carregar mais"}
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </section>
 

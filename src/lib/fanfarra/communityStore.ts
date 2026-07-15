@@ -24,6 +24,7 @@ import type { Work } from "./types";
 import { toast } from "sonner";
 
 const COLLECTION = "communityRecs";
+const PAGE_SIZE = 30;
 
 export interface PostedRecommendation {
   id: string; // igual ao id da obra original (work.id)
@@ -49,6 +50,9 @@ const SERVER_SNAPSHOT: PostedRecommendation[] = [];
 let hasUser = false;
 let disconnectTimer: ReturnType<typeof setTimeout> | null = null;
 let loading = true;
+let loadingMore = false;
+let hasMore = true;
+let pageLimit = PAGE_SIZE;
 
 function notify() {
   listeners.forEach((l) => l());
@@ -56,7 +60,7 @@ function notify() {
 
 function connect() {
   if (unsubscribeSnapshot || !hasUser) return;
-  const q = query(collection(db, COLLECTION), orderBy("createdAt", "desc"), limit(300));
+  const q = query(collection(db, COLLECTION), orderBy("createdAt", "desc"), limit(pageLimit));
   unsubscribeSnapshot = onSnapshot(
     q,
     (snap) => {
@@ -64,17 +68,31 @@ function connect() {
         id: d.id,
         ...(d.data() as Omit<PostedRecommendation, "id">),
       }));
+      hasMore = snap.docs.length >= pageLimit;
       loading = false;
+      loadingMore = false;
       notify();
     },
     (err) => {
       console.error("Erro ao sincronizar recomendações da comunidade:", err);
       loading = false;
+      loadingMore = false;
       notify();
     },
   );
 }
 
+// Carrega mais recomendações da comunidade. Reassina a mesma escuta com um
+// limite maior — o que já está na tela continua atualizando ao vivo.
+export function loadMoreCommunity(): void {
+  if (loading || loadingMore || !hasMore) return;
+  loadingMore = true;
+  pageLimit += PAGE_SIZE;
+  notify();
+  unsubscribeSnapshot?.();
+  unsubscribeSnapshot = null;
+  connect();
+}
 // Assina a coleção pública inteira (sem filtro de uid) sempre que houver um
 // usuário logado E alguma tela estiver de fato usando esse dado — é isso que
 // faz a recomendação aparecer para todo mundo, sem manter a conexão aberta
@@ -84,6 +102,8 @@ onAuthStateChanged(auth, (user) => {
   unsubscribeSnapshot = null;
   cache = [];
   hasUser = !!user;
+  pageLimit = PAGE_SIZE;
+  hasMore = true;
   loading = hasUser; // sem usuário, não tem nada pra carregar
   notify();
   if (hasUser && listeners.size > 0) connect();
@@ -128,6 +148,22 @@ export function usePublicRecommendationsLoading(): boolean {
     () => true,
   );
   return mounted ? data : true;
+}
+
+export function useCommunityHasMore(): boolean {
+  return useSyncExternalStore(
+    subscribe,
+    () => hasMore,
+    () => true,
+  );
+}
+
+export function useCommunityLoadingMore(): boolean {
+  return useSyncExternalStore(
+    subscribe,
+    () => loadingMore,
+    () => false,
+  );
 }
 
 // Publica (ou atualiza, se já publicada) uma obra como recomendação pública.

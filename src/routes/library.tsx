@@ -6,7 +6,7 @@ import { Filter, BookMarked, LayoutGrid } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { ClientOnly } from "@/components/fanfarra/ClientOnly";
 import { TypeChips, type TypeFilter } from "@/components/fanfarra/Chips";
-import { useWorks, useWorksLoading } from "@/lib/fanfarra/store";
+import { useWorks, useWorksLoading, useWorksHasMore, useWorksLoadingMore, loadMoreWorks } from "@/lib/fanfarra/store";
 import { WorkGridSkeleton } from "@/components/fanfarra/WorkCardSkeleton";
 import { AwardCrownBadge } from "@/components/fanfarra/AwardCrownBadge";
 import { useBookcases, addBookcase } from "@/lib/fanfarra/bookcaseStore";
@@ -69,6 +69,8 @@ function LibraryPage() {
   const { group } = Route.useSearch();
   const works = useWorks();
   const worksLoading = useWorksLoading();
+  const hasMoreWorks = useWorksHasMore();
+  const loadingMoreWorks = useWorksLoadingMore();
   const bookcases = useBookcases();
   const [mode, setMode] = useState<ModeTab>("Todos");
   const [tab, setTab] = useState<Status | "Todos">("Todos");
@@ -225,7 +227,7 @@ function LibraryPage() {
         ) : (
           <div
             ref={listRef}
-            className="px-4 mt-3"
+            className="mt-3"
             style={{ position: "relative", height: rowVirtualizer.getTotalSize() }}
           >
             {rowVirtualizer.getVirtualItems().map((virtualRow) => {
@@ -235,12 +237,13 @@ function LibraryPage() {
                   key={virtualRow.key}
                   ref={rowVirtualizer.measureElement}
                   data-index={virtualRow.index}
-                  className="grid grid-cols-2 gap-3 pb-3"
+                  className="grid grid-cols-2 gap-3 pb-3 px-4"
                   style={{
                     position: "absolute",
                     top: 0,
                     left: 0,
                     width: "100%",
+                    boxSizing: "border-box",
                     transform: `translateY(${virtualRow.start - rowVirtualizer.options.scrollMargin}px)`,
                   }}
                 >
@@ -304,6 +307,24 @@ function LibraryPage() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {!worksLoading && filtered.length > 0 && hasMoreWorks && (
+          <div className="px-4 mt-3 flex justify-center">
+            <button
+              onClick={loadMoreWorks}
+              disabled={loadingMoreWorks}
+              className="rounded-full px-5 py-2.5 text-sm font-bold"
+              style={{
+                background: "var(--fan-bg-2)",
+                border: "1px solid var(--fan-pink)",
+                color: "var(--fan-pink-light)",
+                opacity: loadingMoreWorks ? 0.6 : 1,
+              }}
+            >
+              {loadingMoreWorks ? "Carregando..." : "Carregar mais"}
+            </button>
           </div>
         )}
       </ClientOnly>

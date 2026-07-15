@@ -9,6 +9,7 @@ import {
   query,
   where,
   orderBy,
+  limit,
 } from "firebase/firestore";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { onAuthStateChanged } from "firebase/auth";
@@ -19,6 +20,7 @@ import { toast } from "sonner";
 import { stripUndefined } from "./firestoreUtils.ts";
 
 const COLLECTION = "bookcases";
+const PAGE_SIZE = 20;
 
 export interface ShelfRule {
   mediaTypes?: MediaType[];
@@ -70,9 +72,42 @@ let unsubscribeSnapshot: (() => void) | null = null;
 const listeners = new Set<() => void>();
 const SERVER_SNAPSHOT: Bookcase[] = [];
 let loading = true;
+let loadingMore = false;
+let hasMore = true;
+let pageLimit = PAGE_SIZE;
+let currentUid: string | null = null;
 
 function notify() {
   listeners.forEach((l) => l());
+}
+
+function subscribeBookcases(uid: string) {
+  if (unsubscribeSnapshot) {
+    unsubscribeSnapshot();
+    unsubscribeSnapshot = null;
+  }
+  const q = query(
+    collection(db, COLLECTION),
+    where("uid", "==", uid),
+    orderBy("createdAt", "desc"),
+    limit(pageLimit),
+  );
+  unsubscribeSnapshot = onSnapshot(
+    q,
+    (snap) => {
+      cache = snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Bookcase, "id">) }));
+      hasMore = snap.docs.length >= pageLimit;
+      loading = false;
+      loadingMore = false;
+      notify();
+    },
+    (err) => {
+      console.error("Erro ao sincronizar estantes:", err);
+      loading = false;
+      loadingMore = false;
+      notify();
+    },
+  );
 }
 
 // escuta o login/logout uma única vez e (re)assina a coleção do Firestore
@@ -82,33 +117,28 @@ onAuthStateChanged(auth, (user) => {
     unsubscribeSnapshot = null;
   }
   cache = [];
+  pageLimit = PAGE_SIZE;
+  hasMore = true;
   loading = true;
+  currentUid = user?.uid ?? null;
   notify();
   if (!user) {
     loading = false;
     notify();
     return;
   }
-
-  const q = query(
-    collection(db, COLLECTION),
-    where("uid", "==", user.uid),
-    orderBy("createdAt", "desc"),
-  );
-  unsubscribeSnapshot = onSnapshot(
-    q,
-    (snap) => {
-      cache = snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Bookcase, "id">) }));
-      loading = false;
-      notify();
-    },
-    (err) => {
-      console.error("Erro ao sincronizar estantes:", err);
-      loading = false;
-      notify();
-    },
-  );
+  subscribeBookcases(user.uid);
 });
+
+// Carrega mais estantes. Reassina a mesma escuta com um limite maior — as
+// estantes já carregadas continuam atualizando ao vivo.
+export function loadMoreBookcases(): void {
+  if (!currentUid || loading || loadingMore || !hasMore) return;
+  loadingMore = true;
+  pageLimit += PAGE_SIZE;
+  notify();
+  subscribeBookcases(currentUid);
+}
 
 function subscribe(cb: () => void) {
   listeners.add(cb);
@@ -126,15 +156,20 @@ export function useBookcases(): Bookcase[] {
   return mounted ? data : SERVER_SNAPSHOT;
 }
 
-export function useBookcasesLoading(): boolean {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  const data = useSyncExternalStore(
+export function useBookcasesHasMore(): boolean {
+  return useSyncExternalStore(
     subscribe,
-    () => loading,
+    () => hasMore,
     () => true,
   );
-  return mounted ? data : true;
+}
+
+export function useBookcasesLoadingMore(): boolean {
+  return useSyncExternalStore(
+    subscribe,
+    () => loadingMore,
+    () => false,
+  );
 }
 
 export function useBookcase(id: string): Bookcase | undefined {

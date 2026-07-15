@@ -175,7 +175,8 @@ function RecDetail() {
   const myReaction = useMyRecReaction(item?.id ?? "");
 
   const user = useAuthUser();
-  const comments = useRecComments(item?.id ?? "");
+ const { comments, hasMore: hasMoreComments, loadingMore: loadingMoreComments, loadMore: loadMoreComments } =
+  useRecComments(item?.id ?? "");
   const [commentText, setCommentText] = useState("");
   const [posting, setPosting] = useState(false);
 
@@ -192,11 +193,18 @@ function RecDetail() {
     }
   };
 
+  const [confirmDeleteComment, setConfirmDeleteComment] = useState<string | null>(null);
+  const [deletingComment, setDeletingComment] = useState(false);
+
   const handleDeleteComment = async (commentId: string) => {
+    setDeletingComment(true);
     try {
       await deleteRecComment(commentId);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Não foi possível apagar.");
+    } finally {
+      setDeletingComment(false);
+      setConfirmDeleteComment(null);
     }
   };
 
@@ -497,9 +505,10 @@ function RecDetail() {
                     </div>
                     {canDelete && (
                       <button
-                        onClick={() => handleDeleteComment(c.id)}
+                        onClick={() => setConfirmDeleteComment(c.id)}
+                        disabled={deletingComment}
                         aria-label="Apagar comentário"
-                        className="shrink-0 mt-1"
+                        className="shrink-0 mt-1 disabled:opacity-50"
                       >
                         <Trash2 size={15} color="var(--fan-text-2)" />
                       </button>
@@ -509,6 +518,25 @@ function RecDetail() {
               })}
             </div>
           )}
+
+          {hasMoreComments && (
+            <div className="mt-3 flex justify-center">
+              <button
+                onClick={loadMoreComments}
+                disabled={loadingMoreComments}
+                className="rounded-full px-5 py-2.5 text-sm font-bold"
+                style={{
+                  background: "var(--fan-bg-2)",
+                  border: "1px solid var(--fan-pink)",
+                  color: "var(--fan-pink-light)",
+                  opacity: loadingMoreComments ? 0.6 : 1,
+                }}
+              >
+                {loadingMoreComments ? "Carregando..." : "Carregar mais comentários"}
+              </button>
+            </div>
+          )}
+
         </SectionCard>
       </section>
 
@@ -568,6 +596,46 @@ function RecDetail() {
           Adicionar à biblioteca
         </Link>
       </div>
+
+      {/* Confirmação: apagar comentário */}
+      {confirmDeleteComment && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center"
+          style={{ background: "rgba(0,0,0,0.6)" }}
+          onClick={() => setConfirmDeleteComment(null)}
+        >
+          <div
+            className="w-full max-w-sm rounded-t-[20px] p-5"
+            style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-base font-bold" style={{ color: "var(--fan-text)" }}>
+              Apagar comentário?
+            </h2>
+            <p className="text-sm mt-1.5" style={{ color: "var(--fan-text-2)" }}>
+              Essa ação não pode ser desfeita.
+            </p>
+            <div className="flex gap-2 mt-4">
+              <button
+                onClick={() => setConfirmDeleteComment(null)}
+                disabled={deletingComment}
+                className="flex-1 py-2.5 rounded-[10px] text-sm font-bold disabled:opacity-50"
+                style={{ background: "var(--fan-bg)", border: "1px solid var(--fan-border)", color: "var(--fan-text-2)" }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => handleDeleteComment(confirmDeleteComment)}
+                disabled={deletingComment}
+                className="flex-1 py-2.5 rounded-[10px] text-sm font-bold text-white disabled:opacity-50"
+                style={{ background: "#CC0022" }}
+              >
+                {deletingComment ? "Apagando..." : "Apagar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </AppShell>
   );
 }

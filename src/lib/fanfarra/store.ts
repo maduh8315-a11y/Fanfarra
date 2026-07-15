@@ -9,6 +9,7 @@ import {
   query,
   where,
   orderBy,
+  limit,
 } from "firebase/firestore";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { stripUndefined } from "./firestoreUtils.ts";
@@ -18,15 +19,49 @@ import type { Work } from "./types";
 import { toast } from "sonner";
 
 const COLLECTION = "works";
+const PAGE_SIZE = 30;
 
 let cache: Work[] = [];
 let unsubscribeSnapshot: (() => void) | null = null;
 const listeners = new Set<() => void>();
 const SERVER_SNAPSHOT: Work[] = [];
 let loading = true;
+let loadingMore = false;
+let hasMore = true;
+let pageLimit = PAGE_SIZE;
+let currentUid: string | null = null;
 
 function notify() {
   listeners.forEach((l) => l());
+}
+
+function subscribeWorks(uid: string) {
+  if (unsubscribeSnapshot) {
+    unsubscribeSnapshot();
+    unsubscribeSnapshot = null;
+  }
+  const q = query(
+    collection(db, COLLECTION),
+    where("uid", "==", uid),
+    orderBy("createdAt", "desc"),
+    limit(pageLimit),
+  );
+  unsubscribeSnapshot = onSnapshot(
+    q,
+    (snap) => {
+      cache = snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Work, "id">) }));
+      hasMore = snap.docs.length >= pageLimit;
+      loading = false;
+      loadingMore = false;
+      notify();
+    },
+    (err) => {
+      console.error("Erro ao sincronizar obras:", err);
+      loading = false;
+      loadingMore = false;
+      notify();
+    },
+  );
 }
 
 // escuta o login/logout uma única vez e (re)assina a coleção do Firestore
@@ -36,33 +71,29 @@ onAuthStateChanged(auth, (user) => {
     unsubscribeSnapshot = null;
   }
   cache = [];
-  loading = true;        // ADICIONE ESTA LINHA
+  pageLimit = PAGE_SIZE;
+  hasMore = true;
+  loading = true;
+  currentUid = user?.uid ?? null;
   notify();
   if (!user) {
-    loading = false;     // ADICIONE ESTE BLOCO
+    loading = false;
     notify();
     return;
   }
-
-  const q = query(
-    collection(db, COLLECTION),
-    where("uid", "==", user.uid),
-    orderBy("createdAt", "desc"),
-  );
-  unsubscribeSnapshot = onSnapshot(
-    q,
-    (snap) => {
-      cache = snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Work, "id">) }));
-      loading = false;    // ADICIONE ESTA LINHA
-      notify();
-    },
-    (err) => {
-      console.error("Erro ao sincronizar obras:", err);
-      loading = false;    // ADICIONE ESTA LINHA
-      notify();
-    },
-  );
+  subscribeWorks(user.uid);
 });
+
+// Carrega mais itens da biblioteca. Reassina a mesma escuta em tempo real
+// com um limite maior — os itens já carregados continuam atualizando ao
+// vivo, e os novos entram na sequência.
+export function loadMoreWorks(): void {
+  if (!currentUid || loading || loadingMore || !hasMore) return;
+  loadingMore = true;
+  pageLimit += PAGE_SIZE;
+  notify();
+  subscribeWorks(currentUid);
+}
 
 function subscribe(cb: () => void) {
   listeners.add(cb);
@@ -85,6 +116,22 @@ export function useWorksLoading(): boolean {
     subscribe,
     () => loading,
     () => true, // no servidor, sempre considera "carregando"
+  );
+}
+
+export function useWorksLoadingMore(): boolean {
+  return useSyncExternalStore(
+    subscribe,
+    () => loadingMore,
+    () => false,
+  );
+}
+
+export function useWorksHasMore(): boolean {
+  return useSyncExternalStore(
+    subscribe,
+    () => hasMore,
+    () => true,
   );
 }
 
