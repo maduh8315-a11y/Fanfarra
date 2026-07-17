@@ -23,6 +23,7 @@ import { useState, type ReactNode } from "react";
 import { useAuthUser, signOut } from "@/lib/fanfarra/auth";
 import { ADMIN_UIDS } from "@/lib/fanfarra/config";
 import { useNotifications } from "@/lib/fanfarra/extras";
+import { useOnlineStatus } from "@/hooks/use-online-status";
 
 const TABS = [
   { to: "/", icon: Home, label: "Início" },
@@ -39,6 +40,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const notifications = useNotifications();
   const unreadCount = notifications.filter((n) => !n.read).length;
+  const isOnline = useOnlineStatus();
   function handleLogout() {
     signOut();
     setDrawerOpen(false);
@@ -47,6 +49,18 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex flex-col" style={{ minHeight: "100dvh", background: "var(--fan-bg)" }}>
+      {!isOnline && (
+        <div
+          className="fixed top-0 left-0 right-0 z-50 px-4 py-2 text-center text-[12px] font-medium"
+          style={{
+            background: "var(--fan-pink)",
+            color: "#fff",
+            paddingTop: "calc(0.5rem + var(--sat))",
+          }}
+        >
+          Você está offline
+        </div>
+      )}
       <main className="flex-1 pb-20">{children}</main>
 
       <nav

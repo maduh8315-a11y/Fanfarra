@@ -17,8 +17,10 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import "../lib/sentry";
 import { Toaster } from "@/components/ui/sonner";
 import { patchServerFnBaseUrl } from "@/lib/nativeApiPatch";
+import { registerServiceWorker } from "@/lib/fanfarra/registerServiceWorker";
 
 patchServerFnBaseUrl();
+registerServiceWorker();
 
 function NotFoundComponent() {
   return (
@@ -81,7 +83,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover",
       },
-      { name: "theme-color", content: "var(--fan-bg)" },
+      { name: "theme-color", content: "#0d0008" },
       { name: "mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },

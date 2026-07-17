@@ -1,6 +1,11 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+  memoryLocalCache,
+} from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -15,4 +20,14 @@ const firebaseConfig = {
 export const firebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 export const auth = getAuth(firebaseApp);
-export const db = getFirestore(firebaseApp);
+
+// No servidor (SSR) não existe IndexedDB, então usamos cache em memória lá
+// e cache persistente (IndexedDB, com suporte a múltiplas abas) no browser.
+// Isso faz o app conseguir mostrar dados já vistos mesmo sem internet, em vez
+// de só ficar tentando reconectar e falhando.
+export const db = initializeFirestore(firebaseApp, {
+  localCache:
+    typeof window === "undefined"
+      ? memoryLocalCache()
+      : persistentLocalCache({ tabManager: persistentMultipleTabManager() }),
+});

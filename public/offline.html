@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Você está offline — Fanfarra</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+      }
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 24px;
+        background: #000000;
+        color: #fff3f0;
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        text-align: center;
+      }
+      .card {
+        max-width: 360px;
+      }
+      .emoji {
+        font-size: 48px;
+        line-height: 1;
+        margin-bottom: 16px;
+      }
+      h1 {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0 0 8px;
+      }
+      p {
+        font-size: 14px;
+        color: #cbb7b3;
+        margin: 0 0 24px;
+        line-height: 1.5;
+      }
+      button {
+        border: none;
+        border-radius: 12px;
+        padding: 12px 24px;
+        background: #ff0000;
+        color: #fff3f0;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+      }
+      button:active {
+        opacity: 0.8;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="emoji">📡</div>
+      <h1>Sem conexão</h1>
+      <p>
+        Não foi possível carregar esta página porque você está offline. Páginas
+        e obras que você já visitou continuam disponíveis assim que a
+        conexão voltar.
+      </p>
+      <button onclick="location.reload()">Tentar novamente</button>
+    </div>
+  </body>
+</html>
