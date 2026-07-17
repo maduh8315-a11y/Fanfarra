@@ -16,6 +16,9 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import "../lib/sentry";
 import { Toaster } from "@/components/ui/sonner";
+import { patchServerFnBaseUrl } from "@/lib/nativeApiPatch";
+
+patchServerFnBaseUrl();
 
 function NotFoundComponent() {
   return (

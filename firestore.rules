@@ -2,6 +2,15 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // ── Admin ────────────────────────────────────────────────────────
+    // Único lugar nas regras onde o UID de admin aparece. Espelha
+    // ADMIN_UIDS em src/lib/fanfarra/config.ts (usado só pra mostrar/
+    // esconder o painel admin no client — a segurança de verdade é
+    // validada aqui no servidor).
+    function isAdmin() {
+      return request.auth != null && request.auth.uid in ["ikvASYa9kgQknCrZeiiupirGGef1"];
+    }
+
     match /works/{workId} {
       allow read: if request.auth != null &&
         (resource.data.uid == request.auth.uid || resource.data.isPublicRec == true);
@@ -45,14 +54,9 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
 
-    // ⚠️ UID de admin hardcoded abaixo (7 ocorrências neste arquivo).
-    // Espelha ADMIN_UIDS em src/lib/fanfarra/config.ts — se trocar de conta
-    // admin, atualize os DOIS lugares e reimplante as regras no Firebase.
-
     match /challenges_catalog/{challengeId} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null &&
-        request.auth.uid in ["ikvASYa9kgQknCrZeiiupirGGef1"];
+      allow write: if isAdmin();
     }
 
     match /user_challenges/{docId} {
@@ -67,39 +71,47 @@ service cloud.firestore {
     // ── Fanfarra Awards ──────────────────────────────────────────────
     match /awards_config/{docId} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null &&
-        request.auth.uid in ["ikvASYa9kgQknCrZeiiupirGGef1"];
+      allow write: if isAdmin();
     }
 
     match /awards_catalog/{categoryId} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null &&
-        request.auth.uid in ["ikvASYa9kgQknCrZeiiupirGGef1"];
+      allow write: if isAdmin();
     }
 
     match /award_votes_indicacao/{uid} {
       allow read: if request.auth != null;
       allow create, update, delete: if request.auth != null &&
-    (request.auth.uid == uid || request.auth.uid == "ikvASYa9kgQknCrZeiiupirGGef1");
+        (request.auth.uid == uid || isAdmin());
     }
 
-   	match /award_votes_final/{uid} {
-  		allow read: if request.auth != null;
-  		allow create, update, delete: if request.auth != null &&
-    (request.auth.uid == uid || request.auth.uid == "ikvASYa9kgQknCrZeiiupirGGef1");
-		}
+    match /award_votes_final/{uid} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if request.auth != null &&
+        (request.auth.uid == uid || isAdmin());
+    }
 
     // ── Sistema antigo de sugestão manual (mantido só pra não quebrar a limpeza de conta) ──
     match /award_nominations/{id} {
       allow read: if request.auth != null;
       allow create: if request.auth != null && request.auth.uid == request.resource.data.uid;
-      allow update: if request.auth != null;
+
+      // "update" fica aberto pra qualquer autenticado porque quem
+      // incrementa applause/boos é QUEM REAGE, não o dono da indicação.
+      // Travado: só pode alterar applause/boos, em no máximo ±1 por vez,
+      // e nada mais (nem workTitle, nem uid, nem themeId).
+      allow update: if request.auth != null &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['applause', 'boos']) &&
+        request.resource.data.applause is int && request.resource.data.applause >= 0 &&
+        request.resource.data.boos is int && request.resource.data.boos >= 0 &&
+        (request.resource.data.applause - resource.data.applause) in [-1, 0, 1] &&
+        (request.resource.data.boos - resource.data.boos) in [-1, 0, 1];
+
       allow delete: if request.auth != null &&
-        (request.auth.uid == resource.data.uid ||
-         request.auth.uid in ["ikvASYa9kgQknCrZeiiupirGGef1"]);
+        (request.auth.uid == resource.data.uid || isAdmin());
     }
 
-   match /award_reactions/{id} {
+    match /award_reactions/{id} {
       allow read: if request.auth != null;
       allow create, update: if request.auth != null &&
         request.auth.uid == request.resource.data.uid;
@@ -107,26 +119,24 @@ service cloud.firestore {
         request.auth.uid == resource.data.uid;
     }
 
-    // ── Aplaudir/vaiar nas recomendações reais ──────────────────────
-    match /rec_reactions/{id} {
-      allow read: if request.auth != null;
-      allow create, update: if request.auth != null &&
-        request.auth.uid == request.resource.data.uid;
-      allow delete: if request.auth != null &&
-        request.auth.uid == resource.data.uid;
-    }
-    
     match /rec_comments/{id} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.uid;
+      allow delete: if request.auth != null &&
+        (request.auth.uid == resource.data.uid || isAdmin());
+    }
+
+   // Escrita agora só acontece via reactToRecItemServer (service account,
+// que ignora as regras) — o client só lê.
+match /rec_reactions/{id} {
   allow read: if request.auth != null;
-  allow create: if request.auth != null && request.auth.uid == request.resource.data.uid;
-  allow delete: if request.auth != null &&
-    (request.auth.uid == resource.data.uid || request.auth.uid == "ikvASYa9kgQknCrZeiiupirGGef1");
+  allow write: if false;
 }
 
-    match /rec_reaction_counts/{itemId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
-    }
+match /rec_reaction_counts/{itemId} {
+  allow read: if request.auth != null;
+  allow write: if false;
+}
 
     match /rec_reaction_daily_snapshot/{day} {
       allow read: if request.auth != null;
