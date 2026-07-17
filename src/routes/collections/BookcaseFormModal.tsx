@@ -3,6 +3,8 @@ import { useNavigate } from "@tanstack/react-router";
 import { Lock } from "lucide-react";
 import { C, ACCENTS, EMOJIS, cardBase, labelStyle, inputStyle, overlay, btnGhost, btnPrimary } from "./styles";
 import { CoverField } from "./CoverField";
+import { useOnlineStatus } from "@/hooks/use-online-status";
+import { useIsPro } from "@/lib/fanfarra/config";
 
 // ─── Modal Nova Estante ───────────────────────────────────────────────────────
 export function BookcaseFormModal({
@@ -11,7 +13,7 @@ export function BookcaseFormModal({
   onCancel,
   onCreate,
   showPublicToggle = false,
-  isPro = false,
+  isPro: _isProProp = false,
 }: {
   title?: string;
   namePlaceholder?: string;
@@ -27,6 +29,9 @@ export function BookcaseFormModal({
   isPro?: boolean;
 }) {
   const nav = useNavigate();
+  const isOnline = useOnlineStatus();
+  const isPro = useIsPro();
+  const offlineBlocked = !isOnline && !isPro;
   const [name, setName] = useState("");
   const [emoji, setEmoji] = useState(EMOJIS[0]);
   const [accent, setAccent] = useState(ACCENTS[0]);
@@ -143,17 +148,40 @@ export function BookcaseFormModal({
         )}
 
         <div style={{ display: "flex", gap: 8, marginTop: 24 }}>
+          {offlineBlocked && (
+          <p
+            style={{
+              marginTop: 16,
+              fontSize: 12,
+              color: C.muted,
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            <Lock size={12} /> Criar offline é exclusivo do PRO. Conecte-se à internet ou assine o PRO para continuar.
+          </p>
+        )}
+
+        <div style={{ display: "flex", gap: 8, marginTop: 24 }}>
           <button style={btnGhost} onClick={onCancel}>
             Cancelar
           </button>
           <button
-            style={btnPrimary}
+            style={{
+              ...btnPrimary,
+              opacity: offlineBlocked ? 0.5 : 1,
+              cursor: offlineBlocked ? "not-allowed" : "pointer",
+            }}
+            disabled={offlineBlocked}
             onClick={() => {
+              if (offlineBlocked) return;
               if (name.trim()) onCreate(name.trim(), emoji, accent, cover, isPro && isPublic);
             }}
           >
             Criar
           </button>
+        </div>
         </div>
       </div>
     </div>

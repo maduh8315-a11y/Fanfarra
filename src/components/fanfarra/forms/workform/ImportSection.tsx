@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { LinkIcon, Loader2, Search, AlertTriangle } from "lucide-react";
+import { LinkIcon, Loader2, Search, AlertTriangle, Lock } from "lucide-react";
 import { IMPORT_HINTS } from "@/lib/fanfarra/formConfig";
 import { importWorkFromUrl, type ImportedWorkData } from "@/lib/api/importWork.functions";
 import type { MediaType } from "@/lib/fanfarra/types";
+import { useOnlineStatus } from "@/hooks/use-online-status";
+import { useIsPro } from "@/lib/fanfarra/config";
 
 export function ImportSection({
   type,
@@ -11,12 +13,17 @@ export function ImportSection({
   type: MediaType;
   onImported: (data: ImportedWorkData, meta: { source?: string; url: string }) => void;
 }) {
+  const isOnline = useOnlineStatus();
+  const isPro = useIsPro();
+  const offlineBlocked = !isOnline && !isPro;
+
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [warning, setWarning] = useState("");
 
   const handleImport = async () => {
+    if (offlineBlocked) return;
     const trimmed = url.trim();
     if (!trimmed) return;
     setLoading(true);
@@ -55,12 +62,13 @@ export function ImportSection({
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           placeholder={IMPORT_HINTS[type]}
-          className="w-full px-3 py-3 text-sm outline-none rounded-[10px]"
+          disabled={offlineBlocked}
+          className="w-full px-3 py-3 text-sm outline-none rounded-[10px] disabled:opacity-40"
           style={{ background: "var(--fan-bg)", border: "1px solid var(--fan-rose-mid)", color: "var(--fan-text)" }}
         />
         <button
           type="button"
-          disabled={!url.trim() || loading}
+          disabled={!url.trim() || loading || offlineBlocked}
           onClick={handleImport}
           className="w-full rounded-full py-2.5 text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-40"
           style={{ background: "var(--fan-pink)" }}
@@ -68,6 +76,11 @@ export function ImportSection({
           {loading ? <Loader2 size={14} className="animate-spin" /> : <Search size={14} />}
           {loading ? "Buscando..." : "Buscar informações"}
         </button>
+        {offlineBlocked && (
+          <p className="text-sm flex items-center gap-1" style={{ color: "var(--fan-rose-mid)" }}>
+            <Lock size={12} /> Importar offline é exclusivo do PRO. Conecte-se à internet ou assine o PRO.
+          </p>
+        )}
         {error && (
           <p className="text-sm" style={{ color: "#F87171" }}>
             {error}
