@@ -328,3 +328,21 @@
 svg {
   color: var(--fan-icon-blue) !important;
 }
+
+/* ─── Onboarding: mantém tamanhos e cores do design original,
+   sem o piso global de legibilidade e sem o ícone azul forçado ─── */
+.onboarding-screen .text-\[9px\] {
+  font-size: 9px !important;
+}
+.onboarding-screen .text-\[10px\] {
+  font-size: 10px !important;
+}
+.onboarding-screen .text-\[11px\] {
+  font-size: 11px !important;
+}
+.onboarding-screen .text-xs {
+  font-size: 12px !important;
+}
+.onboarding-screen svg {
+  color: var(--icon-color) !important;
+}

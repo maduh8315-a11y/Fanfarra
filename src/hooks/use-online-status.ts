@@ -5,9 +5,7 @@ import { useEffect, useState } from "react";
  * Em SSR (sem `window`), assume `true` (online) até hidratar no client.
  */
 export function useOnlineStatus() {
-  const [isOnline, setIsOnline] = useState(
-    typeof navigator === "undefined" ? true : navigator.onLine,
-  );
+  const [isOnline, setIsOnline] = useState(true); // sempre true no primeiro render, tanto server quanto client — evita mismatch de hydration
 
   useEffect(() => {
     function handleOnline() {

@@ -177,7 +177,7 @@ function AuthGuard() {
     if (typeof window === "undefined") return;
     const isPublic = PUBLIC_ROUTES.has(pathname);
     if (!user && !isPublic) {
-      const seen = localStorage.getItem("fanfarra:auth_seen") === "1";
+      const seen = !import.meta.env.DEV && localStorage.getItem("fanfarra:auth_seen") === "1";
       navigate({ to: seen ? "/login" : "/splash" });
       if (!seen) localStorage.setItem("fanfarra:auth_seen", "1");
       return;

@@ -21,7 +21,9 @@ function SplashPage() {
         return;
       }
       const onboarded =
-        typeof window !== "undefined" && localStorage.getItem("fanfarra:onboarding_done") === "1";
+        !import.meta.env.DEV &&
+        typeof window !== "undefined" &&
+        localStorage.getItem("fanfarra:onboarding_done") === "1";
       navigate({ to: onboarded ? "/login" : "/onboarding" });
     }, 1500);
 
