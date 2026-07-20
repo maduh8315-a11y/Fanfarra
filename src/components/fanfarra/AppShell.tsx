@@ -23,6 +23,7 @@ import { useState, type ReactNode } from "react";
 import { useAuthUser, signOut } from "@/lib/fanfarra/auth";
 import { ADMIN_UIDS } from "@/lib/fanfarra/config";
 import { useNotifications } from "@/lib/fanfarra/extras";
+import { useIsPro } from "@/lib/fanfarra/config";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 
 const TABS = [
@@ -40,6 +41,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const notifications = useNotifications();
   const unreadCount = notifications.filter((n) => !n.read).length;
+  const isPro = useIsPro();
   const isOnline = useOnlineStatus();
   function handleLogout() {
     signOut();
@@ -182,8 +184,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               <DrawerLink to="/search" icon={Search} label="Buscar" />
 
               <DrawerSection label="Descobrir" />
-              <DrawerLink to="/stats" icon={BarChart3} label="Estatísticas Avançadas" iconColor="var(--fan-icon-blue)" />
-              <DrawerLink to="/wrapped" icon={Sparkles} label="Wrapped Anual" pro />
+              <DrawerLink to="/stats" icon={BarChart3} label="Estatísticas Avançadas" iconColor="var(--fan-icon-blue)" pro={isPro ? undefined : "full"} />
+              <DrawerLink to="/wrapped" icon={Sparkles} label="Wrapped Anual" pro={isPro ? undefined : true} />
 
               <DrawerSection label="Comunidade" />
               <DrawerLink
@@ -193,7 +195,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 badge="Votação aberta"
               />
               <DrawerLink to="/challenges" icon={Award} label="Desafios Fandom" />
-              <DrawerLink to="/collections" icon={Users} label="Minhas Estantes" />
+              <DrawerLink to="/collections" icon={Users} label="Minhas Estantes" pro={isPro ? undefined : true} />
 
               <DrawerSection label="Conta" />
               <DrawerLink
@@ -255,7 +257,9 @@ function DrawerLink({
   | "/admin";
   icon: typeof Home;
   label: string;
-  pro?: boolean;
+  // true = recurso tem partes gratuitas e partes PRO (badge dourado "PRO")
+  // "full" = recurso é 100% travado pra quem não é PRO (badge rosa "PRO+")
+  pro?: boolean | "full";
   badge?: string;
   iconColor?: string;
 }) {
@@ -277,7 +281,15 @@ function DrawerLink({
         </span>
       )}
 
-      {pro && (
+      {pro === "full" && (
+        <span
+          className="text-[11px] font-bold px-2 py-0.5 rounded-full"
+          style={{ background: "var(--fan-active-chip)", color: "var(--fan-pink-light)", border: "0.5px solid var(--fan-pink)" }}
+        >
+          PRO+
+        </span>
+      )}
+      {pro === true && (
         <span
           className="text-[11px] font-bold px-2 py-0.5 rounded-full"
           style={{ background: "var(--fan-gold-bg)", color: "var(--fan-gold)" }}

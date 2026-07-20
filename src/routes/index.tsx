@@ -28,6 +28,7 @@ import {
   Clock,
   Joystick,
   ScrollText,
+  Headphones,
 } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { TypeChips, type TypeFilter } from "@/components/fanfarra/Chips";
@@ -79,6 +80,8 @@ function calcStats(works: Work[]) {
     monthGameH = 0;
   let totalPages = 0,
     monthPages = 0;
+  let totalListens = 0,
+    monthListens = 0;
 
   for (const w of works) {
     const d = w.details ?? {};
@@ -91,23 +94,29 @@ function calcStats(works: Work[]) {
       if (isThisMonth(upd)) monthWords += wc;
     }
 
-    // Horas assistidas — Anime, Série, Donghua, Dorama (episodeDuration × episódios)
+    // Horas assistidas — Anime, Série, Donghua, Dorama: estimativa de ~24min por
+    // episódio (o formulário não coleta duração exata, então não dá pra depender
+    // de um campo que nunca é preenchido).
     if (w.type === "Anime" || w.type === "Série" || w.type === "Donghua" || w.type === "Dorama") {
-      const dur = d.episodeDuration as
-        | { hours?: number; minutes?: number; seconds?: number }
-        | undefined;
       const eps = Number(d.episode) || 0;
-      if (dur && eps) {
-        const secsPerEp = (dur.hours ?? 0) * 3600 + (dur.minutes ?? 24) * 60 + (dur.seconds ?? 0);
-        const h = (eps * secsPerEp) / 3600;
+      const h = (eps * 24) / 60;
+      totalWatchH += h;
+      if (isThisMonth(upd)) monthWatchH += h;
+    }
+    // Filme — usa duração real se o usuário informou (watchedMin), senão estima ~100min
+    if (w.type === "Filme") {
+      const isWatched = (COMPLETED_STATUSES as readonly string[]).includes(w.status);
+      if (isWatched) {
+        const min = Number(d.watchedMin) || 100;
+        const h = min / 60;
         totalWatchH += h;
         if (isThisMonth(upd)) monthWatchH += h;
       }
     }
-    // Filme (watchedMin)
-    if (w.type === "Filme") {
-      const min = Number(d.watchedMin) || 0;
-      const h = min / 60;
+    // Vídeos / Gacha Videos — estimativa de ~10min por vídeo/parte
+    if (w.type === "Vídeos" || w.type === "Gacha Videos") {
+      const parts = Number(d.part) || 0;
+      const h = (parts * 10) / 60;
       totalWatchH += h;
       if (isThisMonth(upd)) monthWatchH += h;
     }
@@ -119,11 +128,18 @@ function calcStats(works: Work[]) {
       if (isThisMonth(upd)) monthGameH += h;
     }
 
-    // Páginas lidas — Livro, Manga, Manhwa, Manhua, HQ
-    if (["Livro", "Manga", "Manhwa", "Manhua", "HQ"].includes(w.type)) {
-      const pg = Number(d.page ?? d.chapter ?? d.issue) || 0;
+    // Páginas/capítulos lidos — Livro, Manga, Manhwa, Manhua, HQ, Webtoon
+    if (["Livro", "Manga", "Manhwa", "Manhua", "HQ", "Webtoon"].includes(w.type)) {
+      const pg = Number(d.page ?? d.chapter ?? d.issue ?? d.episode) || 0;
       totalPages += pg;
       if (isThisMonth(upd)) monthPages += pg;
+    }
+
+    // Escutas — Música
+    if (w.type === "Música") {
+      const plays = Number(d.plays) || 0;
+      totalListens += plays;
+      if (isThisMonth(upd)) monthListens += plays;
     }
   }
 
@@ -136,6 +152,8 @@ function calcStats(works: Work[]) {
     monthGameH,
     totalPages,
     monthPages,
+    totalListens,
+    monthListens,
   };
 }
 
@@ -197,8 +215,9 @@ function StatsSection({ works }: { works: Work[] }) {
   const hasWatch = s.totalWatchH > 0;
   const hasGame = s.totalGameH > 0;
   const hasPages = s.totalPages > 0;
+  const hasListen = s.totalListens > 0;
 
-  if (!hasWords && !hasWatch && !hasGame && !hasPages) return null;
+  if (!hasWords && !hasWatch && !hasGame && !hasPages && !hasListen) return null;
 
   return (
     <div className="px-4 mt-5">
@@ -243,6 +262,15 @@ function StatsSection({ works }: { works: Work[] }) {
             total={fmt(s.totalPages)}
             month={fmt(s.monthPages)}
             color="var(--fan-icon-blue)"
+          />
+        )}
+        {hasListen && (
+          <StatCard
+            icon={Headphones}
+            label="Escutas"
+            total={fmt(s.totalListens)}
+            month={fmt(s.monthListens)}
+            color="#FF6BAE"
           />
         )}
       </div>
