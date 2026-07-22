@@ -46,6 +46,15 @@ service cloud.firestore {
         resource.data.uid == request.auth.uid;
     }
 
+    match /push_tokens/{tokenId} {
+      // só o cron (Admin SDK) lê — ele ignora as rules de qualquer forma
+      allow read: if false;
+      allow create, update: if request.auth != null &&
+        request.resource.data.uid == request.auth.uid;
+      allow delete: if request.auth != null &&
+        resource.data.uid == request.auth.uid;
+    }
+
     match /settings/{uid} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }

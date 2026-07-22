@@ -13,6 +13,50 @@
 //
 // Bump a versão abaixo sempre que quiser forçar os clientes a jogarem fora
 // o cache antigo (ex: depois de um deploy com mudanças grandes de assets).
+
+// ── Firebase Cloud Messaging (push em segundo plano) ───────────────────────
+importScripts("https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js");
+
+firebase.initializeApp({
+  apiKey: "AIzaSyA7D91hIRP5PjxIUl8Pfyy4IJFsdrW1wYY",
+  authDomain: "fanfarra-6e54b.firebaseapp.com",
+  projectId: "fanfarra-6e54b",
+  storageBucket: "fanfarra-6e54b.firebasestorage.app",
+  messagingSenderId: "514080981795",
+  appId: "1:514080981795:web:b23741870bb5f636194296",
+});
+
+const messaging = firebase.messaging();
+
+messaging.onBackgroundMessage((payload) => {
+  const title = payload.notification?.title || "Fanfarra";
+  const body = payload.notification?.body || "";
+  self.registration.showNotification(title, {
+    body,
+    icon: "/icon-192.png",
+    badge: "/icon-192.png",
+    data: { url: payload.data?.url || "/notifications" },
+  });
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || "/notifications";
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+      for (const client of list) {
+        if (client.url.includes(self.location.origin) && "focus" in client) {
+          client.navigate(url);
+          return client.focus();
+        }
+      }
+      return clients.openWindow(url);
+    }),
+  );
+});
+// ── fim do bloco FCM ─────────────────────────────────────────────────────
+
 const CACHE_VERSION = "fanfarra-v2";
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PAGES_CACHE = `${CACHE_VERSION}-pages`;

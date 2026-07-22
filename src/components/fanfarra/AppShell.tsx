@@ -1,4 +1,7 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { toast } from "sonner";
+import { listenForegroundPush } from "@/lib/fanfarra/pushNotifications";
 import {
   Home,
   Library,
@@ -37,6 +40,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [drawerOpen, setDrawerOpen] = useState(false);
   const user = useAuthUser();
+  useEffect(() => {
+    if (!user) return;
+    return listenForegroundPush((title, body) => toast(title, { description: body }));
+  }, [user]);
   const isAdmin = !!user && ADMIN_UIDS.includes(user.uid);
   const navigate = useNavigate();
   const notifications = useNotifications();

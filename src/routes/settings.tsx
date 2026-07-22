@@ -7,6 +7,7 @@ import { updateSettings, useSettings } from "@/lib/fanfarra/extras";
 import { DEV_MODE, useIsPro } from "@/lib/fanfarra/config";
 import { toast } from "sonner";
 import { signOut } from "@/lib/fanfarra/auth";
+import { enablePushNotifications } from "@/lib/fanfarra/pushNotifications";
 import {
   ChangeEmailModal,
   ChangePasswordModal,
@@ -71,6 +72,19 @@ function SettingsPage() {
             label="Sons de notificação"
             value={s.notif_sound}
             onChange={(v) => updateSettings({ notif_sound: v })}
+          />
+          <Item
+            label="Ativar notificações neste aparelho"
+            variant="modal"
+            onClick={async () => {
+              const result = await enablePushNotifications();
+              if (result === "granted") toast.success("Notificações ativadas!");
+              else if (result === "denied")
+                toast.error("Permissão negada. Ative nas configurações do navegador/aparelho.");
+              else if (result === "unsupported")
+                toast.error("Esse navegador não suporta notificações push.");
+              else toast.error("Não deu pra ativar agora. Tenta de novo em instantes.");
+            }}
           />
         </Group>
 

@@ -208,6 +208,7 @@ export async function pushNotification(n: Omit<Notification, "id" | "ts" | "read
       text: n.text,
       ts: Date.now(),
       read: false,
+      pushed: false, // o cron (scripts/cron.mjs) usa essa flag pra saber o que ainda precisa virar push real
     }),
   );
 }
