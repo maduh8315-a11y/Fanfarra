@@ -16,7 +16,7 @@ import {
 import { useEffect, useState } from "react";
 import { auth, db } from "./firebase";
 import { checkClientCooldown } from "./clientCooldown";
-import { ADMIN_UIDS } from "./config";
+import { isAdminUid } from "./config";
 
 const COMMENTS_COLLECTION = "rec_comments";
 const COMMENTS_PAGE_SIZE = 20;
@@ -117,7 +117,7 @@ export async function deleteRecComment(commentId: string): Promise<void> {
   if (!snap.exists()) return;
 
   const ownerUid = (snap.data() as { uid?: string }).uid;
-  if (ownerUid !== uid && !ADMIN_UIDS.includes(uid)) {
+  if (ownerUid !== uid && !(await isAdminUid(uid))) {
     throw new Error("Você não pode apagar este comentário.");
   }
   await deleteDoc(ref);

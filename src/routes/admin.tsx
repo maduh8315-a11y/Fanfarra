@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { ArrowLeft, ShieldAlert } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { AdminPanel } from "@/components/fanfarra/AdminPanel";
-import { ADMIN_UIDS } from "@/lib/fanfarra/config";
+import { useIsAdmin } from "@/lib/fanfarra/config";
 import { useAuthReady, useAuthUser } from "@/lib/fanfarra/auth";
 
 export const Route = createFileRoute("/admin")({
@@ -15,7 +15,7 @@ function AdminPage() {
   const nav = useNavigate();
   const user = useAuthUser();
   const authReady = useAuthReady();
-  const isAdmin = !!user && ADMIN_UIDS.includes(user.uid);
+  const isAdmin = useIsAdmin(user?.uid);
 
   // Espera o Firebase confirmar a sessão antes de decidir se expulsa o
   // usuário — sem isso, ele seria chutado pra "/" por uma fração de

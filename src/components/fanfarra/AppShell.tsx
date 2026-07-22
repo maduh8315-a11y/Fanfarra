@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useAuthUser, signOut } from "@/lib/fanfarra/auth";
-import { ADMIN_UIDS } from "@/lib/fanfarra/config";
+import { useIsAdmin } from "@/lib/fanfarra/config";
 import { useNotifications } from "@/lib/fanfarra/extras";
 import { useIsPro } from "@/lib/fanfarra/config";
 import { useOnlineStatus } from "@/hooks/use-online-status";
@@ -44,7 +44,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     if (!user) return;
     return listenForegroundPush((title, body) => toast(title, { description: body }));
   }, [user]);
-  const isAdmin = !!user && ADMIN_UIDS.includes(user.uid);
+  const isAdmin = useIsAdmin(user?.uid);
   const navigate = useNavigate();
   const notifications = useNotifications();
   const unreadCount = notifications.filter((n) => !n.read).length;

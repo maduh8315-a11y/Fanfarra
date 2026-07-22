@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import { ADMIN_UIDS } from "@/lib/fanfarra/config";
+import { useIsAdmin } from "@/lib/fanfarra/config";
 import { useAuthUser } from "@/lib/fanfarra/auth";
 import {
   forceAdvanceAwardsPhase,
@@ -27,8 +27,8 @@ export function AdminPanel() {
 
   // Defesa extra: mesmo que a rota /admin já bloqueie quem não é admin,
   // o componente também se recusa a renderizar pra quem não é.
-  if (!user || !ADMIN_UIDS.includes(user.uid)) return null;
-
+const isAdmin = useIsAdmin(user?.uid);
+  if (!user || !isAdmin) return null;
   const toLocalInputValue = (ts?: number) => {
     if (!ts) return "";
     const d = new Date(ts - new Date().getTimezoneOffset() * 60000);

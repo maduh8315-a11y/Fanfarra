@@ -1,4 +1,4 @@
-import { ADMIN_UIDS } from "@/lib/fanfarra/config";
+import { useIsAdmin } from "@/lib/fanfarra/config";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import type { MediaType } from "@/lib/fanfarra/types";
 import { useMemo, useState } from "react";
@@ -162,6 +162,7 @@ function RecDetail() {
   const nav = useNavigate();
   const community = usePublicRecommendations();
 
+
   const item: RecommendationItem | null = useMemo(() => {
     if (id.startsWith("community_")) {
       const originalId = id.replace("community_", "");
@@ -175,6 +176,7 @@ function RecDetail() {
   const myReaction = useMyRecReaction(item?.id ?? "");
 
   const user = useAuthUser();
+  const isAdmin = useIsAdmin(user?.uid);
  const { comments, hasMore: hasMoreComments, loadingMore: loadingMoreComments, loadMore: loadMoreComments } =
   useRecComments(item?.id ?? "");
   const [commentText, setCommentText] = useState("");
@@ -492,7 +494,7 @@ function RecDetail() {
           ) : (
             <div className="space-y-3">
               {comments.map((c) => {
-                const canDelete = !!user && (user.uid === c.uid || ADMIN_UIDS.includes(user.uid));
+                const canDelete = !!user && (user.uid === c.uid || isAdmin);
                 return (
                   <div key={c.id} className="flex items-start justify-between gap-2">
                     <div>
