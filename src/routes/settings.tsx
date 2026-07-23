@@ -4,7 +4,8 @@ import { ArrowLeft, ChevronRight, PanelBottomOpen, RefreshCw, Sun, Moon } from "
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { ToggleField } from "@/components/fanfarra/forms/FormFields";
 import { updateSettings, useSettings } from "@/lib/fanfarra/extras";
-import { DEV_MODE, useIsPro } from "@/lib/fanfarra/config";
+import { DEV_MODE, useIsPro, useIsAdmin } from "@/lib/fanfarra/config";
+import { useAuthUser } from "@/lib/fanfarra/auth";
 import { toast } from "sonner";
 import { signOut } from "@/lib/fanfarra/auth";
 import { enablePushNotifications } from "@/lib/fanfarra/pushNotifications";
@@ -21,6 +22,8 @@ export const Route = createFileRoute("/settings")({
 
 function SettingsPage() {
   const nav = useNavigate();
+  const user = useAuthUser();
+  const isAdmin = useIsAdmin(user?.uid);
   const s = useSettings();
   const isPro = useIsPro();
   const [modal, setModal] = useState<"email" | "password" | "delete" | null>(null);
@@ -136,7 +139,7 @@ function SettingsPage() {
             variant="navigate"
             onClick={() => nav({ to: "/pro" })}
           />
-          {DEV_MODE && (
+          {DEV_MODE && isAdmin && (
             <Item
               label={s.pro ? "[DEV] Desligar PRO (teste)" : "[DEV] Ligar PRO (teste)"}
               onClick={() => {

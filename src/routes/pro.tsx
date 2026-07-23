@@ -13,7 +13,8 @@ import {
   Sparkles,
 } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
-import { DEV_MODE, useIsPro } from "@/lib/fanfarra/config";
+import { DEV_MODE, useIsPro, useIsAdmin } from "@/lib/fanfarra/config";
+import { useAuthUser } from "@/lib/fanfarra/auth";
 import { updateSettings } from "@/lib/fanfarra/extras";
 import { toast } from "sonner";
 
@@ -45,9 +46,11 @@ const FEATURES = [
 function ProPage() {
   const nav = useNavigate();
   const isPro = useIsPro();
+  const user = useAuthUser();
+  const isAdmin = useIsAdmin(user?.uid);
 
   async function handleSubscribe() {
-    if (!DEV_MODE) {
+   if (!DEV_MODE || !isAdmin) {
       toast.error("Pagamentos ainda não estão disponíveis nesta versão do app.");
       return;
     }
@@ -77,7 +80,7 @@ function ProPage() {
         <span className="w-6" />
       </header>
 
-      {DEV_MODE && (
+      {DEV_MODE && isAdmin && (
         <div
           className="mx-4 mb-4 flex items-center gap-2 px-3.5 py-2 rounded-[10px]"
           style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-rose-mid)" }}

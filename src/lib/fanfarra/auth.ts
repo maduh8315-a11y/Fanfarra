@@ -26,6 +26,7 @@ import { deleteAwardVotesForUser } from "./awardsStore";
 import { deleteAllRecommendationsForUser } from "./communityStore";
 import { deleteRemainingUserData, setSkipNextProfileAutoSeed } from "./extras";
 import { useEffect, useState, useSyncExternalStore } from "react";
+import { initPurchases, logOutPurchases } from "./purchases";
 
 export interface AuthUser {
   uid: string;
@@ -58,6 +59,11 @@ onAuthStateChanged(auth, (u) => {
   cache = u ? toAuthUser(u) : null;
   ready = true;
   listeners.forEach((l) => l());
+  if (u) {
+    initPurchases(u.uid).catch((e) => console.error("RevenueCat initPurchases falhou:", e));
+  } else {
+    logOutPurchases().catch(() => {});
+  }
 });
 
 function subscribe(cb: () => void) {

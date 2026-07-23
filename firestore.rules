@@ -61,7 +61,18 @@ service cloud.firestore {
     }
 
     match /settings/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read: if request.auth != null && request.auth.uid == uid;
+
+      allow create: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.pro == false;
+
+      // Ninguém consegue mudar `pro` pelo client, exceto o admin (o toggle
+      // [DEV] em /settings, que já só aparece pra admin). Pra qualquer
+      // outro usuário, esse campo só muda via webhook do servidor
+      // (googleFirestoreRest.server.ts, que usa service account e não
+      // passa por essas regras).
+      allow update: if request.auth != null && request.auth.uid == uid
+        && (request.resource.data.pro == resource.data.pro || isAdmin());
     }
 
     match /profiles/{uid} {
