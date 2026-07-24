@@ -7,8 +7,8 @@ service cloud.firestore {
     // documento que o client usa (app_config/admins) — não há mais UID
     // hardcoded aqui, então não há nada para sincronizar manualmente.
     function isAdmin() {
-      return request.auth != null &&
-        request.auth.uid in get(/databases/$(database)/documents/app_config/admins).data.uids;
+    return request.auth != null &&
+    request.auth.uid in get(/databases/$(database)/documents/app_config/admins).data.uids;
     }
 
     match /app_config/admins {
@@ -103,6 +103,11 @@ service cloud.firestore {
       allow read: if request.auth != null;
       allow write: if isAdmin();
     }
+
+    match /awards_history/{docId} {
+  allow read: if request.auth != null;
+  allow write: if isAdmin();
+}
 
     match /award_votes_indicacao/{uid} {
       allow read: if request.auth != null;

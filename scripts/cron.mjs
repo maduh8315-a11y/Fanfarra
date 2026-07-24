@@ -40,6 +40,7 @@ async function advanceAwardsPhase() {
     if (config[key] !== undefined) config[key] = Number(config[key]);
   }
   const now = Date.now();
+  console.log(`[awards] verificando... fase atual: ${config.phase}, agora: ${new Date(now).toISOString()}`);
 
   const catalogSnap = await db.collection("awards_catalog").get();
   const categories = catalogSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
@@ -56,14 +57,19 @@ async function advanceAwardsPhase() {
   }
 
   if (config.phase === "recomendacao") {
-    if (!config.recomendacaoDeadline || now < config.recomendacaoDeadline) return;
+    if (!config.recomendacaoDeadline) return console.log("[awards] fase=recomendacao, sem recomendacaoDeadline configurado, ignorando.");
+    if (now < config.recomendacaoDeadline) return console.log(`[awards] fase=recomendacao, prazo ainda não venceu (faltam ${Math.round((config.recomendacaoDeadline - now) / 1000)}s).`);
     await freezeNominationsAndAdvance(categories, config);
   } else if (config.phase === "indicacao") {
-    if (!config.indicacaoDeadline || now < config.indicacaoDeadline) return;
+    if (!config.indicacaoDeadline) return console.log("[awards] fase=indicacao, sem indicacaoDeadline configurado, ignorando.");
+    if (now < config.indicacaoDeadline) return console.log(`[awards] fase=indicacao, prazo ainda não venceu (faltam ${Math.round((config.indicacaoDeadline - now) / 1000)}s).`);
     await advanceIndicacaoToFinal(categories, config);
   } else if (config.phase === "final") {
-    if (!config.finalDeadline || now < config.finalDeadline) return;
+    if (!config.finalDeadline) return console.log("[awards] fase=final, sem finalDeadline configurado, ignorando.");
+    if (now < config.finalDeadline) return console.log(`[awards] fase=final, prazo ainda não venceu (faltam ${Math.round((config.finalDeadline - now) / 1000)}s).`);
     await advanceFinalToResultado();
+  } else {
+    console.log(`[awards] fase atual é "${config.phase}", nada a fazer.`);
   }
 }
 
@@ -131,7 +137,6 @@ async function freezeNominationsAndAdvance(categories, config) {
   });
   batch.set(db.collection("awards_config").doc("current"), {
     phase: "indicacao",
-    indicacaoDeadline: freezeDeadline + WEEK_MS,
   }, { merge: true });
   await batch.commit();
   console.log("[awards] fase avançada: recomendacao → indicacao");
@@ -158,7 +163,6 @@ async function advanceIndicacaoToFinal(categories, config) {
   });
   batch.set(db.collection("awards_config").doc("current"), {
     phase: "final",
-    finalDeadline: deadline + WEEK_MS,
   }, { merge: true });
   await batch.commit();
   console.log("[awards] fase avançada: indicacao → final");

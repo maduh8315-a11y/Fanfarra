@@ -231,8 +231,8 @@ function RecommendationPhase({ config }: { config: AwardsConfig }) {
     return () => clearInterval(id);
   }, []);
 
-  const notOpenYet = !!open && now < open;
-  const openCountdown = notOpenYet ? formatCountdown(open! - now) : null;
+  const notOpenYet = !open || now < open;
+  const openCountdown = open && notOpenYet ? formatCountdown(open - now) : null;
   const countdown = deadline ? formatCountdown(deadline - now) : null;
 
   return (
@@ -249,12 +249,18 @@ function RecommendationPhase({ config }: { config: AwardsConfig }) {
         </p>
         {notOpenYet && (
           <p className="mt-3 text-[16px] font-extrabold" style={{ color: "var(--fan-pink-light)" }}>
-            {openCountdown ? `Abre em ${openCountdown}` : "Abrindo..."}
+            {openCountdown
+              ? `Abre em ${openCountdown}`
+              : open
+                ? "Prazo de abertura já passou!"
+                : "Data de abertura ainda não agendada."}
           </p>
         )}
         {deadline ? (
           <p className="mt-3 text-[16px] font-extrabold" style={{ color: "var(--fan-pink-light)" }}>
-            {countdown ? `Fecha em ${countdown}` : "Fechando as indicações..."}
+            {countdown
+              ? `Fecha em ${countdown}`
+              : "Prazo encerrado!"}
           </p>
         ) : (
           <p className="mt-3 text-sm" style={{  color: "var(--fan-text-2)" }}>
@@ -342,8 +348,8 @@ function VotingPhase({
 
   const open = phase === "indicacao" ? config.indicacaoOpen : config.finalOpen;
   const deadline = phase === "indicacao" ? config.indicacaoDeadline : config.finalDeadline;
-  const notOpenYet = !!open && now < open;
-  const openCountdown = notOpenYet ? formatCountdown(open! - now) : null;
+  const notOpenYet = !open || now < open;
+  const openCountdown = open && notOpenYet ? formatCountdown(open - now) : null;
   const closeCountdown = deadline ? formatCountdown(deadline - now) : null;
 
   const nomineesFor = (c: AwardCategory): AwardNomineeDetail[] => {
@@ -381,7 +387,11 @@ const handleConfirm = async () => {
           style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-rose-mid)" }}
         >
           <p className="text-[16px] font-extrabold" style={{ color: "var(--fan-pink-light)" }}>
-            {openCountdown ? `Votação abre em ${openCountdown}` : "Abrindo a votação..."}
+            {openCountdown
+              ? `Votação abre em ${openCountdown}`
+              : open
+                ? "Prazo de abertura já passou!"
+                : "Data de abertura ainda não agendada."}
           </p>
           <p className="mt-1 text-sm" style={{ color: "var(--fan-text-2)" }}>
             Volte quando abrir para votar nesta fase.
@@ -395,7 +405,9 @@ const handleConfirm = async () => {
     <div className="px-4 pb-10 space-y-3">
       {deadline ? (
         <p className="text-center text-sm font-bold" style={{ color: "var(--fan-pink-light)" }}>
-          {closeCountdown ? `Fecha em ${closeCountdown}` : "Fechando..."}
+          {closeCountdown
+            ? `Fecha em ${closeCountdown}`
+            : "Prazo encerrado!"}
         </p>
       ) : (
         <p className="text-center text-sm" style={{ color: "var(--fan-text-2)" }}>

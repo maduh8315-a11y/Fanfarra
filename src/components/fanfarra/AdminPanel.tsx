@@ -122,6 +122,16 @@ const isAdmin = useIsAdmin(user?.uid);
     setCloseValue: (v: string) => void;
   }[] = [
     {
+      key: "recomendacao",
+      label: "Recomendação (fase 0 — reações no Para você)",
+      openTs: config.recomendacaoOpen,
+      closeTs: config.recomendacaoDeadline,
+      openValue: recomendacaoOpenInput,
+      setOpenValue: setRecomendacaoOpenInput,
+      closeValue: recomendacaoInput,
+      setCloseValue: setRecomendacaoInput,
+    },
+    {
       key: "indicacao",
       label: "Recomendações (10 obras)",
       openTs: config.indicacaoOpen,
