@@ -1,5 +1,7 @@
 
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useIsAdmin } from "@/lib/fanfarra/config";
+import { useAuthUser } from "@/lib/fanfarra/auth";
 import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
@@ -122,8 +124,17 @@ function AwardsPage() {
   const config = useAwardsConfig();
   const phase = config.phase;
   const [view, setView] = useState<"participar" | "leaderboard">("participar");
+  const authUser = useAuthUser();
+  const isAdmin = useIsAdmin(authUser?.uid);
 
 useEffect(() => {
+    // Só o admin tenta essa "virada rápida" no navegador — ele é o único
+    // que tem permissão de escrita em awards_config/awards_catalog pelas
+    // rules. Pra todo mundo, quem garante a virada de fase é o GitHub
+    // Actions (scripts/cron.mjs), que roda a cada 15 min com a Service
+    // Account e ignora as rules. Sem esse "if", todo usuário comum tentava
+    // escrever e caía em 403 a cada 15s (era o que estava no seu console).
+    if (!isAdmin) return;
     if (categories.length === 0) return;
     const runCheck = () => {
       checkAndAdvanceAwardsPhase(categories).catch((err) =>
@@ -133,12 +144,8 @@ useEffect(() => {
     runCheck();
     const id = setInterval(runCheck, 15_000); // checagem mais frequente
     return () => clearInterval(id);
-    // Propositalmente NÃO dependemos do array "categories" inteiro nem de "phase":
-    // como checkAndAdvanceAwardsPhase reescreve as categorias, usar o array como
-    // dependência recria esse efeito toda vez que o Firestore manda a atualização
-    // de volta, criando um loop de transações concorrentes (erros "failed-precondition").
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [categories.length]);
+  }, [categories.length, isAdmin]);
 
   return (
     <AppShell>
@@ -400,6 +407,51 @@ const handleConfirm = async () => {
       </div>
     );
   }
+
+  if (notOpenYet) {
+    return (
+      <div className="px-4 pb-10">
+        <div
+          className="rounded-[14px] p-4 text-center"
+          style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-rose-mid)" }}
+        >
+          <p className="text-[16px] font-extrabold" style={{ color: "var(--fan-pink-light)" }}>
+            {openCountdown
+              ? `Votação abre em ${openCountdown}`
+              : open
+                ? "Prazo de abertura já passou!"
+                : "Data de abertura ainda não agendada."}
+          </p>
+          <p className="mt-1 text-sm" style={{ color: "var(--fan-text-2)" }}>
+            Volte quando abrir para votar nesta fase.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ⬇️ ADICIONE ESTE BLOCO NOVO AQUI ⬇️
+  const deadlinePassed = !!deadline && now >= deadline;
+  if (deadlinePassed) {
+    return (
+      <div className="px-4 pb-10">
+        <div
+          className="rounded-[14px] p-4 text-center"
+          style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-rose-mid)" }}
+        >
+          <p className="text-[16px] font-extrabold" style={{ color: "var(--fan-pink-light)" }}>
+            Prazo encerrado!
+          </p>
+          <p className="mt-1 text-sm" style={{ color: "var(--fan-text-2)" }}>
+            Estamos apurando o resultado dessa fase. Isso costuma levar até 15
+            minutos — assim que terminar, esta tela avança sozinha pra próxima
+            etapa.
+          </p>
+        </div>
+      </div>
+    );
+  }
+  // ⬆️ FIM DO BLOCO NOVO ⬆️
 
   return (
     <div className="px-4 pb-10 space-y-3">

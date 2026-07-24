@@ -67,7 +67,7 @@ async function advanceAwardsPhase() {
   } else if (config.phase === "final") {
     if (!config.finalDeadline) return console.log("[awards] fase=final, sem finalDeadline configurado, ignorando.");
     if (now < config.finalDeadline) return console.log(`[awards] fase=final, prazo ainda não venceu (faltam ${Math.round((config.finalDeadline - now) / 1000)}s).`);
-    await advanceFinalToResultado();
+    await advanceFinalToResultado(categories, config);
   } else {
     console.log(`[awards] fase atual é "${config.phase}", nada a fazer.`);
   }
@@ -168,11 +168,50 @@ async function advanceIndicacaoToFinal(categories, config) {
   console.log("[awards] fase avançada: indicacao → final");
 }
 
-async function advanceFinalToResultado() {
-  await db.collection("awards_config").doc("current").set({ phase: "resultado" }, { merge: true });
-  console.log("[awards] fase avançada: final → resultado");
+// Mesma normalização de título do awardsHistoryStore.ts do cliente — precisa
+// bater exatamente, senão a mesma obra vira "duas obras diferentes" no histórico.
+function normalizeAwardTitle(title) {
+  return title.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim().replace(/\s+/g, " ");
 }
 
+async function advanceFinalToResultado(categories, config) {
+  const deadline = config.finalDeadline ?? Date.now();
+  const snap = await db.collection("award_votes_final").where("confirmed", "==", true).get();
+  const allVotes = snap.docs
+    .map((d) => d.data())
+    .filter((v) => v.confirmedAt === undefined || v.confirmedAt <= deadline);
+
+  const batch = db.batch();
+  for (const c of categories) {
+    const counts = {};
+    allVotes.forEach((v) => {
+      const nominee = v.votes?.[c.id];
+      if (nominee) counts[nominee] = (counts[nominee] ?? 0) + 1;
+    });
+    const ranked = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    const winnerTitle = ranked[0]?.[0];
+    if (!winnerTitle) continue; // categoria sem nenhum voto — ninguém venceu, nada a gravar
+
+    const id = normalizeAwardTitle(winnerTitle);
+    if (!id) continue;
+    batch.set(
+      db.collection("awards_history").doc(id),
+      {
+        title: winnerTitle,
+        wins: FieldValue.arrayUnion({
+          year: config.year,
+          categoryId: c.id,
+          categoryName: c.name,
+          emoji: c.emoji,
+        }),
+      },
+      { merge: true },
+    );
+  }
+  batch.set(db.collection("awards_config").doc("current"), { phase: "resultado" }, { merge: true });
+  await batch.commit();
+  console.log("[awards] fase avançada: final → resultado (vencedores gravados no histórico)");
+}
 // Abre a próxima edição agendada — zera indicados/finalistas da edição
 // anterior e já entra em "recomendacao" com o prazo de fechamento certo.
 async function openScheduledCycle(categories, recomendacaoDeadline) {
