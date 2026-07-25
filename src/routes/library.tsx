@@ -30,6 +30,7 @@ import {
 } from "@/components/fanfarra/FilterSheet";
 import { BookcaseFormModal } from "@/routes/collections";
 import { MediaIcon } from "@/components/fanfarra/MediaIcon";
+import { getTypeColor, getTypeCardBg, getTypeCardBorder } from "@/lib/fanfarra/typeColors";
 import { ModeIcon } from "@/components/fanfarra/ModeIcon";
 
 
@@ -254,16 +255,25 @@ function LibraryPage() {
                         : w.status === "Concluído"
                           ? 100
                           : 0;
+                    const hasCover = !!w.cover;
+                    const typeColor = getTypeColor(w.type);
                     return (
                       <Link
                         key={w.id}
                         to="/work/$id"
                         params={{ id: w.id }}
                         className="fan-card overflow-hidden block active:scale-95 transition-transform"
+                        style={
+                          hasCover
+                            ? {
+                                boxShadow: `0 0 0 1px color-mix(in srgb, ${typeColor} 55%, transparent), 0 0 14px 0 color-mix(in srgb, ${typeColor} 40%, transparent)`,
+                              }
+                            : { background: getTypeCardBg(w.type), border: `0.5px solid ${getTypeCardBorder(w.type)}` }
+                        }
                       >
                         <div
                           className="relative aspect-[2/3] flex items-center justify-center"
-                          style={{ background: "var(--fan-border)" }}
+                          style={{ background: hasCover ? "var(--fan-border)" : "transparent" }}
                         >
                           <AwardCrownBadge title={w.title} />
                           {w.cover ? (

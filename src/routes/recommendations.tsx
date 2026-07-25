@@ -326,7 +326,7 @@ function CatalogCard({ item, grid = false }: { item: RecommendationItem; grid?: 
           <img src={item.cover} alt={item.title} className="w-full h-full object-cover" />
         ) : (
           <>
-            <MediaIcon type={item.type as MediaType} size={28} color="var(--fan-icon-blue)" />
+            <MediaIcon type={item.type as MediaType} size={28} />
             <span
               className="text-sm mt-1 text-center px-1 font-semibold line-clamp-2"
               style={{ color: "var(--fan-text-2)" }}

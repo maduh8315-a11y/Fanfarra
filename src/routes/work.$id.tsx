@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { getTypeColor } from "@/lib/fanfarra/typeColors";
 import {
   ArrowLeft,
   Pencil,
@@ -236,7 +237,7 @@ function WorkDetail() {
               <img src={work.cover} alt={work.title} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center" style={{ background: "var(--fan-bg-2)" }}>
-                <MediaIcon type={work.type} size={36} color="var(--fan-pink-light)" />
+                <MediaIcon type={work.type} size={36} />
               </div>
             )}
           </div>
@@ -247,8 +248,8 @@ function WorkDetail() {
             </h1>
 
             <div className="mt-2 flex flex-wrap gap-2">
-              <Chip>
-                <MediaIcon type={work.type} size={12} color="var(--fan-pink-light)" />
+              <Chip bg={`color-mix(in srgb, ${getTypeColor(work.type)} 18%, var(--fan-tag))`} fg={getTypeColor(work.type)}>
+                <MediaIcon type={work.type} size={12} />
                 {work.type}
               </Chip>
               <Chip bg={statusColor.bg} fg={statusColor.fg}>

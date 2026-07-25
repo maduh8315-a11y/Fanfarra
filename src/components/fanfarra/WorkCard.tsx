@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import type { Work } from "@/lib/fanfarra/types";
 import { MediaIcon } from "./MediaIcon";
+import { getTypeColor, getTypeCardBg, getTypeCardBorder } from "@/lib/fanfarra/typeColors";
 
 export function WorkCard({ work }: { work: Work }) {
   const [imgLoaded, setImgLoaded] = useState(false);
@@ -26,15 +27,24 @@ export function WorkCard({ work }: { work: Work }) {
           : work.type === "Música"
             ? `${work.current} escutas`
             : `Cap ${work.current}${work.total ? `/${work.total}` : ""}`;
+  const hasCover = !!work.cover;
+  const typeColor = getTypeColor(work.type);
   return (
     <Link
       to="/work/$id"
       params={{ id: work.id }}
       className="block w-[110px] shrink-0 fan-card overflow-hidden transition-transform active:scale-95"
+      style={
+        hasCover
+          ? {
+              boxShadow: `0 0 0 1px color-mix(in srgb, ${typeColor} 55%, transparent), 0 0 14px 0 color-mix(in srgb, ${typeColor} 40%, transparent)`,
+            }
+          : { background: getTypeCardBg(work.type), border: `0.5px solid ${getTypeCardBorder(work.type)}` }
+      }
     >
       <div
         className="w-full aspect-[3/4] flex items-center justify-center relative"
-        style={{ background: "var(--fan-border)" }}
+        style={{ background: hasCover ? "var(--fan-border)" : "transparent" }}
       >
         {work.cover ? (
           <img

@@ -19,6 +19,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { MediaType } from "@/lib/fanfarra/types";
+import { getTypeColor } from "@/lib/fanfarra/typeColors";
 
 const MAP: Record<MediaType, LucideIcon> = {
   Anime: Tv,
@@ -52,5 +53,5 @@ export function MediaIcon({
   className?: string;
 }) {
   const Icon = MAP[type] ?? Tv;
-  return <Icon size={size} color={color} strokeWidth={1.5} className={className} />;
+  return <Icon size={size} color={color ?? getTypeColor(type)} strokeWidth={1.5} className={className} />;
 }

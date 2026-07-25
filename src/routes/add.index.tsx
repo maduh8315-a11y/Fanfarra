@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { MediaIcon } from "@/components/fanfarra/MediaIcon";
 import { ModeIcon } from "@/components/fanfarra/ModeIcon";
+import { getTypeColor, getTypeCardBg, getTypeCardBorder } from "@/lib/fanfarra/typeColors";
 import { MEDIA_TYPES, MEDIA_MODES, MODE_OF_TYPE, MODE_LABELS, type MediaType, type MediaMode } from "@/lib/fanfarra/types";
 
 export const Route = createFileRoute("/add/")({
@@ -70,8 +71,8 @@ function AddIndex() {
                   }
                   className="relative flex flex-col items-center justify-center gap-2 p-4 rounded-[12px] active:scale-95 transition"
                   style={{
-                    background: "var(--fan-bg-2)",
-                    border: "0.5px solid var(--fan-rose-mid)",
+                    background: getTypeCardBg(t),
+                    border: `0.5px solid ${getTypeCardBorder(t)}`,
                   }}
                 >
                   {t === "Vídeos" && (
@@ -80,10 +81,10 @@ function AddIndex() {
                       <span className="rounded-full" style={{ width: 4, height: 4, background: "var(--fan-rose-mid)" }} />
                     </span>
                   )}
-                  <MediaIcon type={t} size={28} className="text-[var(--fan-pink)]" />
+                  <MediaIcon type={t} size={28} />
                   <span
                     className="text-sm font-bold text-center"
-                    style={{ color: "var(--fan-text-3)" }}
+                    style={{ color: getTypeColor(t) }}
                   >
                     {t}
                   </span>

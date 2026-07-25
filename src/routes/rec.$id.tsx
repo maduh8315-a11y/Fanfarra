@@ -2,6 +2,7 @@ import { useIsAdmin } from "@/lib/fanfarra/config";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import type { MediaType } from "@/lib/fanfarra/types";
 import { useMemo, useState } from "react";
+import { getTypeColor } from "@/lib/fanfarra/typeColors";
 import {
   ArrowLeft,
   Star,
@@ -14,11 +15,13 @@ import {
   Layers,
   Users2,
   Trash2,
+  Crown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { MediaIcon } from "@/components/fanfarra/MediaIcon";
 import { AwardCrownBadge } from "@/components/fanfarra/AwardCrownBadge";
+import { useAwardWins } from "@/lib/fanfarra/awardsHistoryStore";
 import {
   CATALOG,
   communityToRecommendationItem,
@@ -174,6 +177,7 @@ function RecDetail() {
 
   const reactionCounts = useRecReactionCounts(item?.id ?? "");
   const myReaction = useMyRecReaction(item?.id ?? "");
+  const awardWins = useAwardWins(item?.title);
 
   const user = useAuthUser();
   const isAdmin = useIsAdmin(user?.uid);
@@ -295,7 +299,7 @@ function RecDetail() {
               <img src={item.cover} alt={item.title} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center gap-2">
-                <MediaIcon type={item.type as MediaType} size={44} color="var(--fan-icon-blue)" />               
+                <MediaIcon type={item.type as MediaType} size={44} />               
                 <span className="text-sm font-semibold" style={{ color: "var(--fan-text-2)" }}>
                   {item.type}
                 </span>
@@ -310,7 +314,10 @@ function RecDetail() {
         <div className="flex flex-wrap justify-center gap-1.5 mb-2">
           <span
             className="text-[11px] font-bold px-2.5 py-1 rounded-full"
-            style={{ background: "var(--fan-tag)", color: "var(--fan-pink-light)" }}
+            style={{
+              background: `color-mix(in srgb, ${getTypeColor(item.type as MediaType)} 18%, var(--fan-tag))`,
+              color: getTypeColor(item.type as MediaType),
+            }}
           >
             {item.type}
           </span>
@@ -339,6 +346,17 @@ function RecDetail() {
           </p>
         )}
 
+        {awardWins.length > 0 && (
+          <div
+            className="flex items-center justify-center gap-1.5 mt-3 text-[13px] font-bold"
+            style={{ color: "#FFD24D" }}
+          >
+            <Crown size={15} color="#FFD24D" />
+            {awardWins.length === 1
+              ? "Venceu 1 vez o Fanfarra Awards"
+              : `Venceu ${awardWins.length} vezes o Fanfarra Awards`}
+          </div>
+        )}
         <div className="flex items-center justify-center gap-8 mt-4">
           <button
             onClick={() => handleReact("like")}
@@ -567,7 +585,7 @@ function RecDetail() {
                     {r.cover ? (
                       <img src={r.cover} alt={r.title} className="w-full h-full object-cover" />
                     ) : (
-                      <MediaIcon type={r.type as any} size={20} color="var(--fan-icon-blue)" />
+                      <MediaIcon type={r.type as any} size={20} />
                     )}
                   </div>
                   <p

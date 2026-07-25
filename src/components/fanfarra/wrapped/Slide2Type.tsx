@@ -30,7 +30,7 @@ export default function Slide2Type({ data }: { data: WrappedData }) {
       <div className="wrapped-content">
         <div style={{ display: "flex", justifyContent: "center" }}>
           {data.favoriteType.type ? (
-            <MediaIcon type={data.favoriteType.type} size={120} color="var(--fan-icon-blue)" />
+            <MediaIcon type={data.favoriteType.type} size={120} />
           ) : (
             <Sparkles size={120} color="var(--fan-icon-blue)" />
           )}
