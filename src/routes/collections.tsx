@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useEffect, type CSSProperties } from "react";
 import { AppShell } from "@/components/fanfarra/AppShell";
+import { toast } from "sonner";
 import {
   useBookcases,
   useBookcasesHasMore,
@@ -86,7 +87,11 @@ function CollectionsPage() {
         {/* ── Nível 1: Lista de estantes ── */}
         {level === 1 && (
           <>
-            <InnerHeader title="Minhas Estantes" onAdd={() => setShowNewBookcase(true)} />
+            <InnerHeader
+              title="Minhas Estantes"
+              onBack={() => nav({ to: "/" })}
+              onAdd={() => setShowNewBookcase(true)}
+            />
             <div style={{ ...grid2, padding: 16, ...fadeStyle }}>
               {bookcases.length === 0 && (
                 <div
@@ -214,7 +219,7 @@ function CollectionsPage() {
         )}
 
         {/* ── Modal nova estante ── */}
-      {showNewBookcase && (
+        {showNewBookcase && (
           <BookcaseFormModal
             showPublicToggle
             isPro={isPro}
@@ -231,7 +236,7 @@ function CollectionsPage() {
                 });
                 setShowNewBookcase(false);
               } catch (err) {
-                alert(err instanceof Error ? err.message : "Erro ao criar estante.");
+                toast.error(err instanceof Error ? err.message : "Erro ao criar estante.");
               }
             }}
           />

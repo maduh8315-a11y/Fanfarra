@@ -85,7 +85,7 @@ function LibraryPage() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [creatingBookcase, setCreatingBookcase] = useState(false);
 
- const filtered = useMemo(() => {
+  const filtered = useMemo(() => {
     const base = works.filter((w) => {
       if (mode !== "Todos" && MODE_OF_TYPE[w.type] !== mode) return false;
       if (tab !== "Todos" && w.status !== tab) return false;
@@ -128,7 +128,7 @@ function LibraryPage() {
         </button>
       </header>
 
-     {/* ── Nível 1: MODO de consumo — separação definitiva Ler/Assistir/Jogar/Ouvir ── */}
+      {/* ── Nível 1: MODO de consumo — separação definitiva Ler/Assistir/Jogar/Ouvir ── */}
       <div className="flex gap-2 overflow-x-auto px-4 pb-3" style={{ scrollbarWidth: "none" }}>
         {MODE_TABS.map((m) => {
           const active = mode === m;
@@ -224,7 +224,30 @@ function LibraryPage() {
         {worksLoading ? (
           <WorkGridSkeleton />
         ) : filtered.length === 0 ? (
-          <EmptyState icon={BookMarked} title="Nada por aqui ainda." />
+          <EmptyState
+            icon={BookMarked}
+            title={works.length === 0 ? "Nada por aqui ainda." : "Nenhuma obra bate com esses filtros."}
+            action={
+              works.length === 0 ? (
+                <Link to="/add" className="fan-btn-primary text-sm">
+                  Adicionar obra
+                </Link>
+              ) : (
+                <button
+                  onClick={() => {
+                    setMode("Todos");
+                    setTab("Todos");
+                    setType("Todos");
+                    setFilters(DEFAULT_FILTERS);
+                  }}
+                  className="text-sm"
+                  style={{ color: "var(--fan-pink)" }}
+                >
+                  Limpar filtros
+                </button>
+              )
+            }
+          />
         ) : (
           <div
             ref={listRef}
@@ -266,8 +289,8 @@ function LibraryPage() {
                         style={
                           hasCover
                             ? {
-                                boxShadow: `0 0 0 1px color-mix(in srgb, ${typeColor} 55%, transparent), 0 0 14px 0 color-mix(in srgb, ${typeColor} 40%, transparent)`,
-                              }
+                              boxShadow: `0 0 0 1px color-mix(in srgb, ${typeColor} 55%, transparent), 0 0 14px 0 color-mix(in srgb, ${typeColor} 40%, transparent)`,
+                            }
                             : { background: getTypeCardBg(w.type), border: `0.5px solid ${getTypeCardBorder(w.type)}` }
                         }
                       >

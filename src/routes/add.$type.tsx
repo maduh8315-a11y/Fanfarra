@@ -58,6 +58,7 @@ function AddTypePage() {
   }
   const mediaType = type as MediaType;
 
+
   const isVideoFlow = VIDEO_PAGES.some((p) => p.type === mediaType);
   if (isVideoFlow) {
     return <VideosAddPager initialType={mediaType} />;
@@ -85,7 +86,7 @@ function AddTypePage() {
             for (const entry of v.shelfEntries) {
               addWorkToShelf(entry.bookcaseId, entry.shelfId, w.id);
             }
-            nav({ to: "/add" });
+            nav({ to: "/work/$id", params: { id: w.id } });
           }}
         />
       </ClientOnly>
@@ -164,7 +165,7 @@ function VideosAddPager({ initialType }: { initialType: MediaType }) {
               for (const entry of v.shelfEntries) {
                 addWorkToShelf(entry.bookcaseId, entry.shelfId, w.id);
               }
-              nav({ to: "/add" });
+              nav({ to: "/work/$id", params: { id: w.id } });
             }}
           />
         </ClientOnly>

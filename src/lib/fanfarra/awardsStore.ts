@@ -22,6 +22,7 @@ import { pushNotification } from "./extras";
 import { getRecReactionCountsAsOf } from "./recReactions";
 import { CATALOG } from "./recommendations";
 import { recordAwardWin } from "./awardsHistoryStore";
+import { toast } from "sonner";
 
 // ===== Configuração da edição (ano/título/fase/prazos) — editável no Console do Firebase =====
 const CONFIG_COLLECTION = "awards_config";
@@ -97,7 +98,10 @@ function connectConfig() {
       configCache = normalizeAwardsConfig(snap.exists() ? (snap.data() as Partial<AwardsConfig>) : undefined);
       notifyConfig();
     },
-    (err) => console.error("Erro ao carregar configuração do Awards:", err),
+    (err) => {
+      console.error("Erro ao carregar configuração do Awards:", err);
+      toast.error("Não foi possível carregar os Awards. Verifique sua conexão e tente de novo.");
+    },
   );
 }
 
@@ -294,7 +298,10 @@ function connectCategories() {
       });
       notifyCategories();
     },
-    (err) => console.error("Erro ao carregar categorias do Awards:", err),
+    (err) => {
+      console.error("Erro ao carregar categorias do Awards:", err);
+      toast.error("Não foi possível carregar as categorias do Awards. Verifique sua conexão e tente de novo.");
+    },
   );
 }
 

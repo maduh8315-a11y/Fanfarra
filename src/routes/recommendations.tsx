@@ -6,7 +6,9 @@ import { AppShell } from "@/components/fanfarra/AppShell";
 import { useWorks } from "@/lib/fanfarra/store";
 import { MediaIcon } from "@/components/fanfarra/MediaIcon";
 import { AwardCrownBadge } from "@/components/fanfarra/AwardCrownBadge";
+import { getTypeColor, getTypeCardBg, getTypeCardBorder } from "@/lib/fanfarra/typeColors";
 import { Link } from "@tanstack/react-router";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   CATALOG,
   scoreItems,
@@ -25,6 +27,7 @@ import {
 import { useProfile } from "@/lib/fanfarra/extras";
 import {
   usePublicRecommendations,
+  usePublicRecommendationsLoading,
   useCommunityHasMore,
   useCommunityLoadingMore,
   loadMoreCommunity,
@@ -59,6 +62,7 @@ function RecPage() {
 
   // Recomendações postadas por qualquer usuário — visíveis para todo mundo
   const community = usePublicRecommendations();
+  const communityLoading = usePublicRecommendationsLoading();
   const hasMoreCommunity = useCommunityHasMore();
   const loadingMoreCommunity = useCommunityLoadingMore();
   const communityItems = useMemo<RecommendationItem[]>(
@@ -171,7 +175,15 @@ function RecPage() {
                 Da comunidade
               </h2>
             </div>
-            {communityItems.length === 0 ? (
+            {communityLoading ? (
+              <div className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="w-28 shrink-0">
+                    <Skeleton style={{ aspectRatio: "2/3", width: "100%", borderRadius: 10 }} />
+                  </div>
+                ))}
+              </div>
+            ) : communityItems.length === 0 ? (
               <div
                 className="rounded-[14px] p-4"
                 style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
@@ -183,7 +195,7 @@ function RecPage() {
                   className="p-0"
                 />
               </div>
-           ) : (
+            ) : (
               <>
                 <div className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
                   {communityItems.map((item) => (
@@ -309,19 +321,26 @@ function RecPage() {
 
 // ── Card ───────────────────────────────────────────────────────────────────────
 
-function CatalogCard({ item, grid = false }: { item: RecommendationItem; grid?: boolean }) {
+export function CatalogCard({ item, grid = false }: { item: RecommendationItem; grid?: boolean }) {
   const size = grid ? "w-full" : "w-28 shrink-0";
   return (
     <Link to="/rec/$id" params={{ id: item.id }} className={`${size} relative group block`}>
       <div
         className="w-full rounded-[10px] flex flex-col items-center justify-center overflow-hidden relative"
-        style={{
-          aspectRatio: "2/3",
-          background: "linear-gradient(135deg, var(--fan-bg-2), var(--fan-active-chip))",
-          border: "1px solid var(--fan-rose-mid)",
-        }}
+        style={
+          item.cover
+            ? {
+                aspectRatio: "2/3",
+                boxShadow: `0 0 0 1px color-mix(in srgb, ${getTypeColor(item.type as MediaType)} 55%, transparent), 0 0 14px 0 color-mix(in srgb, ${getTypeColor(item.type as MediaType)} 40%, transparent)`,
+              }
+            : {
+                aspectRatio: "2/3",
+                background: getTypeCardBg(item.type as MediaType),
+                border: `0.5px solid ${getTypeCardBorder(item.type as MediaType)}`,
+              }
+        }
       >
-       <AwardCrownBadge title={item.title} />
+        <AwardCrownBadge title={item.title} />
         {item.cover ? (
           <img src={item.cover} alt={item.title} className="w-full h-full object-cover" />
         ) : (
@@ -357,7 +376,7 @@ function CatalogCard({ item, grid = false }: { item: RecommendationItem; grid?: 
       <p className="text-sm line-clamp-1" style={{ color: "var(--fan-text-2)" }}>
         {item.author}
       </p>
-     {item.recommendedBy && (
+      {item.recommendedBy && (
         <p
           className="text-sm font-semibold mt-0.5 truncate"
           style={{ color: "var(--fan-pink-light)" }}

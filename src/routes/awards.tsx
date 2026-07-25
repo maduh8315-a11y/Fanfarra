@@ -21,6 +21,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import {
   checkAndAdvanceAwardsPhase,
@@ -118,6 +119,25 @@ function AwardsStepper({ phase }: { phase: AwardsPhase }) {
   );
 }
 
+function AwardsCategorySkeleton() {
+  return (
+    <div
+      className="rounded-[14px] p-4"
+      style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-rose-mid)" }}
+    >
+      <div className="flex items-center gap-2 mb-3">
+        <Skeleton style={{ width: 16, height: 16, borderRadius: 4 }} />
+        <Skeleton style={{ width: "45%", height: 14, borderRadius: 4 }} />
+      </div>
+      <div className="space-y-1.5">
+        <Skeleton style={{ width: "100%", height: 38, borderRadius: 10 }} />
+        <Skeleton style={{ width: "100%", height: 38, borderRadius: 10 }} />
+        <Skeleton style={{ width: "70%", height: 38, borderRadius: 10 }} />
+      </div>
+    </div>
+  );
+}
+
 function AwardsPage() {
   const nav = useNavigate();
   const categories = useAwardCategories();
@@ -208,8 +228,10 @@ useEffect(() => {
 
 
       {categories.length === 0 ? (
-        <div className="px-4 pb-10 text-center text-sm" style={{ color: "var(--fan-text-2)" }}>
-          Carregando categorias do Awards...
+        <div className="px-4 pb-10 space-y-3">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <AwardsCategorySkeleton key={i} />
+          ))}
         </div>
       ) : view === "leaderboard" ? (
         <LeaderboardView />

@@ -66,8 +66,6 @@ function VerifyEmailPage() {
 
       <div className="w-full max-w-sm my-6 h-px" style={{ background: "var(--fan-border)" }} />
 
-      <div className="w-full max-w-sm my-6 h-px" style={{ background: "var(--fan-border)" }} />
-
       <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
         Não recebeu?
       </p>
@@ -89,6 +87,13 @@ function VerifyEmailPage() {
       <Link to="/register" className="mt-5 text-sm" style={{ color: "var(--fan-pink-light)" }}>
         Usar outro e-mail
       </Link>
+      <button
+        onClick={() => navigate({ to: "/" })}
+        className="mt-3 text-sm"
+        style={{ color: "var(--fan-text-2)" }}
+      >
+        Confirmar depois — quero explorar agora
+      </button>
     </div>
   );
 }

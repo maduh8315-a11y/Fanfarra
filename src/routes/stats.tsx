@@ -718,6 +718,11 @@ function StatsPage() {
           icon={BarChart3}
           iconColor="var(--fan-icon-blue)"
           title="Adicione obras à sua biblioteca para ver suas estatísticas aqui."
+          action={
+            <Link to="/add" className="fan-btn-primary text-sm">
+              Adicionar obra
+            </Link>
+          }
         />
       </AppShell>
     );
@@ -743,6 +748,11 @@ function StatsPage() {
             icon={BarChart3}
             iconColor="var(--fan-icon-blue)"
             title={`Você ainda não tem obras de ${MODE_LABELS[mode].toLowerCase()} na sua biblioteca.`}
+            action={
+              <Link to="/add" className="fan-btn-primary text-sm">
+                Adicionar obra
+              </Link>
+            }
           />
         </div>
       ) : (

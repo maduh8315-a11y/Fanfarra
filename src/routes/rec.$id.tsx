@@ -2,7 +2,7 @@ import { useIsAdmin } from "@/lib/fanfarra/config";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import type { MediaType } from "@/lib/fanfarra/types";
 import { useMemo, useState } from "react";
-import { getTypeColor } from "@/lib/fanfarra/typeColors";
+import { getTypeColor, getTypeCardBg, getTypeCardBorder } from "@/lib/fanfarra/typeColors";
 import {
   ArrowLeft,
   Star,
@@ -287,12 +287,20 @@ function RecDetail() {
         >
           <div
             className="relative rounded-[18px] overflow-hidden shadow-2xl"
-            style={{
-              width: 190,
-              aspectRatio: "2/3",
-              background: "linear-gradient(135deg, var(--fan-bg-2), var(--fan-active-chip))",
-              border: "1px solid var(--fan-rose-mid)",
-            }}
+            style={
+              item.cover
+                ? {
+                    width: 190,
+                    aspectRatio: "2/3",
+                    boxShadow: `0 0 0 1px color-mix(in srgb, ${getTypeColor(item.type as MediaType)} 55%, transparent), 0 0 14px 0 color-mix(in srgb, ${getTypeColor(item.type as MediaType)} 40%, transparent)`,
+                  }
+                : {
+                    width: 190,
+                    aspectRatio: "2/3",
+                    background: getTypeCardBg(item.type as MediaType),
+                    border: `0.5px solid ${getTypeCardBorder(item.type as MediaType)}`,
+                  }
+            }
           >
             <AwardCrownBadge title={item.title} />
             {item.cover ? (
@@ -575,11 +583,18 @@ function RecDetail() {
                 >
                   <div
                     className="relative w-full rounded-[8px] flex items-center justify-center overflow-hidden"
-                    style={{
-                      aspectRatio: "2/3",
-                      background: "linear-gradient(135deg, var(--fan-bg-2), var(--fan-active-chip))",
-                      border: "1px solid var(--fan-rose-mid)",
-                    }}
+                    style={
+                      r.cover
+                        ? {
+                            aspectRatio: "2/3",
+                            boxShadow: `0 0 0 1px color-mix(in srgb, ${getTypeColor(r.type as MediaType)} 55%, transparent), 0 0 14px 0 color-mix(in srgb, ${getTypeColor(r.type as MediaType)} 40%, transparent)`,
+                          }
+                        : {
+                            aspectRatio: "2/3",
+                            background: getTypeCardBg(r.type as MediaType),
+                            border: `0.5px solid ${getTypeCardBorder(r.type as MediaType)}`,
+                          }
+                    }
                   >
                     <AwardCrownBadge title={r.title} />
                     {r.cover ? (
@@ -609,7 +624,9 @@ function RecDetail() {
       {/* CTA */}
       <div className="px-5 pb-10">
         <Link
-          to="/add"
+          to="/add/$type"
+          params={{ type: item.type }}
+          search={{ title: item.title }}
           className="block w-full py-3 rounded-[14px] text-center text-sm font-bold text-white"
           style={{ background: "linear-gradient(90deg, var(--fan-pink), var(--fan-pink-light))" }}
         >

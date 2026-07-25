@@ -6,6 +6,7 @@ import { Field, TextInput, TextareaField } from "@/components/fanfarra/forms/For
 import { useWorks } from "@/lib/fanfarra/store";
 import { uploadCoverImage } from "@/lib/fanfarra/uploadImage";
 import { updateUserProfile } from "@/lib/fanfarra/auth";
+import { toast } from "sonner";
 import {
   ALL_BADGES,
   earnedBadges,
@@ -97,7 +98,7 @@ function ProfilePage() {
                 const url = await uploadCoverImage(file, "works");
                 updateProfile({ avatar: url });
               } catch (err) {
-                alert(err instanceof Error ? err.message : "Erro ao enviar a foto.");
+                toast.error(err instanceof Error ? err.message : "Erro ao enviar a foto.");
               }
             }}
           />

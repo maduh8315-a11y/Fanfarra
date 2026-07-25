@@ -1,5 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
+import { CATALOG, getTrending, getByType, type RecommendationItem } from "@/lib/fanfarra/recommendations";
+import { getTypeColor, getTypeCardBg, getTypeCardBorder } from "@/lib/fanfarra/typeColors";
+import { CatalogCard } from "./recommendations";
 import {
   tickStreak,
   checkAutoNotifications,
@@ -37,7 +40,7 @@ import { useWorks, useWorksLoading } from "@/lib/fanfarra/store";
 import { WorkGridSkeleton } from "@/components/fanfarra/WorkCardSkeleton";
 import { useAuthUser } from "@/lib/fanfarra/auth";
 import { COMPLETED_STATUSES, IN_PROGRESS_STATUSES, WISHLIST_STATUSES } from "@/lib/fanfarra/types";
-import type { Work } from "@/lib/fanfarra/types";
+import type { Work, MediaType } from "@/lib/fanfarra/types";
 import type { LibraryStatusGroup } from "@/routes/library";
 
 export const Route = createFileRoute("/")({
@@ -255,7 +258,7 @@ function StatsSection({ works }: { works: Work[] }) {
             color="var(--fan-text-2)"
           />
         )}
-       {hasPages && (
+        {hasPages && (
           <StatCard
             icon={ScrollText}
             label="Páginas lidas"
@@ -284,9 +287,22 @@ function StatsSection({ works }: { works: Work[] }) {
     </div>
   );
 }
-function EmptyHome() {
+function EmptyHome({ worksCount }: { worksCount: number }) {
   const user = useAuthUser();
   const name = user?.displayName?.split(" ")[0] ?? "fã";
+  const remaining = Math.max(0, 3 - worksCount);
+
+  const heading =
+    worksCount === 0
+      ? "Sua biblioteca fandom começa aqui."
+      : remaining === 1
+        ? "Só mais uma e sua biblioteca ganha vida!"
+        : "Você está no caminho certo!";
+  const subheading =
+    worksCount === 0
+      ? "Adicione a primeira obra e comece sua jornada!"
+      : `Adicione mais ${remaining} ${remaining === 1 ? "obra" : "obras"} pra desbloquear estatísticas e recomendações de verdade.`;
+  const ctaLabel = worksCount === 0 ? "Adicionar primeira obra" : "Adicionar próxima obra";
 
   return (
     <div className="px-4 pb-6">
@@ -304,8 +320,23 @@ function EmptyHome() {
           Olá, {name}! ✨
         </h1>
         <p className="text-sm leading-relaxed" style={{ color: "var(--fan-text-2)" }}>
-          Sua biblioteca fandom começa aqui.{"\n"}Adicione a primeira obra e comece sua jornada!
+          {heading}
+          {"\n"}
+          {subheading}
         </p>
+        <div className="flex items-center justify-center gap-1.5 mt-4">
+          {[0, 1, 2].map((i) => (
+            <div
+              key={i}
+              className="rounded-full transition-all"
+              style={{
+                width: i < worksCount ? 22 : 8,
+                height: 8,
+                background: i < worksCount ? "var(--fan-pink)" : "var(--fan-border)",
+              }}
+            />
+          ))}
+        </div>
       </div>
 
       <Link
@@ -314,7 +345,7 @@ function EmptyHome() {
         style={{ height: 52, fontSize: 15 }}
       >
         <Plus size={18} color="white" />
-        Adicionar primeira obra
+        {ctaLabel}
       </Link>
 
       <div
@@ -332,9 +363,12 @@ function EmptyHome() {
             <Link key={label} to="/add" className="flex flex-col items-center gap-1.5">
               <div
                 className="w-12 h-12 rounded-[12px] flex items-center justify-center"
-                style={{ background: "var(--fan-tag)", border: "0.5px solid var(--fan-border)" }}
+                style={{
+                  background: getTypeCardBg(label as MediaType),
+                  border: `0.5px solid ${getTypeCardBorder(label as MediaType)}`,
+                }}
               >
-                <Icon size={20} color="var(--fan-icon-blue)" />
+                <Icon size={20} color={getTypeColor(label as MediaType)} />
               </div>
               <span className="text-sm text-center" style={{ color: "var(--fan-text-2)" }}>
                 {label}
@@ -416,9 +450,52 @@ function EmptyHome() {
           só lugar.
         </p>
       </div>
+      <PopularShelves />
     </div>
   );
 }
+
+// Prateleiras de "populares" — mesmo catálogo usado em /recommendations,
+// só que aqui sempre ordenado por popularidade (conta nova = sem histórico
+// pra personalizar ainda). Objetivo: dar pra pessoa algo pra tocar/adicionar
+// nos primeiros segundos, em vez de só formulário em branco.
+function PopularShelves() {
+  const trending = useMemo(() => getTrending(CATALOG, 14), []);
+  const shelfTypes = useMemo(() => {
+    const counts: Record<string, number> = {};
+    CATALOG.forEach((c) => (counts[c.type] = (counts[c.type] ?? 0) + 1));
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([t]) => t);
+  }, []);
+
+  return (
+    <div className="space-y-6 -mx-4">
+      <Shelf title="🔥 Populares agora" items={trending} />
+      {shelfTypes.map((type) => (
+        <Shelf key={type} title={`Em alta em ${type}`} items={getByType(CATALOG, type, 12)} />
+      ))}
+    </div>
+  );
+}
+
+function Shelf({ title, items }: { title: string; items: RecommendationItem[] }) {
+  if (items.length === 0) return null;
+  return (
+    <section className="px-4">
+      <h2 className="text-sm font-bold mb-3" style={{ color: "var(--fan-text-3)" }}>
+        {title}
+      </h2>
+      <div className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
+        {items.map((item) => (
+          <CatalogCard key={item.id} item={item} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function Index() {
   const works = useWorks();
   const worksLoading = useWorksLoading();
@@ -503,7 +580,7 @@ function Index() {
           <WorkGridSkeleton />
         </div>
       ) : works.length === 0 ? (
-        <EmptyHome />
+        <EmptyHome worksCount={works.length} />
       ) : (
         <>
           <TypeChips value={filter} onChange={setFilter} />
@@ -547,10 +624,13 @@ function Index() {
             </Link>
           )}
 
-         <Section title="Recentemente atualizado" works={recent} group="em-andamento" />
+          <Section title="Recentemente atualizado" works={recent} group="em-andamento" />
           <Section title="Adicionadas recentemente" works={recentlyAdded} />
           <Section title="Quero consumir" works={wishlist} group="quero-consumir" />
           <Section title="Concluídos recentemente" works={completed} group="concluidos" />
+          <div className="mt-6">
+            <PopularShelves />
+          </div>
         </>
       )}
     </AppShell>
