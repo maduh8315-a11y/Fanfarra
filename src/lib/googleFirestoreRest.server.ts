@@ -38,7 +38,12 @@ async function importPrivateKey(pem: string): Promise<CryptoKey> {
 
 function getServiceAccount(): ServiceAccount {
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
-  if (!raw) throw new Error("FIREBASE_SERVICE_ACCOUNT_JSON não configurado (wrangler secret put).");
+  const availableKeys = Object.keys(process.env ?? {}).join(", ");
+  if (!raw) {
+    throw new Error(
+      `[DIAGNOSTICO] typeof process=${typeof process} | chaves disponíveis em process.env: [${availableKeys}] | tamanho do valor lido: ${raw === undefined ? "undefined" : raw === "" ? "string vazia" : String(raw).length}`,
+    );
+  }
   return JSON.parse(raw);
 }
 
@@ -182,6 +187,19 @@ export class FirestoreTransaction {
       transaction: this.id,
     });
     return (data as any[]).filter((r) => r.document).length;
+  }
+
+  async listAll<T extends Record<string, any>>(collectionName: string, limit = 5000): Promise<{ id: string; data: T }[]> {
+    const data = await callFirestore(":runQuery", {
+      structuredQuery: { from: [{ collectionId: collectionName }], limit },
+      transaction: this.id,
+    });
+    return (data as any[])
+      .filter((r) => r.document)
+      .map((r) => ({
+        id: (r.document.name as string).split("/").pop() as string,
+        data: fromFields(r.document.fields) as T,
+      }));
   }
 
   upsert(collectionName: string, id: string, data: Record<string, unknown>, writes: any[]) {

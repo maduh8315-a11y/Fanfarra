@@ -2,6 +2,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useIsAdmin } from "@/lib/fanfarra/config";
 import { useAuthUser } from "@/lib/fanfarra/auth";
+import { notifyAllUsers } from "@/lib/fanfarra/notify";
 import {
   forceAdvanceAwardsPhase,
   setPhaseDeadline,
@@ -16,6 +17,7 @@ export function AdminPanel() {
   const user = useAuthUser();
   const categories = useAwardCategories();
   const config = useAwardsConfig();
+  const [broadcastText, setBroadcastText] = useState("");
 
   const [recomendacaoOpenInput, setRecomendacaoOpenInput] = useState("");
   const [recomendacaoInput, setRecomendacaoInput] = useState("");
@@ -252,6 +254,44 @@ const isAdmin = useIsAdmin(user?.uid);
           style={{ border: "1px solid var(--fan-pink)", color: "var(--fan-pink-light)" }}
         >
           Iniciar nova edição
+        </button>
+      </div>
+      <div className="mt-3 pt-3" style={{ borderTop: "1px dashed var(--fan-pink)" }}>
+        <p className="text-sm font-bold mb-2" style={{ color: "var(--fan-pink-light)" }}>
+          Enviar aviso para todo mundo
+        </p>
+        <p className="text-[11px] mb-2" style={{ color: "var(--fan-text-2)" }}>
+          Vai como notificação pra todos os usuários do app. Use com moderação.
+        </p>
+        <textarea
+          value={broadcastText}
+          onChange={(e) => setBroadcastText(e.target.value)}
+          placeholder="Ex: Manutenção programada hoje às 22h."
+          className="w-full rounded-[8px] px-2 py-1 text-sm bg-transparent mb-2"
+          style={{ border: "1px solid var(--fan-rose-mid)", color: "var(--fan-text)" }}
+          rows={2}
+        />
+        <button
+          onClick={async () => {
+            if (!broadcastText.trim()) {
+              toast.error("Escreva o texto do aviso.");
+              return;
+            }
+            setSaving("broadcast");
+            const res = await notifyAllUsers("award", broadcastText.trim());
+            setSaving(null);
+            if (res.ok) {
+              toast.success(`Aviso enviado para ${res.sent ?? 0} usuários.`);
+              setBroadcastText("");
+            } else {
+              toast.error(res.error ?? "Não foi possível enviar.");
+            }
+          }}
+          disabled={saving === "broadcast"}
+          className="text-[11px] px-2 py-1 rounded-full"
+          style={{ border: "1px solid var(--fan-pink)", color: "var(--fan-pink-light)" }}
+        >
+          Enviar aviso
         </button>
       </div>
     </div>

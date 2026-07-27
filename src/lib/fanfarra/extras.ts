@@ -1,6 +1,7 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { Medal, BookMarked, Library, CircleCheck, Flame, Vote, Trophy, Target, Star, Gift, type LucideIcon } from "lucide-react";
 import { onAuthStateChanged } from "firebase/auth";
+import { syncPublicProfile } from "./publicProfiles";
 import {
   collection,
   doc,
@@ -111,7 +112,18 @@ export async function updateSettings(patch: Partial<Settings>) {
 // ===== Notifications =====
 export interface Notification {
   id: string;
-  icon: "pause-circle" | "award" | "bar-chart" | "vote" | "check-circle" | "calendar-clock";
+  icon:
+    | "pause-circle"
+    | "award"
+    | "bar-chart"
+    | "vote"
+    | "check-circle"
+    | "calendar-clock"
+    | "user-plus"
+    | "users"
+    | "heart"
+    | "eye"
+    | "message-circle";
   text: string;
   ts: number;
   read: boolean;
@@ -320,6 +332,11 @@ onAuthStateChanged(auth, async (user) => {
   profileUnsub = onSnapshot(ref, (snap) => {
     if (snap.exists()) {
       profileCache = { ...DEFAULT_PROFILE, ...(snap.data() as Profile) };
+      syncPublicProfile(user.uid, {
+        username: profileCache.username,
+        avatar: profileCache.avatar,
+        bio: profileCache.bio,
+      });
     }
     profileLoaded = true;
     notifyProfileListeners();

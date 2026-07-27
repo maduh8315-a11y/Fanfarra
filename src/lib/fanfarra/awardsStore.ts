@@ -1,5 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
-
+import { notifyAllUsers } from "./notify";
 import {
   doc,
   deleteDoc,
@@ -236,6 +236,8 @@ export async function startNewCycle(categories: AwardCategory[], recomendacaoDea
       { merge: true },
     );
   });
+
+  await notifyAllUsers("calendar-clock", "O Fanfarra Awards começou! Vote nas suas recomendações favoritas.").catch(() => {});
 }
 
 // ===== Catálogo de categorias/indicados — editável no Console do Firebase =====

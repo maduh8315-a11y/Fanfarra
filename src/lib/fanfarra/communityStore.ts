@@ -4,6 +4,7 @@
 // TODOS os usuários autenticados — é o que alimenta a seção "Da comunidade"
 // em /recommendations. Cada usuário só pode CRIAR/ATUALIZAR/APAGAR o próprio
 // documento (ver regras de segurança sugeridas no fim deste arquivo).
+import { notifyMany } from "./notify";
 import {
   collection,
   doc,
@@ -189,35 +190,46 @@ export function postWorkAsRecommendation(work: Work, username: string): void {
       createdAt: now,
       updatedAt: now,
     }),
-  ).catch((err) => {
-    console.error("Erro ao publicar recomendação:", err);
-    toast.error("Não foi possível publicar na comunidade. Tente de novo.");
-  });
+  )
+    .then(() => notifyFriendsAndFollowersOfNewRec(uid, username, work.title))
+    .catch((err) => {
+      console.error("Erro ao publicar recomendação:", err);
+      toast.error("Não foi possível publicar na comunidade. Tente de novo.");
+    });
 }
 
-// Remove a publicação pública. A obra continua normalmente na biblioteca do usuário.
+// Remove a publicação pública de uma obra (ex.: usuário desmarcou "recomendar
+// publicamente"). Fire-and-forget, igual postWorkAsRecommendation.
 export function removeRecommendationPost(workId: string): void {
   deleteDoc(doc(db, COLLECTION, workId)).catch((err) => {
-    console.error("Erro ao remover recomendação:", err);
-    toast.error("Não foi possível remover a publicação. Tente de novo.");
+    console.error("Erro ao remover recomendação da comunidade:", err);
+    toast.error("Não foi possível remover a recomendação. Tente de novo.");
   });
 }
 
-// Apaga todas as recomendações públicas do usuário. Usada ao excluir a conta.
+// Remove todas as recomendações públicas de um usuário (usado ao excluir a conta).
 export async function deleteAllRecommendationsForUser(uid: string): Promise<void> {
   const q = query(collection(db, COLLECTION), where("uid", "==", uid));
   const snap = await getDocs(q);
   await Promise.all(snap.docs.map((d) => deleteDoc(d.ref)));
 }
 
-/*
- * ── Regra de segurança sugerida (configurar no Console do Firebase, em
- *    Firestore Database → Regras — este projeto não versiona o arquivo
- *    firestore.rules, então cole isto lá):
- *
- * match /communityRecs/{recId} {
- *   allow read: if request.auth != null;
- *   allow create, update: if request.auth != null && request.auth.uid == request.resource.data.uid;
- *   allow delete: if request.auth != null && request.auth.uid == resource.data.uid;
- * }
- */
+// Avisa amigos e seguidores que uma nova recomendação foi publicada — é o
+// que faz o feed social parecer "vivo".
+async function notifyFriendsAndFollowersOfNewRec(uid: string, username: string, workTitle: string): Promise<void> {
+  try {
+    const [friendsSnap, followersSnap] = await Promise.all([
+      getDocs(query(collection(db, "friendships"), where("members", "array-contains", uid))),
+      getDocs(query(collection(db, "follows"), where("followingUid", "==", uid))),
+    ]);
+    const friendUids = friendsSnap.docs
+      .map((d) => (d.data() as { members: string[] }).members.find((m) => m !== uid) ?? "")
+      .filter(Boolean);
+    const followerUids = followersSnap.docs.map((d) => (d.data() as { followerUid: string }).followerUid);
+    const targets = [...new Set([...friendUids, ...followerUids])];
+    if (targets.length === 0) return;
+    await notifyMany(targets, "heart", `${username} recomendou "${workTitle}". Dá uma olhada!`);
+  } catch (err) {
+    console.error("Erro ao notificar amigos/seguidores sobre nova recomendação:", err);
+  }
+}

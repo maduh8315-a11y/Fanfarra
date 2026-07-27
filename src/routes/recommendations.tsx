@@ -323,6 +323,7 @@ function RecPage() {
 
 export function CatalogCard({ item, grid = false }: { item: RecommendationItem; grid?: boolean }) {
   const size = grid ? "w-full" : "w-28 shrink-0";
+  const navigate = useNavigate();
   return (
     <Link to="/rec/$id" params={{ id: item.id }} className={`${size} relative group block`}>
       <div
@@ -380,6 +381,11 @@ export function CatalogCard({ item, grid = false }: { item: RecommendationItem; 
         <p
           className="text-sm font-semibold mt-0.5 truncate"
           style={{ color: "var(--fan-pink-light)" }}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            navigate({ to: "/u/$username", params: { username: item.recommendedBy! } });
+          }}
         >
           @{item.recommendedBy}
         </p>

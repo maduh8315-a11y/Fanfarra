@@ -231,6 +231,7 @@ async function openScheduledCycle(categories, recomendacaoDeadline) {
     scheduledEndAt: FieldValue.delete(),
   }, { merge: true });
   await batch.commit();
+  await notifyAllUsers("calendar-clock", "O Fanfarra Awards começou! Vote nas suas recomendações favoritas.");
   console.log("[awards] edição agendada aberta automaticamente.");
 }
 
@@ -314,3 +315,28 @@ await advanceAwardsPhase();
 await freezeDailyReactionSnapshot();
 await sendPendingPushNotifications();
 process.exit(0);
+
+async function notifyAllUsers(icon, text) {
+  const profilesSnap = await db.collection("public_profiles").get();
+  const now = Date.now();
+  let batch = db.batch();
+  let count = 0;
+  for (const docSnap of profilesSnap.docs) {
+    const uid = docSnap.data().uid || docSnap.id;
+    batch.set(db.collection("notifications").doc(`n_${now}_${count}`), {
+      uid,
+      icon,
+      text,
+      ts: now,
+      read: false,
+      pushed: false,
+    });
+    count++;
+    if (count % 400 === 0) {
+      await batch.commit();
+      batch = db.batch();
+    }
+  }
+  if (count % 400 !== 0) await batch.commit();
+  console.log(`[notify] aviso enviado para ${count} usuários.`);
+}

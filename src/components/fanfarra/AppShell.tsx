@@ -2,6 +2,7 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { listenForegroundPush } from "@/lib/fanfarra/pushNotifications";
+import { useIncomingFriendRequests } from "@/lib/fanfarra/friendsStore";
 import {
   Home,
   Library,
@@ -16,6 +17,7 @@ import {
   Info,
   LogOut,
   User,
+  UserPlus,
   Award,
   Wand2,
   Bell,
@@ -48,6 +50,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const notifications = useNotifications();
   const unreadCount = notifications.filter((n) => !n.read).length;
+  const incomingFriendRequests = useIncomingFriendRequests();
   const isPro = useIsPro();
   const isOnline = useOnlineStatus();
   function handleLogout() {
@@ -204,6 +207,13 @@ export function AppShell({ children }: { children: ReactNode }) {
               <DrawerLink to="/challenges" icon={Award} label="Desafios Fandom" />
               <DrawerLink to="/collections" icon={Users} label="Minhas Estantes" pro={isPro ? undefined : true} />
 
+              <DrawerLink
+                to="/friends"
+                icon={UserPlus}
+                label="Amigos"
+                badge={incomingFriendRequests.length > 0 ? String(incomingFriendRequests.length) : undefined}
+              />
+
               <DrawerSection label="Conta" />
               <DrawerLink
                 to="/notifications"
@@ -245,7 +255,7 @@ function DrawerLink({
   badge,
   iconColor,
 }: {
-  to:
+ to:
   | "/"
   | "/library"
   | "/search"
@@ -261,7 +271,8 @@ function DrawerLink({
   | "/settings"
   | "/about"
   | "/stats"
-  | "/admin";
+  | "/admin"
+  | "/friends";
   icon: typeof Home;
   label: string;
   // true = recurso tem partes gratuitas e partes PRO (badge dourado "PRO")

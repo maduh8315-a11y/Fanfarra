@@ -350,7 +350,10 @@ function RecDetail() {
         </p>
        {item.recommendedBy && (
           <p className="text-sm font-semibold mt-1" style={{ color: "var(--fan-pink-light)" }}>
-            Recomendado por @{item.recommendedBy}
+            Recomendado por{" "}
+            <Link to="/u/$username" params={{ username: item.recommendedBy }} className="underline">
+              @{item.recommendedBy}
+            </Link>
           </p>
         )}
 

@@ -420,7 +420,27 @@ function WorkDetail() {
           )}
           <InfoRow icon={<Clock size={16} />} label="Adicionado" value={`há ${daysSinceAdded} dia${daysSinceAdded === 1 ? "" : "s"}`} />
           {work.recommendedBy && (
-            <InfoRow icon={<User size={16} />} label="Recomendado por" value={`@${work.recommendedBy}`} />
+            <div
+              className="flex items-center justify-between px-4 py-3"
+              style={{ borderBottom: "0.5px solid rgba(77,0,37,0.4)" }}
+            >
+              <div className="flex items-center gap-3">
+                <span style={{ color: "var(--fan-pink-light)" }}>
+                  <User size={16} />
+                </span>
+                <span className="text-sm" style={{ color: "var(--fan-text-2)" }}>
+                  Recomendado por
+                </span>
+              </div>
+              <Link
+                to="/u/$username"
+                params={{ username: work.recommendedBy }}
+                className="text-sm font-medium underline"
+                style={{ color: "var(--fan-text)" }}
+              >
+                @{work.recommendedBy}
+              </Link>
+            </div>
           )}
           {work.link ? (
             <button

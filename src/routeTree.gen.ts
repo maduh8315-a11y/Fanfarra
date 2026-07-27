@@ -25,6 +25,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LibraryRouteImport } from './routes/library'
+import { Route as FriendsRouteImport } from './routes/friends'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as CollectionsRouteImport } from './routes/collections'
 import { Route as ChallengesRouteImport } from './routes/challenges'
@@ -35,7 +36,9 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AddIndexRouteImport } from './routes/add.index'
 import { Route as WorkIdRouteImport } from './routes/work.$id'
+import { Route as UUsernameRouteImport } from './routes/u.$username'
 import { Route as RecIdRouteImport } from './routes/rec.$id'
+import { Route as ChatUidRouteImport } from './routes/chat.$uid'
 import { Route as AddTypeRouteImport } from './routes/add.$type'
 import { Route as WorkIdEditRouteImport } from './routes/work_.$id.edit'
 
@@ -119,6 +122,11 @@ const LibraryRoute = LibraryRouteImport.update({
   path: '/library',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FriendsRoute = FriendsRouteImport.update({
+  id: '/friends',
+  path: '/friends',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
@@ -169,9 +177,19 @@ const WorkIdRoute = WorkIdRouteImport.update({
   path: '/work/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UUsernameRoute = UUsernameRouteImport.update({
+  id: '/u/$username',
+  path: '/u/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RecIdRoute = RecIdRouteImport.update({
   id: '/rec/$id',
   path: '/rec/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChatUidRoute = ChatUidRouteImport.update({
+  id: '/chat/$uid',
+  path: '/chat/$uid',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AddTypeRoute = AddTypeRouteImport.update({
@@ -194,6 +212,7 @@ export interface FileRoutesByFullPath {
   '/challenges': typeof ChallengesRoute
   '/collections': typeof CollectionsRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/friends': typeof FriendsRoute
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
   '/notifications': typeof NotificationsRoute
@@ -211,7 +230,9 @@ export interface FileRoutesByFullPath {
   '/verify-email': typeof VerifyEmailRoute
   '/wrapped': typeof WrappedRoute
   '/add/$type': typeof AddTypeRoute
+  '/chat/$uid': typeof ChatUidRoute
   '/rec/$id': typeof RecIdRoute
+  '/u/$username': typeof UUsernameRoute
   '/work/$id': typeof WorkIdRoute
   '/add/': typeof AddIndexRoute
   '/work/$id/edit': typeof WorkIdEditRoute
@@ -224,6 +245,7 @@ export interface FileRoutesByTo {
   '/challenges': typeof ChallengesRoute
   '/collections': typeof CollectionsRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/friends': typeof FriendsRoute
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
   '/notifications': typeof NotificationsRoute
@@ -241,7 +263,9 @@ export interface FileRoutesByTo {
   '/verify-email': typeof VerifyEmailRoute
   '/wrapped': typeof WrappedRoute
   '/add/$type': typeof AddTypeRoute
+  '/chat/$uid': typeof ChatUidRoute
   '/rec/$id': typeof RecIdRoute
+  '/u/$username': typeof UUsernameRoute
   '/work/$id': typeof WorkIdRoute
   '/add': typeof AddIndexRoute
   '/work/$id/edit': typeof WorkIdEditRoute
@@ -256,6 +280,7 @@ export interface FileRoutesById {
   '/challenges': typeof ChallengesRoute
   '/collections': typeof CollectionsRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/friends': typeof FriendsRoute
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
   '/notifications': typeof NotificationsRoute
@@ -273,7 +298,9 @@ export interface FileRoutesById {
   '/verify-email': typeof VerifyEmailRoute
   '/wrapped': typeof WrappedRoute
   '/add/$type': typeof AddTypeRoute
+  '/chat/$uid': typeof ChatUidRoute
   '/rec/$id': typeof RecIdRoute
+  '/u/$username': typeof UUsernameRoute
   '/work/$id': typeof WorkIdRoute
   '/add/': typeof AddIndexRoute
   '/work_/$id/edit': typeof WorkIdEditRoute
@@ -289,6 +316,7 @@ export interface FileRouteTypes {
     | '/challenges'
     | '/collections'
     | '/forgot-password'
+    | '/friends'
     | '/library'
     | '/login'
     | '/notifications'
@@ -306,7 +334,9 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/wrapped'
     | '/add/$type'
+    | '/chat/$uid'
     | '/rec/$id'
+    | '/u/$username'
     | '/work/$id'
     | '/add/'
     | '/work/$id/edit'
@@ -319,6 +349,7 @@ export interface FileRouteTypes {
     | '/challenges'
     | '/collections'
     | '/forgot-password'
+    | '/friends'
     | '/library'
     | '/login'
     | '/notifications'
@@ -336,7 +367,9 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/wrapped'
     | '/add/$type'
+    | '/chat/$uid'
     | '/rec/$id'
+    | '/u/$username'
     | '/work/$id'
     | '/add'
     | '/work/$id/edit'
@@ -350,6 +383,7 @@ export interface FileRouteTypes {
     | '/challenges'
     | '/collections'
     | '/forgot-password'
+    | '/friends'
     | '/library'
     | '/login'
     | '/notifications'
@@ -367,7 +401,9 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/wrapped'
     | '/add/$type'
+    | '/chat/$uid'
     | '/rec/$id'
+    | '/u/$username'
     | '/work/$id'
     | '/add/'
     | '/work_/$id/edit'
@@ -382,6 +418,7 @@ export interface RootRouteChildren {
   ChallengesRoute: typeof ChallengesRoute
   CollectionsRoute: typeof CollectionsRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
+  FriendsRoute: typeof FriendsRoute
   LibraryRoute: typeof LibraryRoute
   LoginRoute: typeof LoginRoute
   NotificationsRoute: typeof NotificationsRoute
@@ -398,7 +435,9 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
   WrappedRoute: typeof WrappedRoute
+  ChatUidRoute: typeof ChatUidRoute
   RecIdRoute: typeof RecIdRoute
+  UUsernameRoute: typeof UUsernameRoute
   WorkIdRoute: typeof WorkIdRoute
   WorkIdEditRoute: typeof WorkIdEditRoute
 }
@@ -517,6 +556,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LibraryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/friends': {
+      id: '/friends'
+      path: '/friends'
+      fullPath: '/friends'
+      preLoaderRoute: typeof FriendsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/forgot-password': {
       id: '/forgot-password'
       path: '/forgot-password'
@@ -587,11 +633,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WorkIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/u/$username': {
+      id: '/u/$username'
+      path: '/u/$username'
+      fullPath: '/u/$username'
+      preLoaderRoute: typeof UUsernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/rec/$id': {
       id: '/rec/$id'
       path: '/rec/$id'
       fullPath: '/rec/$id'
       preLoaderRoute: typeof RecIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/chat/$uid': {
+      id: '/chat/$uid'
+      path: '/chat/$uid'
+      fullPath: '/chat/$uid'
+      preLoaderRoute: typeof ChatUidRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/add/$type': {
@@ -632,6 +692,7 @@ const rootRouteChildren: RootRouteChildren = {
   ChallengesRoute: ChallengesRoute,
   CollectionsRoute: CollectionsRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
+  FriendsRoute: FriendsRoute,
   LibraryRoute: LibraryRoute,
   LoginRoute: LoginRoute,
   NotificationsRoute: NotificationsRoute,
@@ -648,7 +709,9 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   VerifyEmailRoute: VerifyEmailRoute,
   WrappedRoute: WrappedRoute,
+  ChatUidRoute: ChatUidRoute,
   RecIdRoute: RecIdRoute,
+  UUsernameRoute: UUsernameRoute,
   WorkIdRoute: WorkIdRoute,
   WorkIdEditRoute: WorkIdEditRoute,
 }
