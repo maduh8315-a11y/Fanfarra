@@ -135,6 +135,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthGuard />
+      <CrashRecovery />
       <ApplyTheme />
       <Outlet />
       <Toaster />
@@ -171,21 +172,64 @@ function AuthGuard() {
   const navigate = useNavigate();
   const user = useAuthUser();
   const authReady = useAuthReady();
+  const router = useRouter();
 
   useEffect(() => {
     if (!authReady) return; // espera o Firebase confirmar a sessão antes de decidir
     if (typeof window === "undefined") return;
-    const isPublic = PUBLIC_ROUTES.has(pathname);
-    if (!user && !isPublic) {
-      const seen = !import.meta.env.DEV && localStorage.getItem("fanfarra:auth_seen") === "1";
-      navigate({ to: seen ? "/login" : "/splash" });
-      if (!seen) localStorage.setItem("fanfarra:auth_seen", "1");
-      return;
+
+    const decide = () => {
+      const isPublic = PUBLIC_ROUTES.has(pathname);
+      if (!user && !isPublic) {
+        const seen = !import.meta.env.DEV && localStorage.getItem("fanfarra:auth_seen") === "1";
+        navigate({ to: seen ? "/login" : "/splash" });
+        if (!seen) localStorage.setItem("fanfarra:auth_seen", "1");
+        return;
+      }
+      if (user && AUTH_ONLY_PUBLIC.has(pathname)) {
+        navigate({ to: "/" });
+      }
+    };
+
+    // Se o router ainda estiver no meio de uma navegação (comum logo após o
+    // carregamento inicial, principalmente em celulares mais lentos),
+    // espera ele terminar antes de redirecionar. Redirecionar no meio de
+    // uma transição em andamento é o que causava o erro "Could not find
+    // match for matchId" e travava o app com tela branca.
+    if (router.state.status === "pending") {
+      return router.subscribe("onResolved", () => decide());
     }
-    if (user && AUTH_ONLY_PUBLIC.has(pathname)) {
-      navigate({ to: "/" });
-    }
-  }, [pathname, user, navigate, authReady]);
+    decide();
+  }, [pathname, user, navigate, authReady, router]);
+
+  return null;
+}
+
+// ─── REDE DE SEGURANÇA — nunca mais deixa o app travado em tela branca ──────
+// Se por algum motivo escapar um erro do tipo "Could not find match" (o
+// mesmo que causava a tela branca no celular), recarrega a página sozinho
+// em vez de deixar a pessoa presa numa tela em branco. Só recarrega uma vez
+// a cada 10s pra nunca entrar em loop caso o erro seja outra coisa.
+function CrashRecovery() {
+  useEffect(() => {
+    const handler = (event: ErrorEvent | PromiseRejectionEvent) => {
+      const message =
+        "message" in event ? event.message : String((event as PromiseRejectionEvent).reason);
+      if (!message || !message.includes("Could not find match for matchId")) return;
+
+      const lastReload = Number(sessionStorage.getItem("fanfarra:crash_reload") || 0);
+      if (Date.now() - lastReload < 10_000) return; // evita loop de reload
+      sessionStorage.setItem("fanfarra:crash_reload", String(Date.now()));
+      window.location.reload();
+    };
+
+    window.addEventListener("error", handler);
+    window.addEventListener("unhandledrejection", handler);
+    return () => {
+      window.removeEventListener("error", handler);
+      window.removeEventListener("unhandledrejection", handler);
+    };
+  }, []);
 
   return null;
 }

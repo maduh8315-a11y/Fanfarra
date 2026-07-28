@@ -24,12 +24,24 @@ export interface PublicProfile {
   usernameLower: string;
   avatar?: string;
   bio?: string;
+  coverImage?: string;
+  statusText?: string;
+  tags?: string[];
+  socialLinks?: { platform: string; url: string }[];
 }
 
 // Chamado de dentro de extras.ts toda vez que o perfil do usuário atualiza.
 export async function syncPublicProfile(
   uid: string,
-  p: { username: string; avatar?: string; bio?: string },
+  p: {
+    username: string;
+    avatar?: string;
+    bio?: string;
+    coverImage?: string;
+    statusText?: string;
+    tags?: string[];
+    socialLinks?: { platform: string; url: string }[];
+  },
 ): Promise<void> {
   await setDoc(
     doc(db, COLLECTION, uid),
@@ -39,6 +51,10 @@ export async function syncPublicProfile(
       usernameLower: p.username.trim().toLowerCase(),
       avatar: p.avatar,
       bio: p.bio,
+      coverImage: p.coverImage,
+      statusText: p.statusText,
+      tags: p.tags,
+      socialLinks: p.socialLinks,
     }),
     { merge: true },
   );

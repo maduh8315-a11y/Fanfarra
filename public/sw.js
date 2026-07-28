@@ -57,7 +57,7 @@ self.addEventListener("notificationclick", (event) => {
 });
 // ── fim do bloco FCM ─────────────────────────────────────────────────────
 
-const CACHE_VERSION = "fanfarra-v2";
+const CACHE_VERSION = "fanfarra-v3"; // ← subi de v2 pra v3 pra forçar clientes antigos a atualizar
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PAGES_CACHE = `${CACHE_VERSION}-pages`;
 
@@ -102,6 +102,25 @@ function isNavigationRequest(request) {
   );
 }
 
+// NOVO: busca na rede com prazo máximo. Se a rede não responder a tempo,
+// desiste e deixa o .catch() de quem chamou decidir o que fazer (cache ou
+// offline.html) — em vez de ficar esperando pra sempre.
+function fetchWithTimeout(request, timeoutMs = 8000) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error("sw-fetch-timeout")), timeoutMs);
+    fetch(request).then(
+      (response) => {
+        clearTimeout(timer);
+        resolve(response);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
+    );
+  });
+}
+
 self.addEventListener("fetch", (event) => {
   const { request } = event;
 
@@ -113,7 +132,7 @@ self.addEventListener("fetch", (event) => {
   // Navegação entre páginas
   if (isNavigationRequest(request)) {
     event.respondWith(
-      fetch(request)
+      fetchWithTimeout(request, 8000)
         .then((response) => {
           const copy = response.clone();
           caches.open(PAGES_CACHE).then((cache) => cache.put(request, copy));
@@ -132,7 +151,7 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       caches.open(STATIC_CACHE).then(async (cache) => {
         const cached = await cache.match(request);
-        const network = fetch(request)
+        const network = fetchWithTimeout(request, 8000)
           .then((response) => {
             if (response.ok) cache.put(request, response.clone());
             return response;

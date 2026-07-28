@@ -257,6 +257,10 @@ export interface Profile {
   email: string;
   bio: string;
   avatar?: string;
+  coverImage?: string;
+  statusText?: string;
+  tags?: string[];
+  socialLinks?: { platform: string; url: string }[];
   streakDays: number;
   lastActiveDate: string | null;
   earnedBadgeIds: string[];
@@ -267,6 +271,8 @@ const DEFAULT_PROFILE: Profile = {
   username: "fan_user",
   email: "fan@fanfarra.app",
   bio: "Mergulhada no universo fandom ✦",
+  tags: [],
+  socialLinks: [],
   streakDays: 0,
   lastActiveDate: null,
   earnedBadgeIds: [],
@@ -336,6 +342,10 @@ onAuthStateChanged(auth, async (user) => {
         username: profileCache.username,
         avatar: profileCache.avatar,
         bio: profileCache.bio,
+        coverImage: profileCache.coverImage,
+        statusText: profileCache.statusText,
+        tags: profileCache.tags,
+        socialLinks: profileCache.socialLinks,
       });
     }
     profileLoaded = true;
