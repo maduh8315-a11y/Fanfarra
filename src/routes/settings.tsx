@@ -209,6 +209,9 @@ function SettingsPage() {
             <span className="text-sm" style={{ color: "var(--fan-text-3)" }}>
               Tema
             </span>
+            <p className="text-xs mt-0.5" style={{ color: "var(--fan-text-2)" }}>
+              Personaliza as cores só do seu perfil — o resto do app continua no visual padrão.
+            </p>
             <div className="flex gap-2 mt-2">
               {(
                 [

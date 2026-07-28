@@ -146,13 +146,6 @@ export async function sendChatMessage(
     createdAt: now,
   });
 
-  await addDoc(collection(db, CHATS_COLLECTION, chatId, MESSAGES_SUBCOLLECTION), {
-    senderUid: uid,
-    senderUsername: myUsername,
-    text: trimmed,
-    createdAt: now,
-  });
-
   const preview = trimmed.length > 60 ? `${trimmed.slice(0, 60)}…` : trimmed;
   await notifyMany([otherUid], "message-circle", `${myUsername}: ${preview}`);
 }

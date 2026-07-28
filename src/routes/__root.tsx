@@ -98,6 +98,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
+      { rel: "preconnect", href: "https://i.ibb.co" },
+      { rel: "dns-prefetch", href: "https://i.ibb.co" },
       {
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@600;700;800;900&display=swap",
@@ -145,14 +147,18 @@ function RootComponent() {
 
 // Aplica o tema salvo (default/lunar/aurora) e o modo (claro/escuro) trocando
 // os atributos data-theme e data-mode da tag <html> — são esses atributos que
-// os seletores do styles.css escutam. Os dois são independentes: qualquer
-// tema pode ser combinado com claro ou escuro.
+// os seletores do styles.css escutam. O modo (claro/escuro) continua valendo
+// pro app inteiro. Já o TEMA de cor (Lunar/Aurora) só é aplicado quando o
+// usuário está no perfil (o seu ou o de outra pessoa) — é a customização PRO
+// do perfil, e não deve mudar a cara do resto do app.
 function ApplyTheme() {
   const { theme, mode } = useSettings();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isProfileRoute = pathname === "/profile" || pathname.startsWith("/u/");
   useEffect(() => {
-    document.documentElement.dataset.theme = theme === "default" ? "" : theme;
+    document.documentElement.dataset.theme = isProfileRoute && theme !== "default" ? theme : "";
     document.documentElement.dataset.mode = mode === "dark" ? "" : mode;
-  }, [theme, mode]);
+  }, [theme, mode, isProfileRoute]);
   return null;
 }
 

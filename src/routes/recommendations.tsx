@@ -176,7 +176,7 @@ function RecPage() {
               </h2>
             </div>
             {communityLoading ? (
-              <div className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
+              <div className="flex gap-3 overflow-x-auto pb-2 fan-hscroll" style={{ scrollbarWidth: "none" }}>
                 {Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="w-28 shrink-0">
                     <Skeleton style={{ aspectRatio: "2/3", width: "100%", borderRadius: 10 }} />
@@ -197,7 +197,7 @@ function RecPage() {
               </div>
             ) : (
               <>
-                <div className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
+                <div className="flex gap-3 overflow-x-auto pb-2 fan-hscroll" style={{ scrollbarWidth: "none" }}>
                   {communityItems.map((item) => (
                     <CatalogCard key={item.id} item={item} />
                   ))}
@@ -232,7 +232,7 @@ function RecPage() {
               </h2>
             </div>
             <div
-              className="flex gap-3 overflow-x-auto px-4 pb-2"
+              className="flex gap-3 overflow-x-auto px-4 pb-2 fan-hscroll"
               style={{ scrollbarWidth: "none" }}
             >
               {trending.map((item) => (
@@ -259,7 +259,7 @@ function RecPage() {
                       {type}
                     </p>
                     <div
-                      className="flex gap-3 overflow-x-auto px-4 pb-1"
+                      className="flex gap-3 overflow-x-auto px-4 pb-1 fan-hscroll"
                       style={{ scrollbarWidth: "none" }}
                     >
                       {items.map((item) => (
@@ -325,15 +325,23 @@ export function CatalogCard({ item, grid = false }: { item: RecommendationItem; 
   const size = grid ? "w-full" : "w-28 shrink-0";
   const navigate = useNavigate();
   return (
-    <Link to="/rec/$id" params={{ id: item.id }} className={`${size} relative group block`}>
+    <Link
+      to="/rec/$id"
+      params={{ id: item.id }}
+      className={`${size} relative group block rounded-[10px]`}
+      style={
+        item.cover
+          ? {
+              boxShadow: `0 0 0 1px color-mix(in srgb, ${getTypeColor(item.type as MediaType)} 55%, transparent), 0 0 9px 0 color-mix(in srgb, ${getTypeColor(item.type as MediaType)} 35%, transparent)`,
+            }
+          : undefined
+      }
+    >
       <div
         className="w-full rounded-[10px] flex flex-col items-center justify-center overflow-hidden relative"
         style={
           item.cover
-            ? {
-                aspectRatio: "2/3",
-                boxShadow: `0 0 0 1px color-mix(in srgb, ${getTypeColor(item.type as MediaType)} 55%, transparent), 0 0 14px 0 color-mix(in srgb, ${getTypeColor(item.type as MediaType)} 40%, transparent)`,
-              }
+            ? { aspectRatio: "2/3" }
             : {
                 aspectRatio: "2/3",
                 background: getTypeCardBg(item.type as MediaType),
@@ -363,7 +371,7 @@ export function CatalogCard({ item, grid = false }: { item: RecommendationItem; 
         )}
         <div
           className="absolute top-1 left-1 px-1.5 py-0.5 rounded-full text-[11px] font-bold shadow-sm"
-          style={{ background: "rgba(13,0,8,0.85)", color: "var(--fan-pink-light)" }}
+          style={{ background: "rgba(13,0,8,0.85)", color: getTypeColor(item.type as MediaType) }}
         >
           ★ {item.popularity}
         </div>

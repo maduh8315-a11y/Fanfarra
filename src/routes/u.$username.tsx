@@ -159,25 +159,31 @@ function PublicProfilePage() {
 
   return (
     <AppShell>
-      {/* ---------- Cover / Header ---------- */}
-      <div className="relative w-full">
+      {/* ---------- Fundo fixo: a capa preenche a tela toda ---------- */}
+      <div
+        className="fixed inset-0"
+        style={{
+          zIndex: 0,
+          backgroundImage: coverImage
+            ? `url(${coverImage})`
+            : "linear-gradient(135deg,var(--fan-bg-2),var(--fan-red-dark))",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
         <div
-          className="relative h-56 w-full sm:h-72"
+          className="absolute inset-0"
           style={{
-            backgroundImage: coverImage
-              ? `url(${coverImage})`
-              : "linear-gradient(135deg,var(--fan-bg-2),var(--fan-red-dark))",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
+            background:
+              "linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 45%, var(--fan-bg) 85%)",
           }}
-        >
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.55) 55%, var(--fan-bg) 100%)",
-            }}
-          />
+        />
+      </div>
 
+      <div style={{ position: "relative", zIndex: 1 }}>
+        {/* ---------- Cover / Header ---------- */}
+        <div className="relative w-full">
+          <div className="relative h-56 w-full sm:h-72">
           <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-4 sm:px-6">
             <Link
               to="/friends"
@@ -250,7 +256,15 @@ function PublicProfilePage() {
               style={{ backgroundColor: "var(--fan-bg-2)" }}
             >
               {target.avatar ? (
-                <img src={target.avatar} alt={target.username} className="h-full w-full object-cover" draggable={false} />
+                <img
+                  src={target.avatar}
+                  alt={target.username}
+                  className="h-full w-full object-cover"
+                  draggable={false}
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
+                />
               ) : (
                 <div
                   className="flex h-full w-full items-center justify-center text-2xl font-semibold"
@@ -563,6 +577,7 @@ function PublicProfilePage() {
           </div>
         </div>
       )}
+    </div>
     </AppShell>
   );
 }

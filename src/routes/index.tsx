@@ -471,7 +471,7 @@ function PopularShelves() {
   }, []);
 
   return (
-    <div className="space-y-6 -mx-4">
+    <div className="space-y-6">
       <Shelf title="🔥 Populares agora" items={trending} />
       {shelfTypes.map((type) => (
         <Shelf key={type} title={`Em alta em ${type}`} items={getByType(CATALOG, type, 12)} />
@@ -483,11 +483,11 @@ function PopularShelves() {
 function Shelf({ title, items }: { title: string; items: RecommendationItem[] }) {
   if (items.length === 0) return null;
   return (
-    <section className="px-4">
+    <section className="px-5">
       <h2 className="text-sm font-bold mb-3" style={{ color: "var(--fan-text-3)" }}>
         {title}
       </h2>
-      <div className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: "none" }}>
+      <div className="flex gap-3.5 overflow-x-auto pb-2 fan-hscroll" style={{ scrollbarWidth: "none" }}>
         {items.map((item) => (
           <CatalogCard key={item.id} item={item} />
         ))}
@@ -649,7 +649,7 @@ function Section({
   if (works.length === 0) return null;
   return (
     <section className="mt-6">
-      <div className="flex items-center justify-between px-4 mb-3">
+      <div className="flex items-center justify-between px-5 mb-3">
         <h3 className="text-sm font-bold" style={{ color: "var(--fan-text-3)" }}>
           {title}
         </h3>
@@ -662,7 +662,7 @@ function Section({
           Ver tudo
         </Link>
       </div>
-      <div className="flex gap-3 overflow-x-auto px-4 pb-1" style={{ scrollbarWidth: "none" }}>
+      <div className="flex gap-3.5 overflow-x-auto px-5 pb-1 fan-hscroll" style={{ scrollbarWidth: "none" }}>
         {works.map((w) => (
           <WorkCard key={w.id} work={w} />
         ))}

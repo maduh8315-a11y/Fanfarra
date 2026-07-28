@@ -189,7 +189,7 @@ function ProfilePage() {
 
           <button
             onClick={() => coverInputRef.current?.click()}
-            className="absolute bottom-3 right-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium backdrop-blur transition hover:brightness-110 active:scale-95"
+            className="absolute right-3 top-16 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium backdrop-blur transition hover:brightness-110 active:scale-95"
             style={{ backgroundColor: "rgba(0,0,0,0.5)", color: "#fff", border: "1px solid rgba(255,255,255,0.2)" }}
           >
             <Camera size={14} />
@@ -421,39 +421,45 @@ function ProfilePage() {
             </label>
             <div className="space-y-2">
               {socialLinks.map((link, i) => (
-                <div key={i} className="flex gap-2">
-                  <input
-                    type="text"
-                    value={link.platform}
-                    onChange={(e) => updateSocialLink(i, { platform: e.target.value })}
-                    placeholder="Instagram"
-                    className="w-28 px-3 py-2.5 rounded-lg text-sm outline-none transition"
-                    style={{
-                      backgroundColor: "var(--fan-bg-3)",
-                      border: "1px solid var(--fan-border)",
-                      color: "var(--fan-text)",
-                    }}
-                  />
+                <div
+                  key={i}
+                  className="rounded-lg p-2.5 space-y-2"
+                  style={{ backgroundColor: "var(--fan-bg-3)", border: "1px solid var(--fan-border)" }}
+                >
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={link.platform}
+                      onChange={(e) => updateSocialLink(i, { platform: e.target.value })}
+                      placeholder="Instagram"
+                      className="flex-1 min-w-0 px-3 py-2 rounded-md text-sm outline-none transition"
+                      style={{
+                        backgroundColor: "var(--fan-bg-2)",
+                        border: "1px solid var(--fan-border)",
+                        color: "var(--fan-text)",
+                      }}
+                    />
+                    <button
+                      onClick={() => removeSocialLink(i)}
+                      aria-label="Remover link"
+                      className="shrink-0 p-2 rounded-md transition hover:brightness-110 active:scale-95"
+                      style={{ backgroundColor: "var(--fan-bg-2)", border: "1px solid var(--fan-border)", color: "var(--fan-text-3)" }}
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
                   <input
                     type="url"
                     value={link.url}
                     onChange={(e) => updateSocialLink(i, { url: e.target.value })}
                     placeholder="https://instagram.com/seu_usuario"
-                    className="flex-1 px-3 py-2.5 rounded-lg text-sm outline-none transition"
+                    className="w-full px-3 py-2 rounded-md text-sm outline-none transition"
                     style={{
-                      backgroundColor: "var(--fan-bg-3)",
+                      backgroundColor: "var(--fan-bg-2)",
                       border: "1px solid var(--fan-border)",
                       color: "var(--fan-text)",
                     }}
                   />
-                  <button
-                    onClick={() => removeSocialLink(i)}
-                    aria-label="Remover link"
-                    className="px-2.5 rounded-lg transition hover:brightness-110 active:scale-95"
-                    style={{ backgroundColor: "var(--fan-bg-3)", border: "1px solid var(--fan-border)", color: "var(--fan-text-3)" }}
-                  >
-                    <X size={14} />
-                  </button>
                 </div>
               ))}
             </div>
