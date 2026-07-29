@@ -10,7 +10,7 @@ on:
     # Motor principal do cron. Roda a cada 20 minutos como "vigia" — cada
     # execução é barata (só lê a config de votação) e serve pra detectar
     # quando falta pouco pra um prazo, ligando o job rápido nesse momento.
-    - cron: "*/20 * * * *"
+    - cron: "*/5 * * * *"
 
 jobs:
   run-cron:
