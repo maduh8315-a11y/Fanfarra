@@ -5,6 +5,7 @@
 import { initializeApp, cert } from "firebase-admin/app";
 import { getFirestore, Timestamp, FieldValue } from "firebase-admin/firestore";
 import { pushAllowedForIcon, sendPendingPushNotifications } from "./lib/push.mjs";
+import { syncFastPolling } from "./lib/cronjobControl.mjs";
 
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
 initializeApp({ credential: cert(serviceAccount) });
@@ -235,6 +236,18 @@ async function openScheduledCycle(categories, recomendacaoDeadline) {
   console.log("[awards] edição agendada aberta automaticamente.");
 }
 
+async function syncFastPollingWithConfig() {
+  const configSnap = await db.collection("awards_config").doc("current").get();
+  if (!configSnap.exists) return;
+  const config = configSnap.data();
+  let checkpoint = null;
+  if (config.scheduledStartAt) checkpoint = Number(config.scheduledStartAt);
+  else if (config.phase === "recomendacao") checkpoint = Number(config.recomendacaoDeadline);
+  else if (config.phase === "indicacao") checkpoint = Number(config.indicacaoDeadline);
+  else if (config.phase === "final") checkpoint = Number(config.finalDeadline);
+  await syncFastPolling(checkpoint);
+}
+
 // ───────────────────────────────────────────────────────────
 // 2) Foto diária dos aplausos/vaias (à meia-noite de Brasília)
 // Congela os números do dia numa coleção separada. O contador
@@ -269,6 +282,7 @@ async function freezeDailyReactionSnapshot() {
 await advanceAwardsPhase();
 await freezeDailyReactionSnapshot();
 await sendPendingPushNotifications(db);
+await syncFastPollingWithConfig();
 // ───────────────────────────────────────────────────────────
 // 4) Encerramento
 // Não existe mais corrente de auto-disparo aqui: o próprio GitHub Actions
