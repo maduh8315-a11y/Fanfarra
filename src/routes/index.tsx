@@ -487,7 +487,7 @@ function Shelf({ title, items }: { title: string; items: RecommendationItem[] })
       <h2 className="text-sm font-bold mb-3" style={{ color: "var(--fan-text-3)" }}>
         {title}
       </h2>
-      <div className="flex gap-3.5 overflow-x-auto pb-2 fan-hscroll" style={{ scrollbarWidth: "none" }}>
+      <div className="flex gap-3.5 overflow-x-auto px-1 py-2 fan-hscroll" style={{ scrollbarWidth: "none" }}>
         {items.map((item) => (
           <CatalogCard key={item.id} item={item} />
         ))}

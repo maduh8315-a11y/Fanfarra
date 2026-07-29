@@ -4,7 +4,7 @@
 // sem precisar do plano Blaze.
 import { initializeApp, cert } from "firebase-admin/app";
 import { getFirestore, Timestamp, FieldValue } from "firebase-admin/firestore";
-import { getMessaging } from "firebase-admin/messaging";
+import { pushAllowedForIcon, sendPendingPushNotifications } from "./lib/push.mjs";
 
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_JSON);
 initializeApp({ credential: cert(serviceAccount) });
@@ -264,56 +264,19 @@ async function freezeDailyReactionSnapshot() {
 // ───────────────────────────────────────────────────────────
 // 3) Push real (FCM) pras notificações in-app pendentes
 // ───────────────────────────────────────────────────────────
-function pushAllowedForIcon(icon, settings) {
-  if (["pause-circle", "calendar-clock"].includes(icon)) return settings.notif_paused !== false;
-  if (["award", "vote", "bar-chart", "check-circle"].includes(icon)) return settings.notif_events !== false;
-  return true;
-}
 
-async function sendPendingPushNotifications() {
-  const pendingSnap = await db.collection("notifications").where("pushed", "==", false).limit(200).get();
-  if (pendingSnap.empty) return console.log("[push] nada pendente.");
-
-  const byUid = new Map();
-  pendingSnap.docs.forEach((d) => {
-    const data = d.data();
-    if (!byUid.has(data.uid)) byUid.set(data.uid, []);
-    byUid.get(data.uid).push({ ref: d.ref, ...data });
-  });
-
-  const messaging = getMessaging();
-
-  for (const [uid, notifs] of byUid) {
-    const settingsSnap = await db.collection("settings").doc(uid).get();
-    const settings = settingsSnap.exists ? settingsSnap.data() : {};
-
-    const tokensSnap = await db.collection("push_tokens").where("uid", "==", uid).get();
-    const tokens = tokensSnap.docs.map((d) => d.id);
-
-    const batch = db.batch();
-    for (const n of notifs) {
-      if (tokens.length > 0 && pushAllowedForIcon(n.icon, settings)) {
-        const response = await messaging.sendEachForMulticast({
-          tokens,
-          notification: { title: "Fanfarra", body: n.text },
-          data: { url: "/notifications" },
-        });
-        response.responses.forEach((r, i) => {
-          if (!r.success && r.error?.code === "messaging/registration-token-not-registered") {
-            db.collection("push_tokens").doc(tokens[i]).delete().catch(() => {});
-          }
-        });
-      }
-      batch.update(n.ref, { pushed: true });
-    }
-    await batch.commit();
-  }
-  console.log(`[push] processadas notificações de ${byUid.size} usuário(s).`);
-}
 
 await advanceAwardsPhase();
 await freezeDailyReactionSnapshot();
-await sendPendingPushNotifications();
+await sendPendingPushNotifications(db);
+// ───────────────────────────────────────────────────────────
+// 4) Encerramento
+// Não existe mais corrente de auto-disparo aqui: o próprio GitHub Actions
+// já chama esse script de novo a cada 5min via "schedule" (veja
+// fanfarra-cron.yml). Cada execução é 100% independente das outras — se
+// uma falhar por qualquer motivo, a próxima roda normalmente 5min depois,
+// sem nada pra "quebrar a corrente" e travar tudo em silêncio.
+// ───────────────────────────────────────────────────────────
 process.exit(0);
 
 async function notifyAllUsers(icon, text) {

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, ChevronRight, PanelBottomOpen, RefreshCw, Sun, Moon } from "lucide-react";
+import { ArrowLeft, ChevronRight, PanelBottomOpen, Sun, Moon } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { ToggleField } from "@/components/fanfarra/forms/FormFields";
 import { updateSettings, useSettings } from "@/lib/fanfarra/extras";
@@ -62,9 +62,9 @@ function SettingsPage() {
             onChange={(v) => updateSettings({ notif_paused: v })}
           />
           <Toggle
-            label="Alertas de eventos e votações"
-            value={s.notif_events}
-            onChange={(v) => updateSettings({ notif_events: v })}
+            label="Novo episódio/capítulo disponível"
+            value={s.notif_episodes}
+            onChange={(v) => updateSettings({ notif_episodes: v })}
           />
           <Toggle
             label="Novidades do app"
@@ -97,39 +97,6 @@ function SettingsPage() {
             value={s.privacy_public}
             onChange={(v) => updateSettings({ privacy_public: v })}
           />
-          <Toggle
-            label="Mostrar biblioteca publicamente"
-            value={s.privacy_library}
-            onChange={(v) => updateSettings({ privacy_library: v })}
-          />
-          <Toggle
-            label="Permitir ser encontrado por e-mail"
-            value={s.privacy_email}
-            onChange={(v) => updateSettings({ privacy_email: v })}
-          />
-        </Group>
-
-        <Group title="Sincronização">
-          <Toggle
-            label="Sincronizar com Firebase"
-            value={s.sync_firebase}
-            onChange={(v) => updateSettings({ sync_firebase: v })}
-          />
-          <button
-            onClick={() => updateSettings({ lastSync: Date.now() })}
-            className="w-full flex items-center justify-between px-3 py-3 rounded-[10px]"
-            style={{ background: "var(--fan-bg-2)", border: "0.5px solid var(--fan-rose-mid)" }}
-          >
-            <span
-              className="text-sm flex items-center gap-2"
-              style={{ color: "var(--fan-text-3)" }}
-            >
-              <RefreshCw size={14} color="var(--fan-icon-blue)" /> Forçar sincronização agora
-            </span>
-          </button>
-          <p className="text-sm mt-1" style={{ color: "var(--fan-text-2)" }}>
-            Última sincronização: {s.lastSync ? new Date(s.lastSync).toLocaleString("pt-BR") : "—"}
-          </p>
         </Group>
 
         <Group title="Assinatura">
@@ -151,11 +118,6 @@ function SettingsPage() {
         </Group>
 
        <Group title="Estilo">
-          <Toggle
-            label="Animações do app"
-            value={s.animations}
-            onChange={(v) => updateSettings({ animations: v })}
-          />
           <div className="flex items-center justify-between py-2">
             <span className="text-sm" style={{ color: "var(--fan-text-3)" }}>
               Colunas da biblioteca

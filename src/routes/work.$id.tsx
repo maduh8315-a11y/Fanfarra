@@ -19,6 +19,10 @@ import {
   Check,
   StickyNote,
   Sparkles,
+  FileText,
+  Layers,
+  Users,
+  BookOpen,
 } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { MediaIcon } from "@/components/fanfarra/MediaIcon";
@@ -26,7 +30,15 @@ import { AwardCrownBadge } from "@/components/fanfarra/AwardCrownBadge";
 import { deleteWork, updateWork, useWork } from "@/lib/fanfarra/store";
 import { postWorkAsRecommendation, removeRecommendationPost } from "@/lib/fanfarra/communityStore";
 import { useProfile } from "@/lib/fanfarra/extras";
-import { STATUS_COLORS } from "@/lib/fanfarra/types";
+import { STATUS_COLORS, TYPE_FIELDS, type FieldDef, type DateParts } from "@/lib/fanfarra/types";
+import {
+  PROGRESS_PAIRS,
+  EXTRA_NUMERIC,
+  EPISODE_DURATION_TYPES,
+  RATING_CRITERIA,
+  getKeysToSkip,
+  type RelatedWork,
+} from "@/lib/fanfarra/formConfig";
 
 export const Route = createFileRoute("/work/$id")({
   component: WorkDetail,
@@ -38,6 +50,34 @@ function formatDate(d?: { d?: number; m?: number; y?: number }) {
   const dd = String(d.d ?? 1).padStart(2, "0");
   const mm = String(d.m ?? 1).padStart(2, "0");
   return `${dd}/${mm}/${d.y}`;
+}
+
+function formatEpisodeDuration(d?: { hours?: number; minutes?: number; seconds?: number }) {
+  if (!d || (!d.hours && !d.minutes && !d.seconds)) return null;
+  const parts: string[] = [];
+  if (d.hours) parts.push(`${d.hours}h`);
+  if (d.minutes) parts.push(`${d.minutes}min`);
+  if (d.seconds) parts.push(`${d.seconds}s`);
+  return parts.length ? parts.join(" ") : null;
+}
+
+// Mostra o valor de um campo do "Adicionar obra" exatamente como foi salvo,
+// usando "—" quando ficou em branco.
+function fieldValueDisplay(f: FieldDef, details: Record<string, unknown>): string {
+  const v = details[f.key];
+  switch (f.kind) {
+    case "toggle":
+      return v ? "Sim" : "Não";
+    case "slider":
+      return v == null || v === "" ? "—" : `${v}%`;
+    case "chips":
+      if (Array.isArray(v)) return v.length ? v.join(", ") : "—";
+      return v ? String(v) : "—";
+    case "date":
+      return formatDate(v as DateParts) ?? "—";
+    default:
+      return v == null || v === "" ? "—" : String(v);
+  }
 }
 
 /* ---------- primitives ---------- */
@@ -128,7 +168,26 @@ function WorkDetail() {
     );
   }
 
-  const statusColor = STATUS_COLORS[work.status];
+ const statusColor = STATUS_COLORS[work.status];
+
+  // ---- tudo que o formulário "Adicionar obra" pode preencher ----
+  const details = work.details ?? {};
+  const skipKeys = getKeysToSkip(work.type);
+  const extraFields = (TYPE_FIELDS[work.type] ?? []).filter(
+    (f) => !skipKeys.has(f.key) && f.key !== "link",
+  );
+  const secondaryPairs = (PROGRESS_PAIRS[work.type] ?? []).slice(1);
+  const extraNumeric = EXTRA_NUMERIC[work.type] ?? [];
+  const ratingCriteria = RATING_CRITERIA[work.type] ?? [];
+  const criteriaRatings = (details.criteriaRatings as Record<string, number>) ?? {};
+  const tags = Array.isArray(details.tags) ? (details.tags as string[]) : [];
+  const fandoms = Array.isArray(details.fandoms) ? (details.fandoms as string[]) : [];
+  const reactionsList = Array.isArray(details.reactions) ? (details.reactions as string[]) : [];
+  const related = Array.isArray(details.related) ? (details.related as RelatedWork[]) : [];
+  const obraCompleta = !!details._obraCompleta;
+  const episodeDurationLabel = formatEpisodeDuration(
+    details.episodeDuration as { hours?: number; minutes?: number; seconds?: number } | undefined,
+  );
 
   const progressUnit =
     work.type === "Anime" || work.type === "Série" || work.type === "Donghua" || work.type === "Dorama"
@@ -457,7 +516,237 @@ function WorkDetail() {
               </div>
               <ChevronRight size={16} color="var(--fan-text-2)" />
             </button>
-          ) : null}
+          ) : (
+            <InfoRow icon={<ExternalLink size={16} />} label="Link da fonte" value="—" last />
+          )}
+        </div>
+      </motion.section>
+
+      {/* SINOPSE */}
+      <motion.section
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.18, duration: 0.4 }}
+        className="px-5 mt-6"
+      >
+        <h2 className="text-xs uppercase tracking-wider mb-2 px-1" style={{ color: "var(--fan-text-2)" }}>
+          Sinopse
+        </h2>
+        <div style={cardStyle} className="p-4">
+          {(details.synopsis as string)?.trim() ? (
+            <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ color: "var(--fan-text-3)" }}>
+              {details.synopsis as string}
+            </p>
+          ) : (
+            <div className="text-center py-6 flex flex-col items-center gap-2">
+              <div className="p-3 rounded-full" style={{ background: "var(--fan-bg-3)", border: "0.5px solid var(--fan-rose-mid)" }}>
+                <FileText size={20} color="var(--fan-pink-light)" />
+              </div>
+              <div className="text-sm font-medium" style={{ color: "var(--fan-text)" }}>
+                Sem sinopse
+              </div>
+            </div>
+          )}
+        </div>
+      </motion.section>
+
+      {/* FICHA TÉCNICA — todos os campos extras do formulário, mesmo em branco */}
+      <motion.section
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2, duration: 0.4 }}
+        className="px-5 mt-6"
+      >
+        <h2 className="text-xs uppercase tracking-wider mb-2 px-1" style={{ color: "var(--fan-text-2)" }}>
+          Ficha técnica
+        </h2>
+        <div style={cardStyle}>
+          {secondaryPairs.map((p) => (
+            <InfoRow
+              key={p.currentKey}
+              icon={<Layers size={16} />}
+              label={p.currentLabel.replace(" atual", "")}
+              value={`${details[p.currentKey] ?? "—"}${
+                details[p.totalKey] && details[p.totalKey] !== "?" ? ` / ${details[p.totalKey]}` : ""
+              }`}
+            />
+          ))}
+          {EPISODE_DURATION_TYPES.has(work.type) && (
+            <InfoRow icon={<Clock size={16} />} label="Duração por episódio" value={episodeDurationLabel ?? "—"} />
+          )}
+          {extraNumeric.map((e) => (
+            <InfoRow
+              key={e.key}
+              icon={<Hash size={16} />}
+              label={e.label.replace(" (opcional)", "")}
+              value={details[e.key] != null && details[e.key] !== "" ? String(details[e.key]) : "—"}
+            />
+          ))}
+          {extraFields.map((f) => (
+            <InfoRow
+              key={f.key}
+              icon={<Layers size={16} />}
+              label={f.label.replace(" (opcional)", "")}
+              value={fieldValueDisplay(f, details)}
+            />
+          ))}
+          {(PROGRESS_PAIRS[work.type]?.length ?? 0) > 0 && (
+            <InfoRow icon={<Check size={16} />} label="Obra completa" value={obraCompleta ? "Sim" : "Não"} last />
+          )}
+        </div>
+      </motion.section>
+
+      {/* AVALIAÇÕES DETALHADAS — mesmo critério sem nota ainda mostra 0 estrelas */}
+      {ratingCriteria.length > 0 && (
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.22, duration: 0.4 }}
+          className="px-5 mt-6"
+        >
+          <h2 className="text-xs uppercase tracking-wider mb-2 px-1" style={{ color: "var(--fan-text-2)" }}>
+            Avaliações detalhadas
+          </h2>
+          <div style={cardStyle} className="p-4">
+            {ratingCriteria.map((c, i) => {
+              const val = criteriaRatings[c.key] ?? 0;
+              return (
+                <div
+                  key={c.key}
+                  className="flex items-center justify-between py-2.5"
+                  style={{ borderBottom: i === ratingCriteria.length - 1 ? "none" : "0.5px solid rgba(77,0,37,0.4)" }}
+                >
+                  <span className="text-sm" style={{ color: "var(--fan-text-2)" }}>
+                    {c.label}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <Star
+                        key={n}
+                        size={16}
+                        fill={n <= val ? "var(--fan-pink-light)" : "transparent"}
+                        color={n <= val ? "var(--fan-pink-light)" : "var(--fan-text-2)"}
+                      />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </motion.section>
+      )}
+
+      {/* FANDOMS — só para Fanfic, igual ao formulário */}
+      {work.type === "Fanfic" && (
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.24, duration: 0.4 }}
+          className="px-5 mt-6"
+        >
+          <h2 className="text-xs uppercase tracking-wider mb-2 px-1" style={{ color: "var(--fan-text-2)" }}>
+            Fandoms
+          </h2>
+          <div style={cardStyle} className="p-4 flex flex-wrap gap-2">
+            {fandoms.length > 0 ? (
+              fandoms.map((f) => (
+                <Chip key={f}>
+                  <Users size={12} />
+                  {f}
+                </Chip>
+              ))
+            ) : (
+              <span className="text-sm" style={{ color: "var(--fan-text-2)" }}>
+                Nenhum fandom adicionado
+              </span>
+            )}
+          </div>
+        </motion.section>
+      )}
+
+      {/* TAGS */}
+      <motion.section
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.26, duration: 0.4 }}
+        className="px-5 mt-6"
+      >
+        <h2 className="text-xs uppercase tracking-wider mb-2 px-1" style={{ color: "var(--fan-text-2)" }}>
+          Tags
+        </h2>
+        <div style={cardStyle} className="p-4 flex flex-wrap gap-2">
+          {tags.length > 0 ? (
+            tags.map((t) => (
+              <Chip key={t}>
+                <Tag size={12} />
+                {t}
+              </Chip>
+            ))
+          ) : (
+            <span className="text-sm" style={{ color: "var(--fan-text-2)" }}>
+              Nenhuma tag adicionada
+            </span>
+          )}
+        </div>
+      </motion.section>
+
+      {/* OBRAS RELACIONADAS */}
+      <motion.section
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.28, duration: 0.4 }}
+        className="px-5 mt-6"
+      >
+        <h2 className="text-xs uppercase tracking-wider mb-2 px-1" style={{ color: "var(--fan-text-2)" }}>
+          Obras relacionadas
+        </h2>
+        <div style={cardStyle}>
+          {related.length > 0 ? (
+            related.map((r, i) => (
+              <div
+                key={`${r.title}-${i}`}
+                className="flex items-center justify-between px-4 py-3"
+                style={{ borderBottom: i === related.length - 1 ? "none" : "0.5px solid rgba(77,0,37,0.4)" }}
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <BookOpen size={16} color="var(--fan-pink-light)" />
+                  <div className="min-w-0">
+                    <div className="text-sm font-medium truncate" style={{ color: "var(--fan-text)" }}>
+                      {r.title}
+                    </div>
+                    <div className="text-xs" style={{ color: "var(--fan-text-2)" }}>
+                      {r.relation} · {r.type}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="px-4 py-6 text-center text-sm" style={{ color: "var(--fan-text-2)" }}>
+              Nenhuma obra relacionada
+            </div>
+          )}
+        </div>
+      </motion.section>
+
+      {/* REAÇÕES */}
+      <motion.section
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3, duration: 0.4 }}
+        className="px-5 mt-6"
+      >
+        <h2 className="text-xs uppercase tracking-wider mb-2 px-1" style={{ color: "var(--fan-text-2)" }}>
+          Reações
+        </h2>
+        <div style={cardStyle} className="p-4 flex flex-wrap gap-2">
+          {reactionsList.length > 0 ? (
+            reactionsList.map((r) => <Chip key={r}>{r}</Chip>)
+          ) : (
+            <span className="text-sm" style={{ color: "var(--fan-text-2)" }}>
+              Nenhuma reação marcada
+            </span>
+          )}
         </div>
       </motion.section>
 

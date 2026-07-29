@@ -329,13 +329,9 @@ export function CatalogCard({ item, grid = false }: { item: RecommendationItem; 
       to="/rec/$id"
       params={{ id: item.id }}
       className={`${size} relative group block rounded-[10px]`}
-      style={
-        item.cover
-          ? {
-              boxShadow: `0 0 0 1px color-mix(in srgb, ${getTypeColor(item.type as MediaType)} 55%, transparent), 0 0 9px 0 color-mix(in srgb, ${getTypeColor(item.type as MediaType)} 35%, transparent)`,
-            }
-          : undefined
-      }
+      style={{
+        boxShadow: `0 0 0 1px color-mix(in srgb, ${getTypeColor(item.type as MediaType)} 55%, transparent), 0 0 9px 0 color-mix(in srgb, ${getTypeColor(item.type as MediaType)} 35%, transparent)`,
+      }}
     >
       <div
         className="w-full rounded-[10px] flex flex-col items-center justify-center overflow-hidden relative"
@@ -377,17 +373,17 @@ export function CatalogCard({ item, grid = false }: { item: RecommendationItem; 
         </div>
       </div>
       <p
-        className="mt-1 text-sm font-semibold line-clamp-2 leading-tight"
+        className="mt-2 text-sm font-semibold line-clamp-2 leading-tight text-center"
         style={{ color: "var(--fan-text)" }}
       >
         {item.title}
       </p>
-      <p className="text-sm line-clamp-1" style={{ color: "var(--fan-text-2)" }}>
+      <p className="text-sm line-clamp-1 text-center" style={{ color: "var(--fan-text-2)" }}>
         {item.author}
       </p>
       {item.recommendedBy && (
         <p
-          className="text-sm font-semibold mt-0.5 truncate"
+          className="text-sm font-semibold mt-0.5 truncate text-center"
           style={{ color: "var(--fan-pink-light)" }}
           onClick={(e) => {
             e.preventDefault();

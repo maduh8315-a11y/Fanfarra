@@ -11,7 +11,6 @@ import {
   Menu,
   X,
   Trophy,
-  Users,
   Sparkles,
   Settings,
   Info,
@@ -27,6 +26,7 @@ import {
 import { useState, type ReactNode } from "react";
 import { useAuthUser, signOut } from "@/lib/fanfarra/auth";
 import { useIsAdmin } from "@/lib/fanfarra/config";
+import { useIsAwardsVotingOpen } from "@/lib/fanfarra/awardsStore";
 import { useNotifications } from "@/lib/fanfarra/extras";
 import { useIsPro } from "@/lib/fanfarra/config";
 import { useOnlineStatus } from "@/hooks/use-online-status";
@@ -47,6 +47,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     return listenForegroundPush((title, body) => toast(title, { description: body }));
   }, [user]);
   const isAdmin = useIsAdmin(user?.uid);
+  const isVotingOpen = useIsAwardsVotingOpen();
   const navigate = useNavigate();
   const notifications = useNotifications();
   const unreadCount = notifications.filter((n) => !n.read).length;
@@ -73,7 +74,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           Você está offline
         </div>
       )}
-      <main className="flex-1 pb-20">{children}</main>
+      <main className="flex-1 pb-28">{children}</main>
 
       <nav
         className="fixed bottom-0 left-0 right-0 flex flex-row items-center justify-around px-0.5 pt-2 z-40"
@@ -202,10 +203,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                 to="/awards"
                 icon={Trophy}
                 label="Fanfarra Awards"
-                badge="Votação aberta"
+                badge={isVotingOpen ? "Votação aberta" : undefined}
               />
               <DrawerLink to="/challenges" icon={Award} label="Desafios Fandom" />
-              <DrawerLink to="/collections" icon={Users} label="Minhas Estantes" pro={isPro ? undefined : true} />
 
               <DrawerLink
                 to="/friends"

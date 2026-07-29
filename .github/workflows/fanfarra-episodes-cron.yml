@@ -1,0 +1,20 @@
+name: Fanfarra Episodes Cron
+
+on:
+  workflow_dispatch: {} # pra você poder testar manualmente
+  schedule:
+    # 1x por dia, 09:00 no horário de Brasília (12:00 UTC)
+    - cron: "0 12 * * *"
+
+jobs:
+  check-episodes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --omit=dev --include=dev firebase-admin
+      - run: node scripts/checkEpisodes.mjs
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}

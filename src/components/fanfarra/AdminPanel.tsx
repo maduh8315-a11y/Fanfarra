@@ -11,6 +11,7 @@ import {
   useAwardCategories,
   useAwardsConfig,
 } from "@/lib/fanfarra/awardsStore";
+import { triggerAwardsCron } from "@/lib/api/triggerCron.functions";
 
 // ===== Painel admin (só visível pro UID em ADMIN_UIDS) =====
 export function AdminPanel() {
@@ -71,6 +72,7 @@ const isAdmin = useIsAdmin(user?.uid);
     setSaving(`open-${phase}`);
     try {
       await setPhaseOpen(phase, ts);
+      triggerAwardsCron().catch(() => {});
       toast.success("Data de abertura salva!");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Não foi possível salvar.");
@@ -92,6 +94,7 @@ const isAdmin = useIsAdmin(user?.uid);
     setSaving("novaEdicao");
     try {
       await startNewCycle(categories, ts);
+      triggerAwardsCron().catch(() => {}); // dá a largada no cron; se falhar, a rede de segurança de 6h cobre
       toast.success("Nova edição iniciada — indicados e finalistas anteriores foram zerados.");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Não foi possível iniciar.");

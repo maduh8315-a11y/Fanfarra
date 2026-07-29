@@ -1,11 +1,13 @@
-
 name: Fanfarra Cron
 
 on:
+  workflow_dispatch: {} # disparado pelo app quando você abre/inicia uma edição
   schedule:
-    # Roda a cada 15 min, pra abrir/fechar perto do horário exato marcado.
-    - cron: "*/15 * * * *"
-  workflow_dispatch: {} # permite rodar manualmente pelo GitHub também
+    # Motor principal do cron. Roda sozinho a cada 5 minutos, sem depender
+    # de nenhuma execução anterior ter dado certo — cada disparo é
+    # independente. Se uma execução falhar por qualquer motivo, a próxima
+    # roda do mesmo jeito 5min depois, sem corrente pra quebrar.
+    - cron: "*/5 * * * *"
 
 jobs:
   run-cron:
@@ -19,3 +21,5 @@ jobs:
       - run: node scripts/cron.mjs
         env:
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          GH_DISPATCH_TOKEN: ${{ secrets.GH_DISPATCH_TOKEN }}
+          GH_REPO: ${{ github.repository }}

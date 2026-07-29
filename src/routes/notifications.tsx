@@ -16,6 +16,7 @@ import {
   MessageCircle,
   Check,
   X,
+  PlayCircle,
 } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import {
@@ -50,6 +51,7 @@ const ICONS = {
   heart: Heart,
   eye: Eye,
   "message-circle": MessageCircle,
+  "play-circle": PlayCircle,
 };
 
 const ICON_COLORS: Record<keyof typeof ICONS, string> = {
@@ -64,6 +66,7 @@ const ICON_COLORS: Record<keyof typeof ICONS, string> = {
   heart: "var(--fan-pink)",
   eye: "var(--fan-gold)",
   "message-circle": "var(--fan-pink)",
+  "play-circle": "#4ADE80",
 };
 
 function timeAgo(ts: number) {
@@ -145,7 +148,7 @@ function EmptyStateFallback() {
 }
 
 function NotifItem({ n }: { n: Notification }) {
-  const Icon = ICONS[n.icon];
+const Icon = ICONS[n.icon];
   return (
     <li
       className="flex items-start gap-3 px-4 py-3 relative"

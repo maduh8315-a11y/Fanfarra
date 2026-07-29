@@ -29,6 +29,7 @@ export interface Settings {
   notif_events: boolean;
   notif_news: boolean;
   notif_sound: boolean;
+  notif_episodes: boolean;
   privacy_public: boolean;
   privacy_library: boolean;
   privacy_email: boolean;
@@ -39,6 +40,7 @@ export interface Settings {
   libraryColumns: 2 | 3;
   theme: "default" | "lunar" | "aurora";
   mode: "dark" | "light";
+
 }
 
 const SETTINGS_COLLECTION = "settings";
@@ -46,7 +48,8 @@ const DEFAULT_SETTINGS: Settings = {
   notif_paused: true,
   notif_events: true,
   notif_news: true,
-  notif_sound: false,
+  notif_sound: true,
+  notif_episodes: true,
   privacy_public: false,
   privacy_library: false,
   privacy_email: false,
@@ -113,17 +116,18 @@ export async function updateSettings(patch: Partial<Settings>) {
 export interface Notification {
   id: string;
   icon:
-    | "pause-circle"
-    | "award"
-    | "bar-chart"
-    | "vote"
-    | "check-circle"
-    | "calendar-clock"
-    | "user-plus"
-    | "users"
-    | "heart"
-    | "eye"
-    | "message-circle";
+  | "pause-circle"
+  | "award"
+  | "bar-chart"
+  | "vote"
+  | "check-circle"
+  | "calendar-clock"
+  | "user-plus"
+  | "users"
+  | "heart"
+  | "eye"
+  | "message-circle"
+  | "play-circle";
   text: string;
   ts: number;
   read: boolean;

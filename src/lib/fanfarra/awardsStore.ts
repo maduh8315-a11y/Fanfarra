@@ -134,6 +134,40 @@ export function useAwardsPhase(): AwardsPhase {
   return useAwardsConfig().phase;
 }
 
+// Diz se, AGORA, existe alguma sessão de votação/recomendação realmente
+// aberta (já passou do horário de abertura e ainda não bateu o prazo de
+// fechamento). Usado pra mostrar/esconder o aviso "Votação aberta" no menu.
+export function useIsAwardsVotingOpen(): boolean {
+  const config = useAwardsConfig();
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const { phase } = config;
+  if (phase === "resultado") return false; // fase de resultado não é votação
+
+  const open =
+    phase === "recomendacao"
+      ? config.recomendacaoOpen
+      : phase === "indicacao"
+        ? config.indicacaoOpen
+        : config.finalOpen;
+
+  const deadline =
+    phase === "recomendacao"
+      ? config.recomendacaoDeadline
+      : phase === "indicacao"
+        ? config.indicacaoDeadline
+        : config.finalDeadline;
+
+  if (!open || now < open) return false; // ainda não abriu
+  if (deadline && now >= deadline) return false; // já fechou
+  return true;
+}
+
 // Ação administrativa: avança a fase do funil pra todo mundo (uso manual/emergencial).
 export async function setAwardsPhase(phase: AwardsPhase): Promise<void> {
   await setDoc(doc(db, CONFIG_COLLECTION, CONFIG_DOC_ID), { phase }, { merge: true });

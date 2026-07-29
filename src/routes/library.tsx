@@ -10,6 +10,7 @@ import { useWorks, useWorksLoading, useWorksHasMore, useWorksLoadingMore, loadMo
 import { WorkGridSkeleton } from "@/components/fanfarra/WorkCardSkeleton";
 import { AwardCrownBadge } from "@/components/fanfarra/AwardCrownBadge";
 import { useBookcases, addBookcase } from "@/lib/fanfarra/bookcaseStore";
+import { useSettings } from "@/lib/fanfarra/extras";
 import {
   STATUSES,
   MEDIA_MODES,
@@ -73,6 +74,8 @@ function LibraryPage() {
   const hasMoreWorks = useWorksHasMore();
   const loadingMoreWorks = useWorksLoadingMore();
   const bookcases = useBookcases();
+  const settings = useSettings();
+  const cols = settings.libraryColumns;
   const [mode, setMode] = useState<ModeTab>("Todos");
   const [tab, setTab] = useState<Status | "Todos">("Todos");
   const groupStatuses = group ? STATUS_GROUPS[group] : null;
@@ -99,11 +102,11 @@ function LibraryPage() {
 
   const rows = useMemo(() => {
     const chunked: (typeof filtered)[] = [];
-    for (let i = 0; i < filtered.length; i += 2) {
-      chunked.push(filtered.slice(i, i + 2));
+    for (let i = 0; i < filtered.length; i += cols) {
+      chunked.push(filtered.slice(i, i + cols));
     }
     return chunked;
-  }, [filtered]);
+  }, [filtered, cols]);
 
   const rowVirtualizer = useWindowVirtualizer({
     count: rows.length,
@@ -261,7 +264,7 @@ function LibraryPage() {
                   key={virtualRow.key}
                   ref={rowVirtualizer.measureElement}
                   data-index={virtualRow.index}
-                  className="grid grid-cols-2 gap-3 pb-3 px-4"
+                  className={`grid ${cols === 3 ? "grid-cols-3" : "grid-cols-2"} gap-3 pb-3 px-4`}
                   style={{
                     position: "absolute",
                     top: 0,
