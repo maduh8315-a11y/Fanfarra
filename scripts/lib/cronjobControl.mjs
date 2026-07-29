@@ -28,8 +28,14 @@ async function setFastPolling(enabled) {
   console.log(`[cronjobControl] job rápido ${enabled ? "LIGADO (perto de uma virada)" : "desligado"}.`);
 }
 
+const STALE_GRACE_MS = 20 * 60 * 1000; // prazo vencido há mais de 20min não conta mais como "perto"
+
 export async function syncFastPolling(checkpoint) {
   const now = Date.now();
-  const isNear = typeof checkpoint === "number" && !Number.isNaN(checkpoint) && checkpoint - now <= WINDOW_MS;
+  const isNear =
+    typeof checkpoint === "number" &&
+    !Number.isNaN(checkpoint) &&
+    checkpoint > now - STALE_GRACE_MS && // ignora prazos antigos "esquecidos" no banco
+    checkpoint - now <= WINDOW_MS;
   await setFastPolling(isNear);
 }

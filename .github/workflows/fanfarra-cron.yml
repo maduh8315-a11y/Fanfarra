@@ -1,5 +1,9 @@
 name: Fanfarra Cron
 
+concurrency:
+  group: fanfarra-cron
+  cancel-in-progress: false
+
 on:
   workflow_dispatch: {} # disparado pelo app quando você abre/inicia uma edição
   schedule:

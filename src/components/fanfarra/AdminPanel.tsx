@@ -22,6 +22,7 @@ export function AdminPanel() {
 
   const [recomendacaoOpenInput, setRecomendacaoOpenInput] = useState("");
   const [recomendacaoInput, setRecomendacaoInput] = useState("");
+  const [novaEdicaoInput, setNovaEdicaoInput] = useState("");
   const [indicacaoOpenInput, setIndicacaoOpenInput] = useState("");
   const [indicacaoInput, setIndicacaoInput] = useState("");
   const [finalOpenInput, setFinalOpenInput] = useState("");
@@ -82,11 +83,11 @@ const isAdmin = useIsAdmin(user?.uid);
   };
 
   const handleStartNewCycle = async () => {
-    if (!recomendacaoInput) {
+    if (!novaEdicaoInput) {
       toast.error("Defina o prazo de fechamento de 'recomendacao' antes de iniciar uma nova edição.");
       return;
     }
-    const ts = new Date(recomendacaoInput).getTime();
+    const ts = new Date(novaEdicaoInput).getTime();
     if (Number.isNaN(ts)) {
       toast.error("Data inválida.");
       return;
@@ -245,8 +246,8 @@ const isAdmin = useIsAdmin(user?.uid);
         </label>
         <input
           type="datetime-local"
-          value={recomendacaoInput}
-          onChange={(e) => setRecomendacaoInput(e.target.value)}
+          value={novaEdicaoInput}
+          onChange={(e) => setNovaEdicaoInput(e.target.value)}
           className="w-full rounded-[8px] px-2 py-1 text-sm bg-transparent mb-2"
           style={{ border: "1px solid var(--fan-rose-mid)", color: "var(--fan-text)" }}
         />

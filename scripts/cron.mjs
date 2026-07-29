@@ -238,13 +238,20 @@ async function openScheduledCycle(categories, recomendacaoDeadline) {
 
 async function syncFastPollingWithConfig() {
   const configSnap = await db.collection("awards_config").doc("current").get();
-  if (!configSnap.exists) return;
+  if (!configSnap.exists) {
+    // Sem config = sem votação aberta. Antes isso só dava "return" e deixava
+    // o job rápido do jeito que estava (podendo ficar ligado pra sempre).
+    await syncFastPolling(null);
+    return;
+  }
   const config = configSnap.data();
   let checkpoint = null;
   if (config.scheduledStartAt) checkpoint = Number(config.scheduledStartAt);
   else if (config.phase === "recomendacao") checkpoint = Number(config.recomendacaoDeadline);
   else if (config.phase === "indicacao") checkpoint = Number(config.indicacaoDeadline);
   else if (config.phase === "final") checkpoint = Number(config.finalDeadline);
+  // fase "resultado" (obra premiada já saiu) cai aqui com checkpoint = null,
+  // então já desliga o job rápido — não há mais prazo pra vigiar de perto.
   await syncFastPolling(checkpoint);
 }
 
