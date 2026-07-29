@@ -6,7 +6,7 @@
 
 const API_KEY = process.env.CRONJOB_API_KEY;
 const FAST_JOB_ID = process.env.CRONJOB_FAST_JOB_ID;
-const WINDOW_MS = 10 * 60 * 1000; // liga o rápido com 10min de antecedência
+const WINDOW_MS = 30 * 60 * 1000; // liga o rápido com até 30min de antecedência (dá folga pro vigia de 20min não pular a janela)
 
 async function setFastPolling(enabled) {
   if (!API_KEY || !FAST_JOB_ID) {
