@@ -308,7 +308,8 @@ async function runOnce() {
 
 const CHECK_INTERVAL_MS = 2 * 60 * 1000; // 2 minutos
 const LOOP_ENTRY_WINDOW_MS = 40 * 60 * 1000; // entra no modo "2 em 2" até 40min antes do prazo
-const LOOP_MAX_DURATION_MS = 55 * 60 * 1000; // teto de segurança nesta execução
+//const LOOP_MAX_DURATION_MS = 55 * 60 * 1000; // teto de segurança nesta execução
+const LOOP_MAX_DURATION_MS = 10 * 60 * 1000; // teto de 10min só pra testar mais rápido
 
 const loopStartedAt = Date.now();
 await runOnce();
