@@ -1,8 +1,6 @@
 import {
   collection,
   doc,
-  addDoc,
-  setDoc,
   updateDoc,
   onSnapshot,
   query,
@@ -14,7 +12,8 @@ import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "./firebase";
 import { checkClientCooldown } from "./clientCooldown";
-import { notifyMany } from "./notify";
+import { sendChatMessageServer } from "@/lib/api/chat.functions";
+import { checkActionRateLimitServer } from "@/lib/api/actionRateLimit.functions";
 
 const CHATS_COLLECTION = "chats";
 const MESSAGES_SUBCOLLECTION = "messages";
@@ -118,36 +117,17 @@ export async function sendChatMessage(
   myUsername: string,
   text: string,
 ): Promise<void> {
-  const uid = auth.currentUser?.uid;
-  if (!uid) throw new Error("Você precisa estar logado.");
+  const user = auth.currentUser;
+  if (!user) throw new Error("Você precisa estar logado.");
   const trimmed = text.trim();
   if (!trimmed) return;
-  checkClientCooldown(`chat-send:${uid}`, 400);
+  checkClientCooldown(`chat-send:${user.uid}`, 400);
 
-  const chatId = chatIdFor(uid, otherUid);
-  const now = Date.now();
-
-  await setDoc(
-    doc(db, CHATS_COLLECTION, chatId),
-    {
-      members: [uid, otherUid].sort(),
-      lastMessage: trimmed,
-      lastMessageAt: now,
-      lastSenderUid: uid,
-      readAt: { [uid]: now },
-    },
-    { merge: true },
-  );
-
-  await addDoc(collection(db, CHATS_COLLECTION, chatId, MESSAGES_SUBCOLLECTION), {
-    senderUid: uid,
-    senderUsername: myUsername,
-    text: trimmed,
-    createdAt: now,
+  const idToken = await user.getIdToken();
+  const result = await sendChatMessageServer({
+    data: { idToken, otherUid, otherUsername, myUsername, text: trimmed },
   });
-
-  const preview = trimmed.length > 60 ? `${trimmed.slice(0, 60)}…` : trimmed;
-  await notifyMany([otherUid], "message-circle", `${myUsername}: ${preview}`);
+  if (!result.ok) throw new Error(result.error);
 }
 
 

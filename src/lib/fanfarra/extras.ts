@@ -227,6 +227,19 @@ export async function pushNotification(n: Omit<Notification, "id" | "ts" | "read
       pushed: false, // o cron (scripts/cron.mjs) usa essa flag pra saber o que ainda precisa virar push real
     }),
   );
+
+  // Espelha por e-mail pro responsável, se essa conta tiver um cadastrado.
+  // Grava um documento simples na coleção "mail" — quem realmente dispara
+  // o envio é a extensão "Trigger Email" do Firebase (ver instruções abaixo).
+  if (profileCache.guardianEmail) {
+    setDoc(doc(db, "mail", generateId()), {
+      to: [profileCache.guardianEmail],
+      message: {
+        subject: `Fanfarra — nova notificação para ${profileCache.username}`,
+        text: n.text,
+      },
+    }).catch((err) => console.error("Erro ao notificar responsável por e-mail:", err));
+  }
 }
 
 export function checkAutoNotifications(works: Work[]) {
@@ -270,6 +283,7 @@ export interface Profile {
   earnedBadgeIds: string[];
   birthDate?: string;
   needsParentalSupervision?: boolean;
+  guardianEmail?: string; // e-mail do responsável — coletado no cadastro se a pessoa é menor de idade
 }
 
 const PROFILES_COLLECTION = "profiles";

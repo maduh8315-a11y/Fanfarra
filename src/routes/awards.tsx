@@ -574,7 +574,7 @@ function VotingPhase({
                           border: "1px solid var(--fan-rose-mid)",
                         }}
                       >
-                        <AwardCrownBadge title={nominee.title} />
+                        <AwardCrownBadge title={nominee.title} size="sm" />
                         {nominee.cover ? (
                           <img src={nominee.cover} alt={nominee.title} className="w-full h-full object-cover" />
                         ) : (

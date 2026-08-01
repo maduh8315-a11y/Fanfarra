@@ -15,6 +15,11 @@ export const SENSITIVE_CONTENT_TAGS = [
 
 export type SensitiveContentTag = (typeof SENSITIVE_CONTENT_TAGS)[number];
 
+// Tag especial pro botão "Obra madura (18+)" (estilo Wattpad) — não aparece
+// na lista de chips normal, é ativada por um toggle simples separado, mas
+// usa o MESMO mecanismo de aviso/bloqueio das outras tags sensíveis.
+export const MATURE_TAG = "Conteúdo adulto (18+)";
+
 // Calcula idade atual a partir de uma data "YYYY-MM-DD". Retorna null se
 // não tiver data (usuário deslogado ou conta antiga sem esse campo).
 export function calculateAge(birthDate: string | undefined): number | null {

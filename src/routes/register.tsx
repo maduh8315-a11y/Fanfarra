@@ -3,10 +3,16 @@ import { useState, useMemo } from "react";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { AuthInput, FanfarraLogo } from "@/components/fanfarra/auth/AuthInput";
 import { signUpWithEmail, authErrorMessage } from "@/lib/fanfarra/auth";
+import { calculateAge } from "@/lib/fanfarra/contentGate";
 
 export const Route = createFileRoute("/register")({
   component: RegisterPage,
 });
+
+// TODO: quando o documento único (docx) estiver pronto, troque este link
+// pelo link público dele (ex.: um link do Google Docs "publicado na web"
+// ou um PDF exportado).
+const TERMS_AND_PRIVACY_URL = "/terms";
 
 function passwordStrength(pw: string): 0 | 1 | 2 | 3 {
   if (!pw) return 0;
@@ -49,6 +55,13 @@ function RegisterPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [birthDate, setBirthDate] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [guardianEmail, setGuardianEmail] = useState("");
+
+  const isMinor = useMemo(() => {
+    const age = calculateAge(birthDate);
+    return age !== null && age < 18;
+  }, [birthDate]);
 
   const validate = useMemo(
     () => () => {
@@ -63,9 +76,15 @@ function RegisterPage() {
       } else if (new Date(birthDate) > new Date()) {
         e.birthDate = "Data de nascimento inválida.";
       }
+      if (isMinor && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guardianEmail.trim())) {
+        e.guardianEmail = "Informe o e-mail de um responsável válido.";
+      }
+      if (!acceptedTerms) {
+        e.terms = "Você precisa ler e aceitar os Termos de Uso e a Política de Privacidade.";
+      }
       return e;
     },
-    [username, email, password, confirm, birthDate],
+    [username, email, password, confirm, birthDate, acceptedTerms, isMinor, guardianEmail],
   );
 
   async function handleSubmit() {
@@ -74,7 +93,7 @@ function RegisterPage() {
     setErrors({});
     setLoading(true);
     try {
-      await signUpWithEmail(email, password, username, birthDate);
+      await signUpWithEmail(email, password, username, birthDate, isMinor ? guardianEmail.trim() : undefined);
       navigate({ to: "/verify-email", replace: true });
     } catch (err) {
       const code = (err as { code?: string })?.code ?? "";
@@ -101,22 +120,38 @@ function RegisterPage() {
           Crie sua conta
         </p>
       </div>
-      <div className="mt-7 space-y-4">
+      <p className="mt-3 text-sm text-right" style={{ color: "var(--fan-text-2)" }}>
+        <span style={{ color: "#F87171" }}>*</span> Campos obrigatórios
+      </p>
+      <div className="mt-3 space-y-4">
         <AuthInput
           label="Nome de usuário"
           placeholder="seu_nick"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           error={errors.username}
+          required
         />
         <AuthInput
-        label="Data de nascimento"
-        type="date"
-        value={birthDate}
-        onChange={(e) => setBirthDate(e.target.value)}
-        error={errors.birthDate}
-        max={new Date().toISOString().split("T")[0]}
-      />
+          label="Data de nascimento"
+          type="date"
+          value={birthDate}
+          onChange={(e) => setBirthDate(e.target.value)}
+          error={errors.birthDate}
+          max={new Date().toISOString().split("T")[0]}
+          required
+        />
+        {isMinor && (
+          <AuthInput
+            label="E-mail de um responsável"
+            type="email"
+            placeholder="responsavel@email.com"
+            value={guardianEmail}
+            onChange={(e) => setGuardianEmail(e.target.value)}
+            error={errors.guardianEmail}
+            required
+          />
+        )}
         <AuthInput
           label="E-mail"
           type="email"
@@ -125,6 +160,7 @@ function RegisterPage() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           error={errors.email}
+          required
         />
         <div>
           <AuthInput
@@ -135,6 +171,7 @@ function RegisterPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             error={errors.password}
+            required
           />
           <StrengthBar pw={password} />
         </div>
@@ -146,7 +183,62 @@ function RegisterPage() {
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
           error={errors.confirm}
+          required
         />
+
+        <div
+          className="rounded-[10px] p-3"
+          style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
+        >
+          <div className="flex items-center mb-2">
+            <Link
+              to={TERMS_AND_PRIVACY_URL as any}
+              target={TERMS_AND_PRIVACY_URL.startsWith("http") ? "_blank" : undefined}
+              className="text-sm font-bold underline"
+              style={{ color: "var(--fan-pink-light)" }}
+            >
+              Ver Termos de Uso e Política de Privacidade
+            </Link>
+          </div>
+
+          <div
+            className="rounded-[8px] p-2.5 overflow-y-auto text-sm"
+            style={{
+              background: "var(--fan-bg)",
+              border: "1px solid var(--fan-border)",
+              color: "var(--fan-text-2)",
+              maxHeight: 140,
+              minHeight: 80,
+            }}
+          >
+            {/* TODO: colar aqui o texto (ou resumo) dos Termos de Uso e da
+                Política de Privacidade quando estiver pronto. Essa caixa já
+                tem altura fixa (140px) e rolagem própria — o usuário rola
+                pra ler tudo, sem a tela inteira crescer. */}
+          </div>
+
+          <label className="flex items-start gap-2.5 mt-3 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              className="mt-0.5 shrink-0"
+              style={{ width: 18, height: 18, accentColor: "var(--fan-pink)" }}
+            />
+           <span className="text-sm font-semibold" style={{ color: "var(--fan-text)" }}>
+              Li e concordo com os Termos de Uso e a Política de Privacidade.{" "}
+              <span style={{ color: "#F87171" }} aria-hidden>
+                *
+              </span>
+            </span>
+          </label>
+        </div>
+        {errors.terms && (
+          <p className="text-sm" style={{ color: "#F87171" }}>
+            {errors.terms}
+          </p>
+        )}
+
         {errors.form && (
           <p className="text-sm text-center" style={{ color: "#F87171" }}>
             {errors.form}

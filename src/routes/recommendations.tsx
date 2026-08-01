@@ -178,9 +178,9 @@ function RecPage() {
         </section>
       ) : (
         <>
-          {/* Comunidade — recomendações públicas postadas por qualquer usuário */}
-          <section className="mt-4 px-4">
-            <div className="flex items-center gap-2 mb-3">
+         {/* Comunidade — recomendações públicas postadas por qualquer usuário */}
+          <section className="mt-4">
+            <div className="flex items-center gap-2 mb-3 px-4">
               <span style={{ color: "var(--fan-pink-light)" }}>👥</span>
               <h2 className="text-sm font-bold" style={{ color: "var(--fan-text-3)" }}>
                 Da comunidade
@@ -196,7 +196,7 @@ function RecPage() {
               </div>
             ) : communityItems.length === 0 ? (
               <div
-                className="rounded-[14px] p-4"
+                className="rounded-[14px] p-4 mx-4"
                 style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
               >
                 <EmptyState
@@ -208,7 +208,7 @@ function RecPage() {
               </div>
             ) : (
               <>
-                <div className="flex gap-3 overflow-x-auto pb-2 fan-hscroll" style={{ scrollbarWidth: "none" }}>
+                <div className="flex gap-3 overflow-x-auto px-4 pb-2 fan-hscroll" style={{ scrollbarWidth: "none" }}>
                   {communityItems.map((item) => (
                     <CatalogCard key={item.id} item={item} />
                   ))}

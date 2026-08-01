@@ -103,6 +103,8 @@ function toValue(v: unknown): unknown {
   if (typeof v === "string") return { stringValue: v };
   if (typeof v === "number") return Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v };
   if (typeof v === "boolean") return { booleanValue: v };
+  if (Array.isArray(v)) return { arrayValue: { values: v.map(toValue) } };
+  if (v && typeof v === "object") return { mapValue: { fields: toFields(v as Record<string, unknown>) } };
   return { nullValue: null };
 }
 function fromValue(v: any): any {
@@ -111,6 +113,8 @@ function fromValue(v: any): any {
   if ("integerValue" in v) return Number(v.integerValue);
   if ("doubleValue" in v) return v.doubleValue;
   if ("booleanValue" in v) return v.booleanValue;
+  if ("arrayValue" in v) return (v.arrayValue.values ?? []).map(fromValue);
+  if ("mapValue" in v) return fromFields(v.mapValue.fields);
   return null;
 }
 function toFields(obj: Record<string, unknown>) {
@@ -151,7 +155,7 @@ export interface FsDoc<T> {
 }
 
 export class FirestoreTransaction {
-  private constructor(public readonly id: string) {}
+  private constructor(public readonly id: string) { }
 
   static async begin(): Promise<FirestoreTransaction> {
     const data = await callFirestore(":beginTransaction", { options: { readWrite: {} } });
@@ -202,13 +206,12 @@ export class FirestoreTransaction {
       }));
   }
 
-  upsert(collectionName: string, id: string, data: Record<string, unknown>, writes: any[]) {
+  upsert(collectionName: string, id: string, data: Record<string, unknown>, writes: any[], updateMask?: string[]) {
     writes.push({
       update: { name: docPath(collectionName, id), fields: toFields(data) },
-      updateMask: { fieldPaths: Object.keys(data) },
+      updateMask: { fieldPaths: updateMask ?? Object.keys(data) },
     });
   }
-
   del(collectionName: string, id: string, writes: any[]) {
     writes.push({ delete: docPath(collectionName, id) });
   }

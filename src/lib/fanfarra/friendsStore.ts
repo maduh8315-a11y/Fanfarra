@@ -4,7 +4,6 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
-  getDoc,
   onSnapshot,
   query,
   where,
@@ -12,9 +11,10 @@ import {
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "./firebase";
-import { stripUndefined } from "./firestoreUtils";
 import { checkClientCooldown } from "./clientCooldown";
 import { notifyMany } from "./notify";
+import { sendFriendRequestServer } from "@/lib/api/friendRequest.functions";
+import { checkActionRateLimitServer } from "@/lib/api/actionRateLimit.functions";
 
 const REQUESTS_COLLECTION = "friend_requests";
 const FRIENDSHIPS_COLLECTION = "friendships";
@@ -143,44 +143,16 @@ export async function sendFriendRequest(
   myUsername: string,
   myAvatar?: string,
 ): Promise<void> {
-  const uid = auth.currentUser?.uid;
-  if (!uid) throw new Error("Você precisa estar logado.");
-  if (uid === toUid) throw new Error("Você não pode adicionar a si mesmo.");
- checkClientCooldown(`friend-request:${uid}:${toUid}`, 2_000);
+  const user = auth.currentUser;
+  if (!user) throw new Error("Você precisa estar logado.");
+  if (user.uid === toUid) throw new Error("Você não pode adicionar a si mesmo.");
+  checkClientCooldown(`friend-request:${user.uid}:${toUid}`, 2_000);
 
-  const [blockedByMe, blockedMe] = await Promise.all([
-    getDoc(doc(db, BLOCKS_COLLECTION, `${uid}_${toUid}`)),
-    getDoc(doc(db, BLOCKS_COLLECTION, `${toUid}_${uid}`)),
-  ]);
-  if (blockedByMe.exists() || blockedMe.exists()) {
-    throw new Error("Não é possível enviar pedido de amizade para este usuário.");
-  }
-
-  // se a outra pessoa já te chamou primeiro, aceita direto em vez de duplicar
-  const reverseId = `${toUid}_${uid}`;
-  const reverseSnap = await getDoc(doc(db, REQUESTS_COLLECTION, reverseId));
-  if (reverseSnap.exists() && (reverseSnap.data() as FriendRequest).status === "pending") {
-    await acceptFriendRequest(reverseId, reverseSnap.data() as FriendRequest, myUsername, myAvatar);
-    return;
-  }
-
-  const id = `${uid}_${toUid}`;
-  const now = Date.now();
-  await setDoc(
-    doc(db, REQUESTS_COLLECTION, id),
-    stripUndefined({
-      fromUid: uid,
-      toUid,
-      fromUsername: myUsername,
-      toUsername,
-      fromAvatar: myAvatar,
-      toAvatar,
-      status: "pending",
-      createdAt: now,
-      updatedAt: now,
-    }),
-  );
-  await notifyMany([toUid], "user-plus", `${myUsername} te enviou um pedido de amizade.`);
+  const idToken = await user.getIdToken();
+  const result = await sendFriendRequestServer({
+    data: { idToken, toUid, toUsername, toAvatar, myUsername, myAvatar },
+  });
+  if (!result.ok) throw new Error(result.error);
 }
 
 export async function acceptFriendRequest(

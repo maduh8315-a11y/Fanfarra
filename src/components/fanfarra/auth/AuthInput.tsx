@@ -5,16 +5,22 @@ interface Props extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
   error?: string;
   togglePassword?: boolean;
+  required?: boolean;
 }
 
 export const AuthInput = forwardRef<HTMLInputElement, Props>(
-  ({ label, error, togglePassword, type, className, ...rest }, ref) => {
+  ({ label, error, togglePassword, required, type, className, ...rest }, ref) => {
     const [show, setShow] = useState(false);
     const actualType = togglePassword ? (show ? "text" : "password") : type;
     return (
       <div className="w-full">
         <label className="block text-sm mb-1.5" style={{ color: "var(--fan-text-2)" }}>
           {label}
+          {required && (
+            <span style={{ color: "#F87171" }} aria-hidden>
+              {" "}*
+            </span>
+          )}
         </label>
         <div className="relative">
           <input

@@ -113,6 +113,7 @@ export async function signUpWithEmail(
   password: string,
   username: string,
   birthDate: string, // "YYYY-MM-DD"
+  guardianEmail?: string, // obrigatório no formulário se a pessoa for menor de idade
 ): Promise<AuthUser> {
   setSkipNextProfileAutoSeed(true);
   try {
@@ -135,6 +136,7 @@ export async function signUpWithEmail(
         // LGPD art. 14 — menor de 12 anos precisa de responsável. Não
         // bloqueamos o cadastro, só marcamos a conta pra exibir o aviso.
         needsParentalSupervision: calculateAge(birthDate) !== null && calculateAge(birthDate)! < 12,
+        ...(guardianEmail ? { guardianEmail: guardianEmail.trim().toLowerCase() } : {}),
       },
       { merge: true },
     );

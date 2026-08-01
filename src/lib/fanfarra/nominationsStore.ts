@@ -10,7 +10,6 @@ import {
   onSnapshot,
   query,
   where,
-  runTransaction,
   updateDoc,
   deleteDoc,
 } from "firebase/firestore";
@@ -18,6 +17,8 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "./firebase";
 import { stripUndefined } from "./firestoreUtils";
+import { reactToNominationServer } from "@/lib/api/awardVote.functions";
+import { checkActionRateLimitServer } from "@/lib/api/actionRateLimit.functions";
 
 const NOMINATIONS_COLLECTION = "award_nominations";
 const REACTIONS_COLLECTION = "award_reactions";
@@ -136,40 +137,18 @@ export async function submitNomination(themeId: string, workTitle: string, cover
 }
 
 // ── Reagir (aplaudir/vaiar) a uma indicação ─────────────────────────────────
-// Um usuário só pode ter UMA reação ativa por indicação (doc id determinístico
-// `${nominationId}__${uid}`). Clicar de novo na mesma reação remove o voto;
-// clicar na outra troca. Tudo numa transação pra manter os contadores certos.
+// Agora passa pelo servidor (reactToNominationServer), que tem rate limit
+// de verdade e é o único que consegue escrever em award_nominations/
+// award_reactions (ver firestore.rules).
 export async function reactToNomination(nominationId: string, themeId: string, reaction: Reaction): Promise<void> {
-  const uid = auth.currentUser?.uid;
-  if (!uid) throw new Error("Usuário não autenticado.");
+  const user = auth.currentUser;
+  if (!user) throw new Error("Usuário não autenticado.");
 
-  const nominationRef = doc(db, NOMINATIONS_COLLECTION, nominationId);
-  const reactionRef = doc(db, REACTIONS_COLLECTION, `${nominationId}__${uid}`);
-
-  await runTransaction(db, async (tx) => {
-    const [nomSnap, reactionSnap] = await Promise.all([tx.get(nominationRef), tx.get(reactionRef)]);
-    if (!nomSnap.exists()) throw new Error("Indicação não encontrada.");
-
-    const current = nomSnap.data() as Omit<AwardNomination, "id">;
-    let applause = current.applause ?? 0;
-    let boos = current.boos ?? 0;
-    const previous = reactionSnap.exists() ? (reactionSnap.data().reaction as Reaction) : null;
-
-    if (previous === reaction) {
-      if (reaction === "aplauso") applause = Math.max(0, applause - 1);
-      else boos = Math.max(0, boos - 1);
-      tx.delete(reactionRef);
-    } else {
-      if (previous === "aplauso") applause = Math.max(0, applause - 1);
-      if (previous === "vaia") boos = Math.max(0, boos - 1);
-      if (reaction === "aplauso") applause += 1;
-      else boos += 1;
-      tx.set(reactionRef, { nominationId, themeId, uid, reaction, createdAt: Date.now() });
-    }
-
-    tx.update(nominationRef, { applause, boos });
-  });
+  const idToken = await user.getIdToken();
+  const result = await reactToNominationServer({ data: { idToken, nominationId, themeId, reaction } });
+  if (!result.ok) throw new Error(result.error);
 }
+
 
 // Reações do usuário atual, por indicação — destaca o botão ativo.
 let myReactionsCache: Record<string, Reaction> = {};

@@ -6,7 +6,7 @@ import { TagInput } from "@/components/fanfarra/TagInput";
 import { Star, Check } from "lucide-react";
 import type { ImportedWorkData } from "@/lib/api/importWork.functions";
 import type { RelatedWork } from "@/lib/fanfarra/formConfig";
-import { SENSITIVE_CONTENT_TAGS } from "@/lib/fanfarra/contentGate";
+import { SENSITIVE_CONTENT_TAGS, MATURE_TAG } from "@/lib/fanfarra/contentGate";
 import {
   COMPLETED_STATUSES,
   DEFAULT_STATUS_FOR_TYPE,
@@ -523,6 +523,30 @@ export function WorkForm({
           multi
         />
       </Field>
+
+      <div
+        className="flex items-center justify-between rounded-[10px] px-3 py-2.5"
+        style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
+      >
+        <div className="pr-3">
+          <span className="text-sm font-semibold block" style={{ color: "var(--fan-text)" }}>
+            Obra madura (18+)
+          </span>
+          <span className="text-xs" style={{ color: "var(--fan-text-2)" }}>
+            Ativa o aviso de conteúdo sensível pra quem for ver essa obra.
+          </span>
+        </div>
+        <ToggleField
+          value={((values.details.contentWarnings as string[] | undefined) ?? []).includes(MATURE_TAG)}
+          onChange={(checked) => {
+            const current = (values.details.contentWarnings as string[] | undefined) ?? [];
+            const next = checked
+              ? [...new Set([...current, MATURE_TAG])]
+              : current.filter((w) => w !== MATURE_TAG);
+            setDetail("contentWarnings", next);
+          }}
+        />
+      </div>
 
       <Field label="Avisos de conteúdo (opcional)">
         <ChipsField
