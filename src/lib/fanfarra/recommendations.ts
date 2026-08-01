@@ -32,7 +32,10 @@ export interface RecommendationItem {
   fandom?: string;
   words?: number;
   related?: RelatedWork[]; // obras relacionadas escolhidas manualmente pelo autor da obra
+  contentWarnings?: string[];
 }
+
+
 
 export { CATALOG } from "./recommendationsData";
 type ScoredItem = RecommendationItem & { _score: number };
@@ -111,6 +114,7 @@ export function communityToRecommendationItem(r: PostedRecommendation): Recommen
     link: r.link,
     studio: (d.studio as string) || undefined,
     tags: (d.tags as string[]) || undefined,
+    contentWarnings: (d.contentWarnings as string[]) || undefined,
     reactions: (d.reactions as string[]) || undefined,
     episodes: toNum(d.totalEpisodes),
     chapters: toNum(d.totalChapters),

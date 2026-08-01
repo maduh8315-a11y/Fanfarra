@@ -48,6 +48,7 @@ function RegisterPage() {
   const [confirm, setConfirm] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [birthDate, setBirthDate] = useState("");
 
   const validate = useMemo(
     () => () => {
@@ -57,9 +58,14 @@ function RegisterPage() {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) e.email = "Informe um e-mail válido.";
       if (password.trim().length < 6) e.password = "Mínimo de 6 caracteres.";
       if (confirm.trim() !== password.trim()) e.confirm = "As senhas não coincidem.";
+      if (!birthDate) {
+        e.birthDate = "Informe sua data de nascimento.";
+      } else if (new Date(birthDate) > new Date()) {
+        e.birthDate = "Data de nascimento inválida.";
+      }
       return e;
     },
-    [username, email, password, confirm],
+    [username, email, password, confirm, birthDate],
   );
 
   async function handleSubmit() {
@@ -68,7 +74,7 @@ function RegisterPage() {
     setErrors({});
     setLoading(true);
     try {
-      await signUpWithEmail(email, password, username);
+      await signUpWithEmail(email, password, username, birthDate);
       navigate({ to: "/verify-email", replace: true });
     } catch (err) {
       const code = (err as { code?: string })?.code ?? "";
@@ -103,6 +109,14 @@ function RegisterPage() {
           onChange={(e) => setUsername(e.target.value)}
           error={errors.username}
         />
+        <AuthInput
+        label="Data de nascimento"
+        type="date"
+        value={birthDate}
+        onChange={(e) => setBirthDate(e.target.value)}
+        error={errors.birthDate}
+        max={new Date().toISOString().split("T")[0]}
+      />
         <AuthInput
           label="E-mail"
           type="email"

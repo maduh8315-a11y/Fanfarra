@@ -6,6 +6,7 @@ import { TagInput } from "@/components/fanfarra/TagInput";
 import { Star, Check } from "lucide-react";
 import type { ImportedWorkData } from "@/lib/api/importWork.functions";
 import type { RelatedWork } from "@/lib/fanfarra/formConfig";
+import { SENSITIVE_CONTENT_TAGS } from "@/lib/fanfarra/contentGate";
 import {
   COMPLETED_STATUSES,
   DEFAULT_STATUS_FOR_TYPE,
@@ -521,6 +522,18 @@ export function WorkForm({
           onChange={(g) => setValues((s) => ({ ...s, genres: g as string[] }))}
           multi
         />
+      </Field>
+
+      <Field label="Avisos de conteúdo (opcional)">
+        <ChipsField
+          options={[...SENSITIVE_CONTENT_TAGS]}
+          value={(values.details.contentWarnings as string[] | undefined) ?? []}
+          onChange={(w) => setDetail("contentWarnings", w)}
+          multi
+        />
+        <p className="text-xs mt-1.5" style={{ color: "var(--fan-text-2)" }}>
+          Marque se a obra tem algum desses temas — isso ativa um aviso automático pra usuários mais novos.
+        </p>
       </Field>
 
       <Field label="Tags">

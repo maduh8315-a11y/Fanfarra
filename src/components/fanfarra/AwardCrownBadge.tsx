@@ -20,7 +20,7 @@ export function AwardCrownBadge({
   if (variant === "corner") {
     return (
       <div
-        className="absolute -top-1.5 -right-1.5 rounded-full px-1 py-1 flex items-center justify-center shadow-sm z-10"
+        className="absolute top-1 right-1 rounded-full px-1 py-1 flex items-center justify-center shadow-sm z-10"
         style={{ background: "#FFD24D" }}
         title={tooltip}
       >

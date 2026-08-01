@@ -24,6 +24,7 @@ import {
   applyRecFilters,
   type RecFilters,
 } from "@/components/fanfarra/RecFilterSheet";
+import { filterBlockedForAge } from "@/lib/fanfarra/contentGate";
 import { useProfile } from "@/lib/fanfarra/extras";
 import {
   usePublicRecommendations,
@@ -42,23 +43,12 @@ const ALL_TYPES = ["Todos", ...MEDIA_TYPES] as const;
 type TypeTab = (typeof ALL_TYPES)[number];
 
 function RecPage() {
+  const { birthDate } = useProfile();
   const works = useWorks();
   const profile = useProfile();
   const [tab, setTab] = useState<TypeTab>("Todos");
   const [filterOpen, setFilterOpen] = useState(false);
   const [filters, setFilters] = useState<RecFilters>(DEFAULT_REC_FILTERS);
-
-  const scored = useMemo(() => {
-    const items = scoreItems(CATALOG, works);
-    // Marca itens que o usuário tem na biblioteca com seu @username
-    const libraryTitles = new Set(works.map((w) => w.title.toLowerCase()));
-    return items.map((item) =>
-      libraryTitles.has(item.title.toLowerCase())
-        ? { ...item, recommendedBy: profile.username }
-        : item,
-    );
-  }, [works, profile.username]);
-  const trending = useMemo(() => getTrending(scored, 12), [scored]);
 
   // Recomendações postadas por qualquer usuário — visíveis para todo mundo
   const community = usePublicRecommendations();
@@ -66,9 +56,30 @@ function RecPage() {
   const hasMoreCommunity = useCommunityHasMore();
   const loadingMoreCommunity = useCommunityLoadingMore();
   const communityItems = useMemo<RecommendationItem[]>(
-    () => community.map(communityToRecommendationItem),
-    [community],
+    () => filterBlockedForAge(community.map(communityToRecommendationItem), birthDate),
+    [community, birthDate],
   );
+
+  const scored = useMemo(() => {
+    const items = scoreItems(CATALOG, works);
+    // Marca itens que o usuário tem na biblioteca com seu @username
+    const libraryTitles = new Set(works.map((w) => w.title.toLowerCase()));
+    const withOwn = items.map((item) =>
+      libraryTitles.has(item.title.toLowerCase())
+        ? { ...item, recommendedBy: profile.username }
+        : item,
+    );
+    // Recomendações da comunidade entram na FRENTE da lista, dentro do
+    // tipo/gênero delas (ex.: recomendou um anime -> aparece na frente
+    // dos outros animes). Se o título já existe no catálogo padrão,
+    // a versão da comunidade substitui pra não duplicar.
+    const communityTitles = new Set(communityItems.map((c) => c.title.toLowerCase()));
+    const withoutDuplicates = withOwn.filter(
+      (item) => !communityTitles.has(item.title.toLowerCase()),
+    );
+    return [...communityItems, ...withoutDuplicates];
+  }, [works, profile.username, communityItems]);
+  const trending = useMemo(() => getTrending(scored, 12), [scored]);
 
   const topTypes = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -176,7 +187,7 @@ function RecPage() {
               </h2>
             </div>
             {communityLoading ? (
-              <div className="flex gap-3 overflow-x-auto pb-2 fan-hscroll" style={{ scrollbarWidth: "none" }}>
+              <div className="flex gap-3 overflow-x-auto px-4 pb-2 fan-hscroll" style={{ scrollbarWidth: "none" }}>
                 {Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="w-28 shrink-0">
                     <Skeleton style={{ aspectRatio: "2/3", width: "100%", borderRadius: 10 }} />

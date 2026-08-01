@@ -1,0 +1,40 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch: {} # dispara manualmente pela aba "Actions" no GitHub
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Sincronizar config nativa do Capacitor
+        run: npx cap sync android
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "21"
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Garantir SDK/build-tools necessários
+        run: sdkmanager "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Buildar APK de debug
+        working-directory: android
+        run: ./gradlew assembleDebug
+
+      - name: Disponibilizar APK pra download
+        uses: actions/upload-artifact@v4
+        with:
+          name: fanfarra-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk

@@ -3,6 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import type { MediaType } from "@/lib/fanfarra/types";
 import { useMemo, useState } from "react";
 import { getTypeColor, getTypeCardBg, getTypeCardBorder } from "@/lib/fanfarra/typeColors";
+import { ContentGate } from "@/components/fanfarra/ContentGate";
 import {
   ArrowLeft,
   Star,
@@ -32,6 +33,7 @@ import { useRecReactionCounts, useMyRecReaction, reactToRecItem } from "@/lib/fa
 import type { RelatedWork } from "@/lib/fanfarra/formConfig";
 import { useAuthUser } from "@/lib/fanfarra/auth";
 import { useRecComments, postRecComment, deleteRecComment } from "@/lib/fanfarra/recComments";
+import { ContentActionsSheet } from "@/routes/ContentActionsSheet";
 
 export const Route = createFileRoute("/rec/$id")({
   component: RecDetail,
@@ -181,8 +183,8 @@ function RecDetail() {
 
   const user = useAuthUser();
   const isAdmin = useIsAdmin(user?.uid);
- const { comments, hasMore: hasMoreComments, loadingMore: loadingMoreComments, loadMore: loadMoreComments } =
-  useRecComments(item?.id ?? "");
+  const { comments, hasMore: hasMoreComments, loadingMore: loadingMoreComments, loadMore: loadMoreComments } =
+    useRecComments(item?.id ?? "");
   const [commentText, setCommentText] = useState("");
   const [posting, setPosting] = useState(false);
 
@@ -214,7 +216,7 @@ function RecDetail() {
     }
   };
 
- const [reacting, setReacting] = useState(false);
+  const [reacting, setReacting] = useState(false);
 
   const handleReact = async (reaction: "like" | "boo") => {
     if (!item || reacting) return;
@@ -269,7 +271,7 @@ function RecDetail() {
 
   return (
     <AppShell>
-      {/* Topo — botão voltar flutuante */}
+      {/* Topo — botão voltar + menu, sempre visíveis mesmo com conteúdo avisado/bloqueado */}
       <div className="relative">
         <button
           onClick={() => nav({ to: "/recommendations" })}
@@ -280,6 +282,15 @@ function RecDetail() {
           <ArrowLeft size={18} color="var(--fan-icon-blue)" />
         </button>
 
+        <ContentActionsSheet
+          contentType="recommendation"
+          contentId={item.id}
+          contentTitle={item.title}
+          shareUrl={typeof window !== "undefined" ? window.location.href : ""}
+        />
+      </div>
+
+      <ContentGate contentWarnings={item.contentWarnings}>
         {/* Capa em destaque, estilo pôster */}
         <div
           className="w-full flex items-center justify-center pt-14 pb-6 px-8"
@@ -315,8 +326,8 @@ function RecDetail() {
             )}
           </div>
         </div>
-      </div>
 
+        
       {/* Título e metadados principais */}
       <div className="px-5 mt-4 text-center">
         <div className="flex flex-wrap justify-center gap-1.5 mb-2">
@@ -348,7 +359,7 @@ function RecDetail() {
         <p className="text-sm mt-1" style={{ color: "var(--fan-text-2)" }}>
           {item.author || "Autor não informado"}
         </p>
-       {item.recommendedBy && (
+        {item.recommendedBy && (
           <p className="text-sm font-semibold mt-1" style={{ color: "var(--fan-pink-light)" }}>
             Recomendado por{" "}
             <Link to="/u/$username" params={{ username: item.recommendedBy }} className="underline">
@@ -589,14 +600,14 @@ function RecDetail() {
                     style={
                       r.cover
                         ? {
-                            aspectRatio: "2/3",
-                            boxShadow: `0 0 0 1px color-mix(in srgb, ${getTypeColor(r.type as MediaType)} 55%, transparent), 0 0 14px 0 color-mix(in srgb, ${getTypeColor(r.type as MediaType)} 40%, transparent)`,
-                          }
+                          aspectRatio: "2/3",
+                          boxShadow: `0 0 0 1px color-mix(in srgb, ${getTypeColor(r.type as MediaType)} 55%, transparent), 0 0 14px 0 color-mix(in srgb, ${getTypeColor(r.type as MediaType)} 40%, transparent)`,
+                        }
                         : {
-                            aspectRatio: "2/3",
-                            background: getTypeCardBg(r.type as MediaType),
-                            border: `0.5px solid ${getTypeCardBorder(r.type as MediaType)}`,
-                          }
+                          aspectRatio: "2/3",
+                          background: getTypeCardBg(r.type as MediaType),
+                          border: `0.5px solid ${getTypeCardBorder(r.type as MediaType)}`,
+                        }
                     }
                   >
                     <AwardCrownBadge title={r.title} />
@@ -676,6 +687,7 @@ function RecDetail() {
           </div>
         </div>
       )}
+      </ContentGate>
     </AppShell>
   );
 }

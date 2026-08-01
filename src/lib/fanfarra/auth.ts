@@ -27,6 +27,7 @@ import { deleteAllRecommendationsForUser } from "./communityStore";
 import { deleteRemainingUserData, setSkipNextProfileAutoSeed } from "./extras";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { initPurchases, logOutPurchases } from "./purchases";
+import { calculateAge } from "./contentGate";
 
 export interface AuthUser {
   uid: string;
@@ -111,6 +112,7 @@ export async function signUpWithEmail(
   email: string,
   password: string,
   username: string,
+  birthDate: string, // "YYYY-MM-DD"
 ): Promise<AuthUser> {
   setSkipNextProfileAutoSeed(true);
   try {
@@ -129,6 +131,10 @@ export async function signUpWithEmail(
         streakDays: 0,
         lastActiveDate: null,
         earnedBadgeIds: [],
+        birthDate,
+        // LGPD art. 14 — menor de 12 anos precisa de responsável. Não
+        // bloqueamos o cadastro, só marcamos a conta pra exibir o aviso.
+        needsParentalSupervision: calculateAge(birthDate) !== null && calculateAge(birthDate)! < 12,
       },
       { merge: true },
     );

@@ -268,6 +268,8 @@ export interface Profile {
   streakDays: number;
   lastActiveDate: string | null;
   earnedBadgeIds: string[];
+  birthDate?: string;
+  needsParentalSupervision?: boolean;
 }
 
 const PROFILES_COLLECTION = "profiles";
