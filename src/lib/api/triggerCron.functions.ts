@@ -12,6 +12,12 @@ export const triggerAwardsCron = createServerFn({ method: "POST" }).handler(asyn
     return { ok: false };
   }
   try {
+    // Reativa o workflow (caso ele tenha sido desligado automaticamente na
+    // fase "resultado"/"fechado") antes de disparar de novo.
+    await fetch(`https://api.github.com/repos/${repo}/actions/workflows/fanfarra-cron.yml/enable`, {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" },
+    });
     const res = await fetch(
       `https://api.github.com/repos/${repo}/actions/workflows/fanfarra-cron.yml/dispatches`,
       {

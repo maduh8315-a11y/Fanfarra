@@ -312,6 +312,28 @@ const LOOP_ENTRY_WINDOW_MS = 40 * 60 * 1000; // entra no modo "2 em 2" até 40mi
 const LOOP_MAX_DURATION_MS = 10 * 60 * 1000; // teto de 10min só pra testar mais rápido
 
 const loopStartedAt = Date.now();
+
+// Desliga o workflow inteiro no GitHub quando não há mais nada pra vigiar
+// (fase "resultado" = obra premiada já saiu). Ele só volta a rodar quando
+// alguém disparar o triggerAwardsCron de novo (nova edição / reabertura),
+// que já reativa o workflow antes de disparar.
+async function disableWorkflowIfIdle() {
+  const configSnap = await db.collection("awards_config").doc("current").get();
+  if (!configSnap.exists) return;
+  const phase = configSnap.data().phase;
+  if (phase !== "resultado" && phase !== "fechado") return;
+
+  const token = process.env.GH_DISPATCH_TOKEN;
+  const repo = process.env.GH_REPO;
+  if (!token || !repo) return;
+
+  console.log(`[workflow] fase="${phase}", desligando o workflow agendado até a próxima edição/reabertura.`);
+  await fetch(`https://api.github.com/repos/${repo}/actions/workflows/fanfarra-cron.yml/disable`, {
+    method: "PUT",
+    headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" },
+  });
+}
+
 await runOnce();
 
 while (true) {
@@ -335,6 +357,7 @@ while (true) {
 // independente das outras — se uma falhar, a próxima roda no próximo
 // agendamento, sem travar tudo em silêncio.
 // ───────────────────────────────────────────────────────────
+await disableWorkflowIfIdle();
 process.exit(0);
 
 async function notifyAllUsers(icon, text) {

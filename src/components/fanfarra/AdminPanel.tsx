@@ -131,10 +131,11 @@ const isAdmin = useIsAdmin(user?.uid);
     }
   };
 
-  const handleReopenVoting = async () => {
+ const handleReopenVoting = async () => {
     setSaving("reabrir");
     try {
       await setAwardsPhase("recomendacao");
+      triggerAwardsCron().catch(() => {}); // reativa o workflow, caso esteja desligado
       toast.success("Votação reaberta na fase de recomendação.");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Não foi possível reabrir.");
