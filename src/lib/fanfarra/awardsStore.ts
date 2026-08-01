@@ -29,7 +29,14 @@ const CONFIG_COLLECTION = "awards_config";
 const CONFIG_DOC_ID = "current";
 
 // Fases do funil: recomendação → indicação → final → resultado
-export type AwardsPhase = "recomendacao" | "indicacao" | "final" | "resultado";
+export type AwardsPhase = "recomendacao" | "indicacao" | "final" | "resultado" | "fechado";
+
+// Ação administrativa: fecha a votação manualmente. A página passa a
+// mostrar "não há votação aberta" pra todo mundo. Não apaga nada — só
+// muda a fase, então dá pra reabrir depois sem perder indicados/votos.
+export async function closeAwardsVoting(): Promise<void> {
+  await setAwardsPhase("fechado");
+}
 
 export interface AwardsConfig {
   year: number;
@@ -147,7 +154,7 @@ export function useIsAwardsVotingOpen(): boolean {
   }, []);
 
   const { phase } = config;
-  if (phase === "resultado") return false; // fase de resultado não é votação
+  if (phase === "resultado" || phase === "fechado") return false; // não é votação
 
   const open =
     phase === "recomendacao"

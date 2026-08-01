@@ -7,10 +7,12 @@ concurrency:
 on:
   workflow_dispatch: {} # disparado pelo app quando você abre/inicia uma edição
   schedule:
-    # Motor principal do cron. Roda a cada 20 minutos como "vigia" — cada
-    # execução é barata (só lê a config de votação) e serve pra detectar
-    # quando falta pouco pra um prazo, ligando o job rápido nesse momento.
-   - cron: "*/30 * * * *"
+    # "Vigia": roda a cada 10 minutos. Quando detecta que um prazo está a
+    # menos de 40min de distância, o próprio script (cron.mjs) passa a se
+    # re-verificar sozinho de 2 em 2 minutos DENTRO dessa mesma execução —
+    # sem depender do GitHub Actions disparar de novo no minuto exato (o
+    # schedule nativo dele pode atrasar bastante, isso é conhecido).
+   - cron: "*/10 * * * *"
 
 jobs:
   run-cron:

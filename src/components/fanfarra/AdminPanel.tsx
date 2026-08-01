@@ -4,7 +4,9 @@ import { useIsAdmin } from "@/lib/fanfarra/config";
 import { useAuthUser } from "@/lib/fanfarra/auth";
 import { notifyAllUsers } from "@/lib/fanfarra/notify";
 import {
+  closeAwardsVoting,
   forceAdvanceAwardsPhase,
+  setAwardsPhase,
   setPhaseDeadline,
   setPhaseOpen,
   startNewCycle,
@@ -112,6 +114,30 @@ const isAdmin = useIsAdmin(user?.uid);
     } catch (err) {
       console.error("Erro ao forçar virada de fase:", err);
       toast.error(err instanceof Error ? err.message : "Não foi possível avançar a fase.");
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  const handleCloseVoting = async () => {
+    setSaving("fechar");
+    try {
+      await closeAwardsVoting();
+      toast.success("Votação fechada — os usuários agora veem a página de 'sem votação aberta'.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Não foi possível fechar a votação.");
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  const handleReopenVoting = async () => {
+    setSaving("reabrir");
+    try {
+      await setAwardsPhase("recomendacao");
+      toast.success("Votação reaberta na fase de recomendação.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Não foi possível reabrir.");
     } finally {
       setSaving(null);
     }
@@ -232,6 +258,33 @@ const isAdmin = useIsAdmin(user?.uid);
       >
         Forçar verificação de fase agora
       </button>
+
+      <div className="mt-3 pt-3" style={{ borderTop: "1px dashed var(--fan-pink)" }}>
+        <p className="text-sm font-bold mb-2" style={{ color: "var(--fan-pink-light)" }}>
+          Fechar / reabrir votação
+        </p>
+        <p className="text-[11px] mb-2" style={{ color: "var(--fan-text-2)" }}>
+          Fechar mostra pra todo mundo a página "não há votação aberta no momento". Não apaga prazos nem indicados — Reabrir volta pra fase de recomendação.
+        </p>
+        <div className="flex gap-2">
+          <button
+            onClick={handleCloseVoting}
+            disabled={saving === "fechar" || config.phase === "fechado"}
+            className="text-[11px] px-2 py-1 rounded-full"
+            style={{ border: "1px solid var(--fan-pink)", color: "var(--fan-pink-light)" }}
+          >
+            Fechar votação
+          </button>
+          <button
+            onClick={handleReopenVoting}
+            disabled={saving === "reabrir" || config.phase !== "fechado"}
+            className="text-[11px] px-2 py-1 rounded-full"
+            style={{ border: "1px solid var(--fan-pink)", color: "var(--fan-pink-light)" }}
+          >
+            Reabrir votação
+          </button>
+        </div>
+      </div>
 
       <div className="mt-3 pt-3" style={{ borderTop: "1px dashed var(--fan-pink)" }}>
         <p className="text-sm font-bold mb-2" style={{ color: "var(--fan-pink-light)" }}>

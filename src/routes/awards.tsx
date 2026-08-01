@@ -23,6 +23,7 @@ import {
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AppShell } from "@/components/fanfarra/AppShell";
+import { EmptyState } from "@/components/fanfarra/EmptyState";
 import {
   checkAndAdvanceAwardsPhase,
   confirmAwardVotes,
@@ -68,6 +69,7 @@ const PHASE_BADGE: Record<AwardsPhase, string> = {
   indicacao: "Votação dos indicados",
   final: "Votação final",
   resultado: "Resultado final",
+  fechado: "Sem votação",
 };
 
 const PHASE_TAB_LABEL: Record<AwardsPhase, string> = {
@@ -75,6 +77,7 @@ const PHASE_TAB_LABEL: Record<AwardsPhase, string> = {
   indicacao: "Votar indicados",
   final: "Votar final",
   resultado: "Resultado",
+  fechado: "Participar",
 };
 
 const AWARD_STEPS: { key: AwardsPhase; label: string }[] = [
@@ -147,7 +150,7 @@ function AwardsPage() {
   const authUser = useAuthUser();
   const isAdmin = useIsAdmin(authUser?.uid);
 
-useEffect(() => {
+  useEffect(() => {
     // Só o admin tenta essa "virada rápida" no navegador — ele é o único
     // que tem permissão de escrita em awards_config/awards_catalog pelas
     // rules. Pra todo mundo, quem garante a virada de fase é o GitHub
@@ -179,74 +182,87 @@ useEffect(() => {
         <span className="w-6" />
       </header>
 
-      <div className="px-5 pt-2 pb-5 text-center">
-        <div className="flex justify-center mb-3">
-          <div
-            className="w-16 h-16 rounded-full flex items-center justify-center"
-            style={{ background: "radial-gradient(circle, var(--fan-active-chip) 0%, var(--fan-bg-2) 70%)", border: "1px solid var(--fan-rose-mid)" }}
-          >
-            <Trophy size={30} color="var(--fan-icon-blue)" />
-          </div>
-        </div>
-        <h2 className="fan-font-display text-[22px] font-extrabold" style={{ color: "var(--fan-text)" }}>
-          {config.title}
-        </h2>
-        <p className="text-sm mt-1.5" style={{ color: "var(--fan-text-2)" }}>
-          {phase === "recomendacao" && "Sugira obras e aplauda ou vaie as sugestões dos outros."}
-          {phase === "indicacao" && "Vote nos 10 indicados de cada categoria — os 5 mais votados avançam."}
-          {phase === "final" && "Vote nos 5 finalistas — quem tiver mais votos vence."}
-          {phase === "resultado" && "Veja quem venceu em cada categoria."}
-        </p>
-
-        <div className="flex justify-center gap-2 mt-4">
-          <button
-            onClick={() => setView("participar")}
-            className="rounded-full px-4 py-1.5 text-sm font-bold"
-            style={{
-              background: view === "participar" ? "var(--fan-active-chip)" : "transparent",
-              border: `1px solid ${view === "participar" ? "var(--fan-pink)" : "var(--fan-border)"}`,
-              color: view === "participar" ? "var(--fan-pink-light)" : "var(--fan-text-2)",
-            }}
-          >
-            {PHASE_TAB_LABEL[phase]}
-          </button>
-          <button
-            onClick={() => setView("leaderboard")}
-            className="rounded-full px-4 py-1.5 text-sm font-bold"
-            style={{
-              background: view === "leaderboard" ? "var(--fan-active-chip)" : "transparent",
-              border: `1px solid ${view === "leaderboard" ? "var(--fan-pink)" : "var(--fan-border)"}`,
-              color: view === "leaderboard" ? "var(--fan-pink-light)" : "var(--fan-text-2)",
-            }}
-          >
-            Recomendadores
-          </button>
-        </div>
-
-        <AwardsStepper phase={phase} />
-      </div>
-
-
-      {categories.length === 0 ? (
-        <div className="px-4 pb-10 space-y-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <AwardsCategorySkeleton key={i} />
-          ))}
-        </div>
-      ) : view === "leaderboard" ? (
-        <LeaderboardView />
-      ) : phase === "recomendacao" ? (
-        <RecommendationPhase config={config} />
-      ) : phase === "indicacao" ? (
-        <VotingPhase categories={categories} phase="indicacao" config={config} />
-      ) : phase === "final" ? (
-        <VotingPhase categories={categories} phase="final" config={config} />
+      {phase === "fechado" ? (
+        <EmptyState
+          icon={Trophy}
+          title="Não há uma votação em aberto no momento"
+          description="Assim que a próxima edição do Fanfarra Awards começar, o aviso aparece bem aqui."
+          className="min-h-[50vh]"
+        />
       ) : (
-        <ResultsPhase categories={categories} config={config} />
+        <>
+
+          <div className="px-5 pt-2 pb-5 text-center">
+            <div className="flex justify-center mb-3">
+              <div
+                className="w-16 h-16 rounded-full flex items-center justify-center"
+                style={{ background: "radial-gradient(circle, var(--fan-active-chip) 0%, var(--fan-bg-2) 70%)", border: "1px solid var(--fan-rose-mid)" }}
+              >
+                <Trophy size={30} color="var(--fan-icon-blue)" />
+              </div>
+            </div>
+            <h2 className="fan-font-display text-[22px] font-extrabold" style={{ color: "var(--fan-text)" }}>
+              {config.title}
+            </h2>
+            <p className="text-sm mt-1.5" style={{ color: "var(--fan-text-2)" }}>
+              {phase === "recomendacao" && "Sugira obras e aplauda ou vaie as sugestões dos outros."}
+              {phase === "indicacao" && "Vote nos 10 indicados de cada categoria — os 5 mais votados avançam."}
+              {phase === "final" && "Vote nos 5 finalistas — quem tiver mais votos vence."}
+              {phase === "resultado" && "Veja quem venceu em cada categoria."}
+            </p>
+
+            <div className="flex justify-center gap-2 mt-4">
+              <button
+                onClick={() => setView("participar")}
+                className="rounded-full px-4 py-1.5 text-sm font-bold"
+                style={{
+                  background: view === "participar" ? "var(--fan-active-chip)" : "transparent",
+                  border: `1px solid ${view === "participar" ? "var(--fan-pink)" : "var(--fan-border)"}`,
+                  color: view === "participar" ? "var(--fan-pink-light)" : "var(--fan-text-2)",
+                }}
+              >
+                {PHASE_TAB_LABEL[phase]}
+              </button>
+              <button
+                onClick={() => setView("leaderboard")}
+                className="rounded-full px-4 py-1.5 text-sm font-bold"
+                style={{
+                  background: view === "leaderboard" ? "var(--fan-active-chip)" : "transparent",
+                  border: `1px solid ${view === "leaderboard" ? "var(--fan-pink)" : "var(--fan-border)"}`,
+                  color: view === "leaderboard" ? "var(--fan-pink-light)" : "var(--fan-text-2)",
+                }}
+              >
+                Recomendadores
+              </button>
+            </div>
+
+            <AwardsStepper phase={phase} />
+          </div>
+
+
+          {categories.length === 0 ? (
+            <div className="px-4 pb-10 space-y-3">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <AwardsCategorySkeleton key={i} />
+              ))}
+            </div>
+          ) : view === "leaderboard" ? (
+            <LeaderboardView />
+          ) : phase === "recomendacao" ? (
+            <RecommendationPhase config={config} />
+          ) : phase === "indicacao" ? (
+            <VotingPhase categories={categories} phase="indicacao" config={config} />
+          ) : phase === "final" ? (
+            <VotingPhase categories={categories} phase="final" config={config} />
+          ) : (
+            <ResultsPhase categories={categories} config={config} />
+          )}
+        </>
       )}
     </AppShell>
   );
 }
+
 
 // ===== Fase 0 — Recomendações (baseada nas reações reais do app) =====
 
@@ -292,11 +308,11 @@ function RecommendationPhase({ config }: { config: AwardsConfig }) {
               : "Prazo encerrado!"}
           </p>
         ) : (
-          <p className="mt-3 text-sm" style={{  color: "var(--fan-text-2)" }}>
+          <p className="mt-3 text-sm" style={{ color: "var(--fan-text-2)" }}>
             Data de corte ainda não configurada pelo time do Fanfarra.
           </p>
         )}
-        <p className="mt-1 text-sm" style={{color: "var(--fan-text-2)" }}>
+        <p className="mt-1 text-sm" style={{ color: "var(--fan-text-2)" }}>
           Quando bater a hora, as 10 obras mais aplaudidas de cada categoria viram indicadas a "Melhor", e
           as 10 mais vaiadas viram indicadas a "Pior" — reações depois disso não contam mais.
         </p>
@@ -388,12 +404,12 @@ function VotingPhase({
     return titles.map((title) => byTitle.get(title) ?? { itemId: title, title, likes: 0, boos: 0 });
   };
 
- const votableCategories = categories.filter((c) => nomineesFor(c).length > 0);
+  const votableCategories = categories.filter((c) => nomineesFor(c).length > 0);
   const totalCategories = votableCategories.length;
   const votedCount = votableCategories.filter((c) => votes[c.id]).length;
   const allVoted = totalCategories > 0 && votedCount === totalCategories;
 
-const handleConfirm = async () => {
+  const handleConfirm = async () => {
     setConfirming(true);
     try {
       await confirmAwardVotes(phase);
@@ -529,7 +545,7 @@ const handleConfirm = async () => {
                 </span>
               )}
             </div>
-           {nominees.length === 0 ? (
+            {nominees.length === 0 ? (
               <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
                 Ainda não teve aplausos/vaias suficientes nesta categoria para gerar indicados.
               </p>
@@ -551,7 +567,7 @@ const handleConfirm = async () => {
                         border: `1px solid ${isSelected ? "var(--fan-pink)" : "var(--fan-border)"}`,
                       }}
                     >
-                     <div
+                      <div
                         className="relative w-9 h-12 rounded-[6px] overflow-hidden shrink-0 flex items-center justify-center"
                         style={{
                           background: "linear-gradient(135deg, var(--fan-bg-2), var(--fan-active-chip))",

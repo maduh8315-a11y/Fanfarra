@@ -286,17 +286,53 @@ async function freezeDailyReactionSnapshot() {
 // ───────────────────────────────────────────────────────────
 
 
-await advanceAwardsPhase();
-await freezeDailyReactionSnapshot();
-await sendPendingPushNotifications(db);
-await syncFastPollingWithConfig();
+// Descobre se tem algum prazo perto o suficiente pra valer a pena ficar
+// de olho de 2 em 2 minutos dentro dessa mesma execução.
+async function nextCheckpoint() {
+  const configSnap = await db.collection("awards_config").doc("current").get();
+  if (!configSnap.exists) return null;
+  const config = configSnap.data();
+  if (config.scheduledStartAt) return Number(config.scheduledStartAt);
+  if (config.phase === "recomendacao" && config.recomendacaoDeadline) return Number(config.recomendacaoDeadline);
+  if (config.phase === "indicacao" && config.indicacaoDeadline) return Number(config.indicacaoDeadline);
+  if (config.phase === "final" && config.finalDeadline) return Number(config.finalDeadline);
+  return null;
+}
+
+async function runOnce() {
+  await advanceAwardsPhase();
+  await freezeDailyReactionSnapshot();
+  await sendPendingPushNotifications(db);
+  await syncFastPollingWithConfig();
+}
+
+const CHECK_INTERVAL_MS = 2 * 60 * 1000; // 2 minutos
+const LOOP_ENTRY_WINDOW_MS = 40 * 60 * 1000; // entra no modo "2 em 2" até 40min antes do prazo
+const LOOP_MAX_DURATION_MS = 55 * 60 * 1000; // teto de segurança nesta execução
+
+const loopStartedAt = Date.now();
+await runOnce();
+
+while (true) {
+  const checkpoint = await nextCheckpoint();
+  const now = Date.now();
+  if (checkpoint === null) break; // nenhum prazo pra vigiar de perto agora
+  if (checkpoint - now > LOOP_ENTRY_WINDOW_MS) break; // prazo ainda longe, a vigia normal resolve
+  if (now - loopStartedAt > LOOP_MAX_DURATION_MS) {
+    console.log("[loop] teto de segurança atingido nesta execução, encerrando — a próxima chamada agendada continua.");
+    break;
+  }
+  const secondsLeft = Math.max(0, Math.round((checkpoint - now) / 1000));
+  console.log(`[loop] prazo perto (faltam ~${secondsLeft}s) — verificando de novo em 2min...`);
+  await new Promise((resolve) => setTimeout(resolve, CHECK_INTERVAL_MS));
+  await runOnce();
+}
+
 // ───────────────────────────────────────────────────────────
 // 4) Encerramento
-// Não existe mais corrente de auto-disparo aqui: o próprio GitHub Actions
-// já chama esse script de novo a cada 5min via "schedule" (veja
-// fanfarra-cron.yml). Cada execução é 100% independente das outras — se
-// uma falhar por qualquer motivo, a próxima roda normalmente 5min depois,
-// sem nada pra "quebrar a corrente" e travar tudo em silêncio.
+// Fora da janela de "prazo perto" (acima), cada execução continua 100%
+// independente das outras — se uma falhar, a próxima roda no próximo
+// agendamento, sem travar tudo em silêncio.
 // ───────────────────────────────────────────────────────────
 process.exit(0);
 
