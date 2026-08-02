@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "514080981795-02r9smigs2bldevgca997a8eekbmetul.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fanfarra.app",
+            "certificate_hash": "a4fb3c3a2fd8e7a5d68bdaf0bd547352f1500188"
+          }
+        },
+        {
           "client_id": "514080981795-3e2ncmov4o3lirku036jlkv47jt61ddt.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
