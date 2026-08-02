@@ -45,7 +45,7 @@ function LoginPage() {
     } catch (err) {
       const code = (err as { code?: string })?.code ?? "";
       if (code !== "auth/popup-closed-by-user" && code !== "auth/cancelled-popup-request") {
-        setErrors({ form: authErrorMessage(code) });
+        setErrors({ form: `${authErrorMessage(code)} [DEBUG: ${code || (err as Error)?.message || "sem código"}]` });
       }
     } finally {
       setGoogleLoading(false);
