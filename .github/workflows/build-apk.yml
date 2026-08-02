@@ -16,6 +16,9 @@ jobs:
       - name: Instalar dependências
         run: npm ci
 
+      - name: Buildar o app web
+        run: npm run build
+
       - name: Sincronizar config nativa do Capacitor
         run: npx cap sync android
 
