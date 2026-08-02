@@ -30,6 +30,14 @@
           }
         },
         {
+          "client_id": "514080981795-ag9n57f49ishviv2ui9e5htjt4vjuuvt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fanfarra.app",
+            "certificate_hash": "015c161e7714f7c05e98122ce383c5e5d2622317"
+          }
+        },
+        {
           "client_id": "514080981795-ln0pe7400qqkr7qut75ika8mp2cpn5ur.apps.googleusercontent.com",
           "client_type": 3
         }
