@@ -42,13 +42,6 @@ jobs:
           echo "SHA-1 real usado nesse build:"
           keytool -list -v -keystore android/app/debug.keystore -storepass android -keypass android -alias androiddebugkey | grep "SHA1:"
 
-      - name: Validar o keystore restaurado (falha se estiver corrompido)
-        run: |
-          echo "Tamanho do arquivo:"
-          ls -la ~/.android/debug.keystore
-          echo "SHA-1 real usado nesse build:"
-          keytool -list -v -keystore ~/.android/debug.keystore -storepass android -keypass android -alias androiddebugkey | grep "SHA1:"
-
       - name: Buildar APK de debug
         working-directory: android
         run: |
