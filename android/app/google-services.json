@@ -41,43 +41,6 @@
           ]
         }
       }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:514080981795:android:e795b4ce89bb006f194296",
-        "android_client_info": {
-          "package_name": "fanfarra.App2"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "514080981795-69cmjfm20bpq6hj8vt0adusb53ef31rs.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "fanfarra.App2",
-            "certificate_hash": "68736f8b8d61be7f4224b2e3ed36888774ec401c"
-          }
-        },
-        {
-          "client_id": "514080981795-ln0pe7400qqkr7qut75ika8mp2cpn5ur.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyCENDTlwwCJ1e2P_oysb7mvX48UJdA_Sw8"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "514080981795-ln0pe7400qqkr7qut75ika8mp2cpn5ur.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
-        }
-      }
     }
   ],
   "configuration_version": "1"
