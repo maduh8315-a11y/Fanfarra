@@ -26,7 +26,7 @@ function LoginPage() {
     setLoading(true);
     try {
       await signInWithEmail(email, password);
-      try { localStorage.setItem("fanfarra:onboarding_done", "1"); } catch {}
+      try { localStorage.setItem("fanfarra:onboarding_done", "1"); } catch { }
       navigate({ to: "/" });
     } catch (err) {
       const code = (err as { code?: string })?.code ?? "";
@@ -40,12 +40,17 @@ function LoginPage() {
     setGoogleLoading(true);
     try {
       await signInWithGoogle();
-      try { localStorage.setItem("fanfarra:onboarding_done", "1"); } catch {}
+      try { localStorage.setItem("fanfarra:onboarding_done", "1"); } catch { }
       navigate({ to: "/" });
     } catch (err) {
       const code = (err as { code?: string })?.code ?? "";
-      if (code !== "auth/popup-closed-by-user" && code !== "auth/cancelled-popup-request") {
-        setErrors({ form: `${authErrorMessage(code)} [DEBUG: ${code || (err as Error)?.message || "sem código"}]` });
+      const message = (err as Error)?.message ?? "";
+      const isUserCancelled =
+        code === "auth/popup-closed-by-user" ||
+        code === "auth/cancelled-popup-request" ||
+        message.toLowerCase().includes("cancel");
+      if (!isUserCancelled) {
+        setErrors({ form: authErrorMessage(code) });
       }
     } finally {
       setGoogleLoading(false);
@@ -95,7 +100,7 @@ function LoginPage() {
 
       <div className="my-5 flex items-center gap-3">
         <div className="flex-1 h-px" style={{ background: "var(--fan-border)" }} />
-        <span className="text-sm" style={{ color: "var(--fan-text-2)"}}>
+        <span className="text-sm" style={{ color: "var(--fan-text-2)" }}>
           ou
         </span>
         <div className="flex-1 h-px" style={{ background: "var(--fan-border)" }} />
