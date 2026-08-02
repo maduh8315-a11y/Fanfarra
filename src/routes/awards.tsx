@@ -18,9 +18,13 @@ import {
   Check,
   Crown,
   Users,
+  Megaphone,
+  PartyPopper,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { EmptyState } from "@/components/fanfarra/EmptyState";
@@ -42,6 +46,7 @@ import {
 } from "@/lib/fanfarra/awardsStore";
 import { useRecommenderLeaderboard } from "@/lib/fanfarra/nominationsStore";
 import { AwardCrownBadge } from "@/components/fanfarra/AwardCrownBadge";
+import { useAwardWins } from "@/lib/fanfarra/awardsHistoryStore";
 
 
 export const Route = createFileRoute("/awards")({
@@ -641,6 +646,104 @@ function VotingPhase({
 
 // ===== Fase 3 — Resultado final =====
 
+function ResultCategoryCard({
+  category,
+  result,
+  detail,
+  index,
+}: {
+  category: AwardCategory;
+  result: AwardResultRow;
+  detail?: AwardNomineeDetail;
+  index: number;
+}) {
+  const isPior = category.kind === "pior";
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20, scale: 0.96 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.55, delay: 0.08 + index * 0.08, ease: [0.19, 1, 0.22, 1] }}
+      className={isPior ? "relative py-2" : ""}
+    >
+      {isPior && (
+        <div
+          className="absolute -left-1 top-0 z-10 -rotate-3 rounded px-3 py-0.5"
+          style={{
+            backgroundColor: "var(--fan-red)",
+            border: "1px solid var(--fan-pink)",
+            color: "var(--fan-text-3)",
+            fontSize: 15,
+            fontWeight: 800,
+            boxShadow: "0 6px 18px rgba(0,0,0,.6)",
+          }}
+        >
+          💀 Quem diria...
+        </div>
+      )}
+
+      <div
+        className="flex items-center gap-4 p-4 transition-transform active:scale-[.98]"
+        style={{
+          backgroundColor: "var(--fan-bg-2)",
+          border: isPior ? "1px dashed var(--fan-pink)66" : "1px solid var(--fan-rose-mid)",
+          borderRadius: 14,
+          transform: isPior ? "rotate(1deg)" : undefined,
+          boxShadow: isPior ? "0 12px 30px rgba(0,0,0,.35)" : "none",
+        }}
+      >
+        {detail?.cover ? (
+          <img
+            src={detail.cover}
+            alt={`Capa de ${result.nominee}`}
+            className="w-[64px] shrink-0 object-cover"
+            style={{ aspectRatio: "2 / 3", borderRadius: 6, border: "1px solid var(--fan-rose-mid)" }}
+          />
+        ) : (
+          <div
+            className="w-[64px] shrink-0 flex items-center justify-center"
+            style={{
+              aspectRatio: "2 / 3",
+              borderRadius: 6,
+              border: "1px solid var(--fan-rose-mid)",
+              background: "var(--fan-bg-3)",
+            }}
+          >
+            <Star size={16} color="var(--fan-icon-blue)" />
+          </div>
+        )}
+
+        <div className="min-w-0 flex-1">
+          <div className="mb-0.5 flex items-center gap-1.5">
+            <span style={{ fontSize: 18 }}>{category.emoji}</span>
+            <span
+              className="uppercase"
+              style={{
+                color: isPior ? "var(--fan-pink-light)" : "var(--fan-text-2)",
+                fontSize: 15,
+                fontWeight: 700,
+                fontStyle: isPior ? "italic" : "normal",
+                letterSpacing: ".04em",
+              }}
+            >
+              {category.name}
+            </span>
+          </div>
+          <h3 className="leading-tight" style={{ color: "var(--fan-text)", fontSize: 18, fontWeight: 800 }}>
+            {result.nominee}
+          </h3>
+          <p style={{ color: "var(--fan-text-3)", fontSize: 15, fontWeight: 500 }}>
+            {result.count} voto(s) • {result.pct}%
+          </p>
+          <AwardCrownBadge title={result.nominee} variant="inline" />
+        </div>
+
+        {!isPior && <Sparkles size={18} color="var(--fan-icon-blue)" />}
+      </div>
+    </motion.div>
+  );
+}
+
 function ResultsPhase({ categories, config }: { categories: AwardCategory[]; config: AwardsConfig }) {
   const rawVotes = useAllConfirmedAwardVotes("final");
   // mesmo princípio do freeze: votos confirmados depois do prazo final não
@@ -650,93 +753,102 @@ function ResultsPhase({ categories, config }: { categories: AwardCategory[]; con
     ? rawVotes.filter((v) => v.confirmedAt === undefined || v.confirmedAt <= deadline)
     : rawVotes;
 
+  const resultsByCategory = categories.map((c) => {
+    const results = getAwardResults(c.id, allVotes);
+    const winner = results[0];
+    const winnerDetail = winner
+      ? c.finalistDetails?.find((d) => d.title === winner.nominee)
+      : undefined;
+    return { category: c, results, winner, winnerDetail };
+  });
+
+  const hasAnyVotes = allVotes.length > 0;
+
+  const handleShareVictory = async () => {
+    const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: config.title, url: shareUrl });
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        toast.success("Link copiado!");
+      }
+    } catch (err) {
+      if (err instanceof Error && err.name !== "AbortError") {
+        toast.error("Não foi possível compartilhar.");
+      }
+    }
+  };
+
   return (
     <div className="px-4 pb-10 space-y-3">
       <div className="flex items-center justify-center gap-1.5 mb-1 text-sm" style={{ color: "var(--fan-text-2)" }}>
         <Users size={13} />
         <span>{allVotes.length} voto(s) confirmado(s) na fase final</span>
       </div>
-      {categories.map((c) => {
-        const results: AwardResultRow[] = getAwardResults(c.id, allVotes);
-        const winner = results[0];
-        const winnerDetail = winner
-          ? c.finalistDetails?.find((d) => d.title === winner.nominee)
-          : undefined;
-        const winnerHasDetail = !!winnerDetail && winnerDetail.itemId !== winnerDetail.title;
-        const Icon = ICONS[c.icon] ?? Star;
-        return (
-          <div key={c.id} className="rounded-[14px] p-4" style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-rose-mid)" }}>
-            <div className="flex items-center gap-2 mb-2">
-              <Icon size={16} color="var(--fan-icon-blue)" />
-              <span className="text-sm font-bold" style={{ color: "var(--fan-text)" }}>
-                {c.emoji} {c.name}
-              </span>
-            </div>
-            {!winner ? (
-              <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
-                Nenhum voto registrado nesta categoria.
-              </p>
-            ) : (
-              <>
-                <div
-                  className="w-full flex items-center gap-2.5 rounded-[10px] px-2.5 py-2 mb-2"
-                  style={{ background: "var(--fan-active-chip)", border: "1px solid #FFD24D" }}
-                >
-                  <div
-                    className="relative w-9 h-12 rounded-[6px] overflow-hidden shrink-0 flex items-center justify-center"
-                    style={{
-                      background: "linear-gradient(135deg, var(--fan-bg-2), var(--fan-active-chip))",
-                      border: "1px solid var(--fan-rose-mid)",
-                    }}
-                  >
-                    {winnerDetail?.cover ? (
-                      <img src={winnerDetail.cover} alt={winner.nominee} className="w-full h-full object-cover" />
-                    ) : (
-                      <Star size={14} color="var(--fan-icon-blue)" />
-                    )}
-                    <div
-                      className="absolute -top-1.5 -right-1.5 rounded-full p-0.5 flex items-center justify-center"
-                      style={{ background: "#FFD24D" }}
-                    >
-                      <Crown size={10} color="#1a0a12" />
-                    </div>
-                  </div>
 
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-extrabold line-clamp-1" style={{ color: "#FFD24D" }}>
-                      {winner.nominee}
-                    </p>
-                    <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
-                      {winner.count} voto(s) · {winner.pct}%
-                    </p>
-                    <AwardCrownBadge title={winner.nominee} variant="inline" />
-                  </div>
-
-                  {winnerHasDetail && (
-                    <Link
-                      to="/rec/$id"
-                      params={{ id: winnerDetail!.itemId }}
-                      onClick={(e) => e.stopPropagation()}
-                      className="text-sm font-semibold shrink-0 px-2 py-1 rounded-full"
-                      style={{ color: "#FFD24D", border: "1px solid #FFD24D" }}
-                    >
-                      Ver obra
-                    </Link>
-                  )}
-                </div>
-                <div className="space-y-1">
-                  {results.slice(1).map((r) => (
-                    <div key={r.nominee} className="flex items-center justify-between text-sm" style={{ color: "var(--fan-text-2)" }}>
-                      <span>{r.nominee}</span>
-                      <span>{r.count} voto(s) · {r.pct}%</span>
-                    </div>
-                  ))}
-                </div>
-              </>
-            )}
+      {!hasAnyVotes ? (
+        <div
+          className="rounded-[14px] p-4 text-center"
+          style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-rose-mid)" }}
+        >
+          <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
+            Nenhum voto confirmado nesta edição ainda.
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="mb-1 flex items-center gap-2 pt-2">
+            <PartyPopper size={18} color="var(--fan-icon-blue)" />
+            <span
+              className="uppercase"
+              style={{ color: "var(--fan-text-2)", fontSize: 15, fontWeight: 700, letterSpacing: ".1em" }}
+            >
+              Vencedores por categoria
+            </span>
           </div>
-        );
-      })}
+
+          {resultsByCategory.map(({ category, winner, winnerDetail }, i) =>
+            !winner ? (
+              <div
+                key={category.id}
+                className="rounded-[14px] p-4"
+                style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-rose-mid)" }}
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <span style={{ fontSize: 18 }}>{category.emoji}</span>
+                  <span className="text-sm font-bold" style={{ color: "var(--fan-text)" }}>
+                    {category.name}
+                  </span>
+                </div>
+                <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
+                  Nenhum voto registrado nesta categoria.
+                </p>
+              </div>
+            ) : (
+              <ResultCategoryCard
+                key={category.id}
+                category={category}
+                result={winner}
+                detail={winnerDetail}
+                index={i}
+              />
+            ),
+          )}
+
+          <div className="flex flex-col items-center pt-6">
+            <button
+              type="button"
+              onClick={handleShareVictory}
+              className="fan-btn-primary w-full flex items-center justify-center gap-2"
+              style={{ height: 52, fontSize: 16 }}
+            >
+              Compartilhar resultado
+              <Megaphone size={18} color="#fff" />
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }

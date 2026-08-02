@@ -48,7 +48,7 @@ export function AwardCrownBadge({
         <span
           key={`${w.categoryId}-${w.year}-${i}`}
           className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-full"
-          style={{ background: "var(--fan-active-chip)", border: "1px solid #FFD24D", color: "#FFD24D" }}
+          style={{ background: "#930000", border: "1px solid #FFD24D", color: "#FFD24D" }}
         >
           <Crown size={11} color="#FFD24D" />
           {w.categoryName} · {w.year}

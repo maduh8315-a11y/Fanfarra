@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { ArrowLeft, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { AuthInput, FanfarraLogo } from "@/components/fanfarra/auth/AuthInput";
 import { signUpWithEmail, authErrorMessage } from "@/lib/fanfarra/auth";
 import { calculateAge } from "@/lib/fanfarra/contentGate";
@@ -89,7 +90,11 @@ function RegisterPage() {
 
   async function handleSubmit() {
     const e = validate();
-    if (Object.keys(e).length) return setErrors(e);
+    if (Object.keys(e).length) {
+      setErrors(e);
+      toast.error(Object.values(e)[0] ?? "Confira os campos destacados em vermelho.");
+      return;
+    }
     setErrors({});
     setLoading(true);
     try {
@@ -97,11 +102,16 @@ function RegisterPage() {
       navigate({ to: "/verify-email", replace: true });
     } catch (err) {
       const code = (err as { code?: string })?.code ?? "";
+      let message: string;
       if (code === "auth/email-already-in-use") {
-        setErrors({ email: "Este e-mail já está em uso. Tente fazer login." });
+        message = "Este e-mail já está em uso. Tente fazer login.";
+        setErrors({ email: message });
       } else {
-        setErrors({ form: authErrorMessage(code) });
+        message = authErrorMessage(code);
+        setErrors({ form: message });
       }
+      console.error("Erro ao criar conta:", err);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
