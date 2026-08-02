@@ -1,6 +1,6 @@
 import type { WrappedData } from "./types";
 
-export default function Slide8End({ data }: { data: WrappedData }) {
+export default function Slide8End({ data, onShare }: { data: WrappedData; onShare: () => void }) {
   const rows = 8;
   const cols = 5;
   return (
@@ -54,7 +54,7 @@ export default function Slide8End({ data }: { data: WrappedData }) {
             flexWrap: "wrap",
           }}
         >
-          <button className="wrapped-btn secondary">↗ Compartilhar</button>
+          <button className="wrapped-btn secondary" onClick={onShare}>↗ Compartilhar</button>
         </div>
       </div>
     </div>

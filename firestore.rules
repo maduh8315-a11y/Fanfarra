@@ -242,7 +242,9 @@ match /rec_reaction_counts/{itemId} {
     }
 
    match /chats/{chatId} {
-      allow read: if request.auth != null && request.auth.uid in resource.data.members;
+      allow read: if request.auth != null &&
+        (!exists(/databases/$(database)/documents/chats/$(chatId)) ||
+         request.auth.uid in resource.data.members);
 
       // Criar conversa / mandar mensagem agora só via sendChatMessageServer.
       allow create: if false;
@@ -254,6 +256,7 @@ match /rec_reaction_counts/{itemId} {
 
       match /messages/{messageId} {
         allow read: if request.auth != null &&
+          exists(/databases/$(database)/documents/chats/$(chatId)) &&
           request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.members;
         allow create: if false;
       }

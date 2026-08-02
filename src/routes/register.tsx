@@ -99,6 +99,7 @@ function RegisterPage() {
     setLoading(true);
     try {
       await signUpWithEmail(email, password, username, birthDate, isMinor ? guardianEmail.trim() : undefined);
+      try { localStorage.setItem("fanfarra:onboarding_done", "1"); } catch {}
       navigate({ to: "/verify-email", replace: true });
     } catch (err) {
       const code = (err as { code?: string })?.code ?? "";

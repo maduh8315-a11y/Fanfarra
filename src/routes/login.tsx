@@ -26,6 +26,7 @@ function LoginPage() {
     setLoading(true);
     try {
       await signInWithEmail(email, password);
+      try { localStorage.setItem("fanfarra:onboarding_done", "1"); } catch {}
       navigate({ to: "/" });
     } catch (err) {
       const code = (err as { code?: string })?.code ?? "";
@@ -39,6 +40,7 @@ function LoginPage() {
     setGoogleLoading(true);
     try {
       await signInWithGoogle();
+      try { localStorage.setItem("fanfarra:onboarding_done", "1"); } catch {}
       navigate({ to: "/" });
     } catch (err) {
       const code = (err as { code?: string })?.code ?? "";

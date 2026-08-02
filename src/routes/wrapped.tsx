@@ -13,7 +13,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import domtoimage from "dom-to-image-more";
-import { BookMarked, Trophy, Gamepad2, Flame, Zap, Star, Sparkles, Sprout, type LucideIcon } from "lucide-react";
+import { BookMarked, Trophy, Gamepad2, Flame, Zap, Star, Sparkles, Sprout, ArrowLeft, type LucideIcon } from "lucide-react";
 import type { MediaType } from "@/lib/fanfarra/types";
 import { useWorks } from "@/lib/fanfarra/store";
 import { useProfile } from "@/lib/fanfarra/extras";
@@ -29,6 +29,7 @@ import Slide8End from "@/components/fanfarra/wrapped/Slide8End";
 import WrappedPaywall from "@/components/fanfarra/wrapped/WrappedPaywall";
 import { useIsPro } from "@/lib/fanfarra/config";
 import type { Work } from "@/lib/fanfarra/types";
+import { toast } from "sonner";
 
 
 export const Route = createFileRoute("/wrapped")({
@@ -146,22 +147,49 @@ function WrappedPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [idx, go]);
 
+  const generateSlidePng = useCallback(async () => {
+    if (!slideRef.current) return null;
+    return domtoimage.toPng(slideRef.current, {
+      bgcolor: "#000000",
+      width: slideRef.current.clientWidth,
+      height: slideRef.current.clientHeight,
+    });
+  }, []);
+
   const handleDownload = useCallback(async () => {
-    if (!slideRef.current) return;
     try {
-      const dataUrl = await domtoimage.toPng(slideRef.current, {
-        bgcolor: "var(--fan-bg)",
-        width: slideRef.current.clientWidth,
-        height: slideRef.current.clientHeight,
-      });
-      const link = document.createElement("a");
-      link.download = `fanfarra-wrapped-${data.year}-slide${idx + 1}.png`;
-      link.href = dataUrl;
-      link.click();
+      const dataUrl = await generateSlidePng();
+      if (!dataUrl) return;
+      const { Filesystem, Directory } = await import("@capacitor/filesystem");
+      const base64 = dataUrl.split(",")[1];
+      const fileName = `fanfarra-wrapped-${data.year}-slide${idx + 1}.png`;
+      await Filesystem.writeFile({ path: fileName, data: base64, directory: Directory.Documents });
+      toast.success("Imagem salva!");
     } catch (err) {
       console.error("Falha ao gerar imagem:", err);
+      toast.error("Não foi possível salvar a imagem.");
     }
-  }, [idx, data.year]);
+  }, [generateSlidePng, idx, data.year]);
+
+  const handleShare = useCallback(async () => {
+    try {
+      const dataUrl = await generateSlidePng();
+      if (!dataUrl) return;
+      const { Filesystem, Directory } = await import("@capacitor/filesystem");
+      const { Share } = await import("@capacitor/share");
+      const base64 = dataUrl.split(",")[1];
+      const fileName = `fanfarra-wrapped-share-${Date.now()}.png`;
+      const saved = await Filesystem.writeFile({ path: fileName, data: base64, directory: Directory.Cache });
+      await Share.share({
+        title: "Meu Fanfarra Wrapped",
+        text: `Confira meu ano de fandom no Fanfarra! ✨`,
+        url: saved.uri,
+      });
+    } catch (err) {
+      console.error("Falha ao compartilhar:", err);
+      toast.error("Não foi possível compartilhar.");
+    }
+  }, [generateSlidePng]);
 
   const onTouchStart = (e: React.TouchEvent) => {
     touchStart.current = e.touches[0].clientX;
@@ -181,7 +209,7 @@ function WrappedPage() {
     isPro ? <Slide5Stats key="5" data={data} /> : <WrappedPaywall key="5" />,
     isPro ? <Slide6Streak key="6" data={data} /> : <WrappedPaywall key="6" />,
     isPro ? <Slide7Achievements key="7" data={data} /> : <WrappedPaywall key="7" />,
-    <Slide8End key="8" data={data} />,
+    <Slide8End key="8" data={data} onShare={handleShare} />,
   ];
 
   return (
@@ -212,7 +240,7 @@ function WrappedPage() {
         }}
         aria-label="Voltar"
       >
-        ←
+        <ArrowLeft size={18} />
       </button>
 
       {/* Slide */}

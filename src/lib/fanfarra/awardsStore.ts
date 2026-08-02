@@ -107,7 +107,6 @@ function connectConfig() {
     },
     (err) => {
       console.error("Erro ao carregar configuração do Awards:", err);
-      toast.error("Não foi possível carregar os Awards. Verifique sua conexão e tente de novo.");
     },
   );
 }
@@ -343,7 +342,6 @@ function connectCategories() {
     },
     (err) => {
       console.error("Erro ao carregar categorias do Awards:", err);
-      toast.error("Não foi possível carregar as categorias do Awards. Verifique sua conexão e tente de novo.");
     },
   );
 }
