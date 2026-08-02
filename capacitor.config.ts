@@ -15,6 +15,10 @@ const config: CapacitorConfig = {
     SystemBars: {
       insetsHandling: "css",
     },
+    FirebaseAuthentication: {
+      skipNativeAuth: false,
+      providers: ["google.com"],
+    },
   },
 };
 

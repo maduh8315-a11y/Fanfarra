@@ -13,7 +13,8 @@
     "cron": "node scripts/cron.mjs",
     "cap:sync": "bunx cap sync",
     "cap:android": "bunx cap open android",
-    "cap:build": "bun run build && bunx cap sync"
+    "cap:build": "bun run build && bunx cap sync",
+    "deploy": "vite build && wrangler deploy"
   },
   "dependencies": {
     "@capacitor-firebase/authentication": "^8.3.0",
