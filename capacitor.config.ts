@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: "Fanfarra",
   webDir: "dist/client", // continua obrigatório pro cap sync não reclamar, mas não é usado em runtime
   server: {
-    url: "https://fanfarra-backend.fanfarra.workers.dev/", 
+    url: `https://fanfarra-backend.fanfarra.workers.dev/?v=${Date.now()}`,
     cleartext: false,
   },
   android: {
