@@ -201,7 +201,10 @@ function AuthGuard() {
       if (!user && !isPublic) {
         const seen = !import.meta.env.DEV && localStorage.getItem("fanfarra:auth_seen") === "1";
         navigate({ to: seen ? "/login" : "/splash" });
-        if (!seen) localStorage.setItem("fanfarra:auth_seen", "1");
+        // Não marca como "visto" aqui — só quando a pessoa realmente
+        // termina/pula o onboarding (ver onboarding.tsx). Assim, fechar o
+        // app no meio do onboarding sem se cadastrar não pula ele da
+        // próxima vez.
         return;
       }
       if (user && AUTH_ONLY_PUBLIC.has(pathname)) {

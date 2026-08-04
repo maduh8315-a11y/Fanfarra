@@ -61,7 +61,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex flex-col" style={{ minHeight: "100dvh", background: "var(--fan-bg)" }}>
+    <div className="flex flex-col" style={{ minHeight: "100vh", background: "var(--fan-bg)" }}>
       {!isOnline && (
         <div
           className="fixed top-0 left-0 right-0 z-50 px-4 py-2 text-center text-[12px] font-medium"

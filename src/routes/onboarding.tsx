@@ -324,6 +324,9 @@ function Onboarding() {
   }, []);
 
   const finish = (to: "/register" | "/login") => {
+    try {
+      localStorage.setItem("fanfarra:auth_seen", "1");
+    } catch {}
     navigate({ to });
   };
 
