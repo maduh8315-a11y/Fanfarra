@@ -1,7 +1,9 @@
 name: Build Android APK
 
 on:
-  workflow_dispatch: {} # dispara manualmente pela aba "Actions" no GitHub
+  workflow_dispatch: {} # continua podendo disparar manualmente também
+  push:
+    branches: [main] # e agora dispara sozinho a cada push no main, igual o deploy do site
 
 jobs:
   build-apk:

@@ -18,9 +18,20 @@ import "../lib/sentry";
 import { Toaster } from "@/components/ui/sonner";
 import { patchServerFnBaseUrl } from "@/lib/nativeApiPatch";
 import { registerServiceWorker } from "@/lib/fanfarra/registerServiceWorker";
+import { Capacitor } from "@capacitor/core";
 
 patchServerFnBaseUrl();
 registerServiceWorker();
+
+if (typeof window !== "undefined" && Capacitor.isNativePlatform()) {
+  const script = document.createElement("script");
+  script.src = "https://cdn.jsdelivr.net/npm/eruda";
+  script.onload = () => {
+    // @ts-ignore
+    window.eruda.init();
+  };
+  document.body.appendChild(script);
+}
 
 function NotFoundComponent() {
   return (
