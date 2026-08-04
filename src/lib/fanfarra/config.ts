@@ -21,20 +21,40 @@ export function useIsPro(): boolean {
 // para adicionar/remover um admin basta editar esse doc no Console:
 // não há nada para sincronizar manualmente nem reimplantar.
 import { doc, getDoc, onSnapshot } from "firebase/firestore";
-import { db } from "./firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth, db } from "./firebase";
 
 let cachedAdminUids: string[] | null = null;
 
 function useAdminUids(): string[] {
   const [uids, setUids] = useState<string[]>(cachedAdminUids ?? []);
   useEffect(() => {
-    const ref = doc(db, "app_config", "admins");
-    const unsub = onSnapshot(ref, (snap) => {
-      const list = (snap.data()?.uids as string[]) ?? [];
-      cachedAdminUids = list;
-      setUids(list);
-    });
-    return unsub;
+    let unsub: (() => void) | null = null;
+
+    const start = () => {
+      if (unsub || !auth.currentUser) return;
+      const ref = doc(db, "app_config", "admins");
+      unsub = onSnapshot(
+        ref,
+        (snap) => {
+          const list = (snap.data()?.uids as string[]) ?? [];
+          cachedAdminUids = list;
+          setUids(list);
+        },
+        (err) => {
+          console.error("Erro ao carregar lista de admins:", err);
+          unsub = null; // libera pra tentar de novo assim que o login terminar
+        },
+      );
+    };
+
+    start();
+    const stopAuth = onAuthStateChanged(auth, () => start());
+
+    return () => {
+      unsub?.();
+      stopAuth();
+    };
   }, []);
   return uids;
 }
