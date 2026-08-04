@@ -23,6 +23,7 @@ import { Capacitor } from "@capacitor/core";
 patchServerFnBaseUrl();
 registerServiceWorker();
 
+//Função devtools no celular, usar quando estiver com erros para acha-los
 if (typeof window !== "undefined" && Capacitor.isNativePlatform()) {
   const script = document.createElement("script");
   script.src = "https://cdn.jsdelivr.net/npm/eruda";

@@ -99,16 +99,24 @@ function notifyConfig() {
 
 function connectConfig() {
   if (configUnsub) return;
-  configUnsub = onSnapshot(
-    doc(db, CONFIG_COLLECTION, CONFIG_DOC_ID),
-    (snap) => {
-      configCache = normalizeAwardsConfig(snap.exists() ? (snap.data() as Partial<AwardsConfig>) : undefined);
-      notifyConfig();
-    },
-    (err) => {
-      console.error("Erro ao carregar configuração do Awards:", err);
-    },
-  );
+
+  const tryConnect = () => {
+    if (configUnsub || !auth.currentUser) return;
+    configUnsub = onSnapshot(
+      doc(db, CONFIG_COLLECTION, CONFIG_DOC_ID),
+      (snap) => {
+        configCache = normalizeAwardsConfig(snap.exists() ? (snap.data() as Partial<AwardsConfig>) : undefined);
+        notifyConfig();
+      },
+      (err) => {
+        console.error("Erro ao carregar configuração do Awards:", err);
+        configUnsub = null; // libera pra tentar de novo assim que o login terminar
+      },
+    );
+  };
+
+  tryConnect();
+  onAuthStateChanged(auth, () => tryConnect());
 }
 
 function subscribeConfig(cb: () => void) {

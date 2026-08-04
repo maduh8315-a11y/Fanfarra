@@ -1,6 +1,7 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { arrayUnion, collection, doc, onSnapshot, setDoc } from "firebase/firestore";
-import { db } from "./firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth, db } from "./firebase";
 
 // ===== Histórico de premiações — "essa obra já foi vencedora antes" =====
 //
@@ -46,16 +47,26 @@ function notify() {
 
 function connect() {
   if (unsub) return;
-  unsub = onSnapshot(
-    collection(db, HISTORY_COLLECTION),
-    (snap) => {
-      const next = new Map<string, AwardHistoryDoc>();
-      snap.docs.forEach((d) => next.set(d.id, d.data() as AwardHistoryDoc));
-      historyCache = next;
-      notify();
-    },
-    (err) => console.error("Erro ao carregar histórico de premiações:", err),
-  );
+
+  const tryConnect = () => {
+    if (unsub || !auth.currentUser) return;
+    unsub = onSnapshot(
+      collection(db, HISTORY_COLLECTION),
+      (snap) => {
+        const next = new Map<string, AwardHistoryDoc>();
+        snap.docs.forEach((d) => next.set(d.id, d.data() as AwardHistoryDoc));
+        historyCache = next;
+        notify();
+      },
+      (err) => {
+        console.error("Erro ao carregar histórico de premiações:", err);
+        unsub = null; // libera pra tentar de novo assim que o login terminar
+      },
+    );
+  };
+
+  tryConnect();
+  onAuthStateChanged(auth, () => tryConnect());
 }
 
 function subscribe(cb: () => void) {
