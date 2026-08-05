@@ -203,7 +203,7 @@ function AuthGuard() {
     const decide = () => {
       const isPublic = PUBLIC_ROUTES.has(pathname);
       if (!user && !isPublic) {
-        const seen = !import.meta.env.DEV && localStorage.getItem("fanfarra:auth_seen") === "1";
+        const seen = !import.meta.env.DEV && localStorage.getItem("fanfarra:onboarding_done") === "1";
         navigate({ to: seen ? "/login" : "/splash" });
         // Não marca como "visto" aqui — só quando a pessoa realmente
         // termina/pula o onboarding (ver onboarding.tsx). Assim, fechar o

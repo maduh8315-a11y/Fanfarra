@@ -348,8 +348,10 @@ function Onboarding() {
 
   return (
     <div
-      className="onboarding-screen relative flex h-[100dvh] w-full max-w-[100vw] flex-col overflow-hidden"
+      className="onboarding-screen flex flex-col overflow-hidden"
       style={{
+        position: "fixed",
+        inset: 0,
         background:
           "radial-gradient(120% 60% at 50% 0%, color-mix(in oklab, var(--fan-pink) 22%, transparent), transparent 60%), radial-gradient(80% 50% at 100% 100%, color-mix(in oklab, var(--fan-icon-blue) 15%, transparent), transparent 60%), var(--fan-bg)",
         color: "var(--fan-text)",

@@ -266,7 +266,8 @@ function RecPage() {
                 if (!items.length) return null;
                 return (
                   <div key={type} className="mb-4">
-                    <p className="px-4 text-sm mb-2" style={{ color: "var(--fan-text-2)" }}>
+                    <p className="px-4 text-sm mb-2 flex items-center gap-1.5" style={{ color: "var(--fan-text-2)" }}>
+                      <MediaIcon type={type as MediaType} size={14} />
                       {type}
                     </p>
                     <div
