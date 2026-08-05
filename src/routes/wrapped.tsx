@@ -14,7 +14,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { logEvent } from "@/lib/fanfarra/analytics";
 import { useCallback, useEffect, useRef, useState } from "react";
 import domtoimage from "dom-to-image-more";
-import { BookMarked, Trophy, Gamepad2, Flame, Zap, Star, Sparkles, Sprout, ArrowLeft, type LucideIcon } from "lucide-react";
+import { BookMarked, Trophy, Gamepad2, Flame, Zap, Star, Sparkles, Sprout, ArrowLeft, Share2, Download, type LucideIcon } from "lucide-react";
 import type { MediaType } from "@/lib/fanfarra/types";
 import { useWorks } from "@/lib/fanfarra/store";
 import { useProfile } from "@/lib/fanfarra/extras";
@@ -110,10 +110,10 @@ function calcWrappedData(works: Work[], userName: string) {
       topGenres.length > 0
         ? topGenres
         : [
-            { name: "Fantasia", pct: 80 },
-            { name: "Aventura", pct: 60 },
-            { name: "Drama", pct: 40 },
-          ],
+          { name: "Fantasia", pct: 80 },
+          { name: "Aventura", pct: 60 },
+          { name: "Drama", pct: 40 },
+        ],
     stats: {
       works: works.length,
       hours: Math.round(hours),
@@ -199,7 +199,7 @@ function WrappedPage() {
       const saved = await Filesystem.writeFile({ path: fileName, data: base64, directory: Directory.Cache });
       await Share.share({
         title: "Meu Fanfarra Wrapped",
-        text: `Confira meu ano de fandom no Fanfarra! ✨`,
+        text: `Confira meu ano de fandom no Fanfarra!`,
         url: saved.uri,
       });
     } catch (err) {
@@ -218,7 +218,7 @@ function WrappedPage() {
     touchStart.current = null;
   };
 
- const slides = [
+  const slides = [
     <Slide1Intro key="1" data={data} onStart={() => go(1)} />,
     <Slide2Type key="2" data={data} />,
     <Slide3Favorite key="3" data={data} />,
@@ -244,12 +244,12 @@ function WrappedPage() {
           gap: "1rem",
         }}
       >
-        <div style={{ fontSize: "3rem" }}>🎉</div>
+        <div style={{ display: "flex", justifyContent: "center" }}><Sparkles size={48} /></div>
         <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--fan-text)" }}>
           O Wrapped ainda não chegou
         </h1>
         <p style={{ color: "var(--fan-text-2)", maxWidth: 320 }}>
-          O resumo anual do Fanfarra é liberado em dezembro, quando o ano termina. Volte lá pra ver o seu ano em fandom! ✨
+          O resumo anual do Fanfarra é liberado em dezembro, quando o ano termina. Volte lá pra ver o seu ano em fandom!
         </p>
         <button onClick={() => nav({ to: "/" })} className="wrapped-btn" style={{ marginTop: "0.5rem" }}>
           Voltar para o início
@@ -311,9 +311,9 @@ function WrappedPage() {
       </button>
 
       {/* ── BOTÃO BAIXAR PNG (fixo, canto superior direito) — só aparece nos slides 1–7 ── */}
-     {idx < TOTAL - 1 && (isPro || idx < 3) && (
-        <button className="wrapped-btn wrapped-download" onClick={handleDownload}>
-          ⬇ Baixar PNG
+      {idx < TOTAL - 1 && (isPro || idx < 3) && (
+        <button className="wrapped-btn wrapped-download flex items-center gap-1.5" onClick={handleDownload}>
+          <Download size={16} /> Baixar PNG
         </button>
       )}
 

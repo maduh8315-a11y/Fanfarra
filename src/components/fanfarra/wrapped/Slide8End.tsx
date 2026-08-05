@@ -1,4 +1,5 @@
 import type { WrappedData } from "./types";
+import { Sparkles, Share2 } from "lucide-react";
 
 export default function Slide8End({ data, onShare }: { data: WrappedData; onShare: () => void }) {
   const rows = 8;
@@ -35,7 +36,7 @@ export default function Slide8End({ data, onShare }: { data: WrappedData; onShar
       </div>
 
       <div className="wrapped-content">
-        <div style={{ fontSize: "3rem" }}>✨</div>
+        <div style={{ display: "flex", justifyContent: "center" }}><Sparkles size={48} /></div>
         <h1 style={{ fontSize: "clamp(2.5rem, 6vw, 4rem)", fontWeight: 800, margin: "0.5rem 0" }}>
           Até o próximo <span style={{ color: "var(--fan-pink)" }}>ano</span>
         </h1>
@@ -54,7 +55,9 @@ export default function Slide8End({ data, onShare }: { data: WrappedData; onShar
             flexWrap: "wrap",
           }}
         >
-          <button className="wrapped-btn secondary" onClick={onShare}>↗ Compartilhar</button>
+          <button className="wrapped-btn secondary flex items-center gap-1.5" onClick={onShare}>
+            <Share2 size={16} /> Compartilhar
+          </button>
         </div>
       </div>
     </div>

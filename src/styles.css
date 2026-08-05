@@ -94,8 +94,8 @@
   --fan-border: #3D0000;
   --fan-tag: #150000;
   --fan-active-chip: #3D0000;
-  --fan-gold: #7FA8C9;
-  --fan-gold-bg: #1C2B36;
+  --fan-gold: #F5A623;
+  --fan-gold-bg: #3D2E0A;
   --sidebar: var(--fan-bg-3);
   --sidebar-foreground: #F7D6D2;
   --sidebar-primary: var(--fan-pink);
@@ -169,8 +169,8 @@
   --fan-border: #EAEAEA;
   --fan-tag: #FFE9E7;
   --fan-active-chip: #FFCFCB;
-  --fan-gold: #3B5D76;
-  --fan-gold-bg: #E1EAF0;
+  --fan-gold: #F5A623;
+  --fan-gold-bg: #FCE8C7;
   --fan-pink-rgb: 225, 6, 0;
   --fan-pink-light-rgb: 255, 59, 48;
   --fan-icon-blue: #F5A623;

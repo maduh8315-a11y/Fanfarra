@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { ArrowLeft, ExternalLink, Sparkles } from "lucide-react";
+import { ArrowLeft, ExternalLink, Sparkles, Heart } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 
 export const Route = createFileRoute("/about")({
@@ -85,8 +85,8 @@ function AboutPage() {
         })}
       </ul>
 
-      <p className="text-center text-sm mt-8 mb-8" style={{ color: "var(--fan-text-2)" }}>
-        Desenvolvido com 💜 pela equipe Fanfarra
+      <p className="text-center text-sm mt-8 mb-8 flex items-center justify-center gap-1.5" style={{ color: "var(--fan-text-2)" }}>
+        Desenvolvido com <Heart size={14} fill="var(--fan-pink)" color="var(--fan-pink)" /> pela equipe Fanfarra
       </p>
     </AppShell>
   );

@@ -686,7 +686,7 @@ export async function checkChallengeCompletion(challengeId: string, done: number
 
   pushNotification({
     icon: "check-circle",
-    text: `Desafio "${c.title}" concluído! Você ganhou o selo 🎯`,
+    text: `Desafio "${c.title}" concluído! Você ganhou o selo`,
   });
 
   const already = profileCache.earnedBadgeIds ?? [];

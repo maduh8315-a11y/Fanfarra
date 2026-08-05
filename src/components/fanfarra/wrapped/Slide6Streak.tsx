@@ -1,14 +1,15 @@
 import type { WrappedData } from "./types";
+import { Flame } from "lucide-react";
 
 export default function Slide6Streak({ data }: { data: WrappedData }) {
   const days = data.streak;
   const msg =
     days >= 30
-      ? "Você é imparável 🔥"
+      ? "Você é imparável"
       : days >= 14
-        ? "Mantendo o ritmo! 💪"
+        ? "Mantendo o ritmo!"
         : days >= 7
-          ? "Boa constância ✨"
+          ? "Boa constância"
           : "Todo dia é um novo começo";
 
   return (
@@ -57,8 +58,11 @@ export default function Slide6Streak({ data }: { data: WrappedData }) {
         <p style={{ fontSize: "1.5rem", fontWeight: 600, marginTop: "-0.5rem" }}>
           dias consecutivos
         </p>
-        <p style={{ color: "var(--fan-pink)", fontSize: "1.5rem", fontWeight: 700, marginTop: "1.5rem" }}>
-          {msg}
+        <p
+          className="flex items-center justify-center gap-2"
+          style={{ color: "var(--fan-pink)", fontSize: "1.5rem", fontWeight: 700, marginTop: "1.5rem" }}
+        >
+          {days >= 7 && <Flame size={22} />} {msg}
         </p>
       </div>
     </div>

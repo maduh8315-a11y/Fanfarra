@@ -21,6 +21,9 @@ import {
   Megaphone,
   PartyPopper,
   Sparkles,
+  ThumbsUp,
+  ThumbsDown,
+  Skull,
   type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -294,7 +297,7 @@ function RecommendationPhase({ config }: { config: AwardsConfig }) {
         <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
           As indicações não são mais sugeridas manualmente aqui — elas vêm direto das recomendações que
           a galera posta na tela{" "}
-          <span style={{ color: "var(--fan-text)", fontWeight: 700 }}>Para você</span>, ao longo do ano. 👏 e 👎
+          <span style={{ color: "var(--fan-text)", fontWeight: 700 }}>Para você</span>, ao longo do ano. <ThumbsUp size={13} className="inline" /> e <ThumbsDown size={13} className="inline" />
           contam pra valer!
         </p>
         {notOpenYet && (
@@ -595,8 +598,8 @@ function VotingPhase({
                           {nominee.title}
                         </p>
                         <p className="text-sm flex items-center gap-2" style={{ color: "var(--fan-text-2)" }}>
-                          <span>👏 {nominee.likes}</span>
-                          <span>👎 {nominee.boos}</span>
+                          <span className="flex items-center gap-1"><ThumbsUp size={13} /> {nominee.likes}</span>
+                          <span className="flex items-center gap-1"><ThumbsDown size={13} /> {nominee.boos}</span>
                         </p>
                       </div>
 
@@ -678,7 +681,7 @@ function ResultCategoryCard({
             boxShadow: "0 6px 18px rgba(0,0,0,.6)",
           }}
         >
-          💀 Quem diria...
+          <span className="flex items-center gap-1.5 justify-center"><Skull size={16} /> Quem diria...</span>
         </div>
       )}
 

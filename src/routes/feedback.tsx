@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Send } from "lucide-react";
+import { ArrowLeft, Send, Smile, HandHeart } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { sendFeedback } from "@/lib/fanfarra/feedback";
@@ -24,13 +24,13 @@ function FeedbackPage() {
 
   async function handleSubmit() {
     if (message.trim().length < 5) {
-      toast.error("Escreve um pouco mais pra gente entender melhor 🙂");
+      toast.error("Escreve um pouco mais pra gente entender melhor", { icon: <Smile size={16} /> });
       return;
     }
     setSending(true);
     try {
       await sendFeedback({ type, message: message.trim() });
-      toast.success("Feedback enviado! Obrigado por ajudar a melhorar o Fanfarra 💛");
+      toast.success("Feedback enviado! Obrigado por ajudar a melhorar o Fanfarra", { icon: <HandHeart size={16} /> });
       setMessage("");
       nav({ to: "/settings" });
     } catch (err) {

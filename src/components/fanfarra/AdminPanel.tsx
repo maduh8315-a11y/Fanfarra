@@ -17,6 +17,7 @@ import { triggerAwardsCron } from "@/lib/api/triggerCron.functions";
 import { useEffect } from "react";
 import { getImportHealthServer } from "@/lib/api/importHealth.functions";
 import { auth } from "@/lib/fanfarra/firebase";
+import { CheckCircle2, XCircle } from "lucide-react";
 
 interface ImportHealthEntry {
   source: string;
@@ -404,8 +405,11 @@ const isAdmin = useIsAdmin(user?.uid);
               style={{ color: "var(--fan-text)" }}
             >
               <span>{h.source}</span>
-              <span style={{ color: (h.failCount ?? 0) > 0 ? "var(--fan-pink-light)" : "var(--fan-text-2)" }}>
-                ✅ {h.okCount ?? 0} · ❌ {h.failCount ?? 0}
+              <span
+                className="flex items-center gap-1"
+                style={{ color: (h.failCount ?? 0) > 0 ? "var(--fan-pink-light)" : "var(--fan-text-2)" }}
+              >
+                <CheckCircle2 size={12} /> {h.okCount ?? 0} · <XCircle size={12} /> {h.failCount ?? 0}
                 {h.lastFailAt ? ` (última falha: ${new Date(h.lastFailAt).toLocaleString("pt-BR")})` : ""}
               </span>
             </div>

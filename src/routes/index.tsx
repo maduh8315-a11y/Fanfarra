@@ -16,6 +16,7 @@ import {
   Bell,
   User,
   Sparkles,
+  Flame,
   Search as SearchIcon,
   Plus,
   Library,
@@ -316,8 +317,8 @@ function EmptyHome({ worksCount }: { worksCount: number }) {
         >
           <Sparkles size={28} color="var(--fan-icon-blue)" fill="var(--fan-icon-blue)" />
         </div>
-        <h1 className="text-xl font-bold mb-1" style={{ color: "var(--fan-text)" }}>
-          Olá, {name}! ✨
+        <h1 className="text-xl font-bold mb-1 flex items-center gap-1.5" style={{ color: "var(--fan-text)" }}>
+          Olá, {name}! <Sparkles size={16} />
         </h1>
         <p className="text-sm leading-relaxed" style={{ color: "var(--fan-text-2)" }}>
           {heading}
@@ -472,7 +473,7 @@ function PopularShelves() {
 
   return (
     <div className="space-y-6">
-      <Shelf title="🔥 Populares agora" items={trending} />
+      <Shelf title="Populares agora" icon={Flame} items={trending} />
       {shelfTypes.map((type) => (
         <Shelf key={type} title={`Em alta em ${type}`} items={getByType(CATALOG, type, 12)} />
       ))}
@@ -480,12 +481,12 @@ function PopularShelves() {
   );
 }
 
-function Shelf({ title, items }: { title: string; items: RecommendationItem[] }) {
+function Shelf({ title, icon: Icon, items }: { title: string; icon?: typeof Flame; items: RecommendationItem[] }) {
   if (items.length === 0) return null;
   return (
     <section className="px-5">
-      <h2 className="text-sm font-bold mb-3" style={{ color: "var(--fan-text-3)" }}>
-        {title}
+      <h2 className="text-sm font-bold mb-3 flex items-center gap-1.5" style={{ color: "var(--fan-text-3)" }}>
+        {Icon && <Icon size={14} />} {title}
       </h2>
       <div className="flex gap-3.5 overflow-x-auto px-1 py-2 fan-hscroll" style={{ scrollbarWidth: "none" }}>
         {items.map((item) => (

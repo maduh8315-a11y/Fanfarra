@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, X, AlertTriangle } from "lucide-react";
+import { Loader2, X, AlertTriangle, PartyPopper } from "lucide-react";
 import { AuthInput } from "@/components/fanfarra/auth/AuthInput";
 import {
   authErrorMessage,
@@ -179,8 +179,8 @@ export function ChangePasswordModal({ open, onClose }: { open: boolean; onClose:
     <ModalShell title="Alterar senha" onClose={onClose}>
       {done ? (
         <div className="text-center py-4">
-          <p className="text-sm" style={{ color: "var(--fan-text)" }}>
-            Senha alterada com sucesso! 🎉
+          <p className="text-sm flex items-center justify-center gap-1.5" style={{ color: "var(--fan-text)" }}>
+            Senha alterada com sucesso! <PartyPopper size={16} color="var(--fan-gold)" />
           </p>
           <button
             onClick={onClose}

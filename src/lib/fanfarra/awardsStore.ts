@@ -598,7 +598,7 @@ export function voteAward(phase: VotePhase, categoryId: string, nominee: string)
 }
 export async function confirmAwardVotes(phase: VotePhase): Promise<void> {
   const label = phase === "indicacao" ? "indicados" : "finalistas";
-  await storeFor(phase).confirm(`Seu voto nos ${label} do ${configCache.title} foi registrado! 🏆`);
+  await storeFor(phase).confirm(`Seu voto nos ${label} do ${configCache.title} foi registrado!`);
 }
 
 export function getAwardResults(categoryId: string, allVotes: AwardVoteRecord[]): AwardResultRow[] {

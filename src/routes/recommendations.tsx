@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { EmptyState } from "@/components/fanfarra/EmptyState";
-import { Flame, Sparkles, BookOpen, SlidersHorizontal } from "lucide-react";
+import { Flame, Sparkles, BookOpen, SlidersHorizontal, Users2, Globe, Star } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { useWorks } from "@/lib/fanfarra/store";
 import { MediaIcon } from "@/components/fanfarra/MediaIcon";
@@ -181,7 +181,7 @@ function RecPage() {
          {/* Comunidade — recomendações públicas postadas por qualquer usuário */}
           <section className="mt-4">
             <div className="flex items-center gap-2 mb-3 px-4">
-              <span style={{ color: "var(--fan-pink-light)" }}>👥</span>
+              <Users2 size={16} style={{ color: "var(--fan-pink-light)" }} />
               <h2 className="text-sm font-bold" style={{ color: "var(--fan-text-3)" }}>
                 Da comunidade
               </h2>
@@ -200,7 +200,7 @@ function RecPage() {
                 style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
               >
                 <EmptyState
-                  emoji="🌐"
+                  icon={Globe}
                   title="Nenhuma recomendação ainda"
                   description='Marque uma obra sua como "Recomendar publicamente" para ser a primeira pessoa a aparecer aqui.'
                   className="p-0"
@@ -377,10 +377,10 @@ export function CatalogCard({ item, grid = false }: { item: RecommendationItem; 
           />
         )}
         <div
-          className="absolute top-1 left-1 px-1.5 py-0.5 rounded-full text-[11px] font-bold shadow-sm"
+          className="absolute top-1 left-1 px-1.5 py-0.5 rounded-full text-[11px] font-bold shadow-sm flex items-center gap-0.5"
           style={{ background: "rgba(13,0,8,0.85)", color: getTypeColor(item.type as MediaType) }}
         >
-          ★ {item.popularity}
+          <Star size={10} fill="currentColor" /> {item.popularity}
         </div>
       </div>
       <p
