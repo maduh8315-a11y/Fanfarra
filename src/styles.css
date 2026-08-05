@@ -230,6 +230,8 @@
     -webkit-user-select: none;
     user-select: none;
     overscroll-behavior: none;
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 
   button,

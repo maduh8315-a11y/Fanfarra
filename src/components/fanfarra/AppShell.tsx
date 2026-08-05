@@ -150,7 +150,11 @@ export function AppShell({ children }: { children: ReactNode }) {
           className={`w-[80%] max-w-[320px] h-full overflow-y-auto transition-transform duration-300 ease-out ${
             drawerOpen ? "translate-x-0" : "translate-x-full"
           }`}
-          style={{ background: "var(--fan-bg)", paddingTop: "var(--sat)" }}
+          style={{
+            background: "var(--fan-bg)",
+            paddingTop: "var(--sat)",
+            paddingBottom: "calc(1.5rem + var(--sab))",
+          }}
         >
             <div className="p-5 flex items-center justify-between">
               {user ? (
