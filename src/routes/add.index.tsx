@@ -43,7 +43,7 @@ function AddIndex() {
         </button>
       </header>
 
-      <div className="px-4 mt-3 flex flex-col gap-6 pb-6">
+      <div className="px-4 mt-3 flex flex-col gap-6 pb-20">
         {MEDIA_MODES.map((m) => (
           <section key={m}>
            <div className="flex items-center gap-2 mb-2.5">

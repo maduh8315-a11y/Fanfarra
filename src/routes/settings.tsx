@@ -220,6 +220,10 @@ function SettingsPage() {
             </div>
           </div>
         </Group>
+
+        <Group title="Suporte">
+          <Item label="Enviar feedback" variant="navigate" onClick={() => nav({ to: "/feedback" })} />
+        </Group>
       </div>
 
       <ChangeEmailModal open={modal === "email"} onClose={() => setModal(null)} />

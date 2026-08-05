@@ -11,6 +11,7 @@
 
 
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { logEvent } from "@/lib/fanfarra/analytics";
 import { useCallback, useEffect, useRef, useState } from "react";
 import domtoimage from "dom-to-image-more";
 import { BookMarked, Trophy, Gamepad2, Flame, Zap, Star, Sparkles, Sprout, ArrowLeft, type LucideIcon } from "lucide-react";
@@ -39,6 +40,8 @@ export const Route = createFileRoute("/wrapped")({
 
 const TOTAL = 8;
 const YEAR = new Date().getFullYear();
+// getMonth() é 0-indexado: 11 = dezembro
+const IS_WRAPPED_SEASON = new Date().getMonth() === 11;
 
 // ─── helpers para calcular dados reais da biblioteca ────────────────────────
 
@@ -147,12 +150,17 @@ function WrappedPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [idx, go]);
 
+  useEffect(() => {
+    logEvent("wrapped_opened", { year: YEAR });
+  }, []);
+
   const generateSlidePng = useCallback(async () => {
     if (!slideRef.current) return null;
     return domtoimage.toPng(slideRef.current, {
       bgcolor: "#000000",
       width: slideRef.current.clientWidth,
       height: slideRef.current.clientHeight,
+      cacheBust: true, // evita pegar uma versão antiga em cache do slide
     });
   }, []);
 
@@ -161,13 +169,22 @@ function WrappedPage() {
       const dataUrl = await generateSlidePng();
       if (!dataUrl) return;
       const { Filesystem, Directory } = await import("@capacitor/filesystem");
+      const { Share } = await import("@capacitor/share");
       const base64 = dataUrl.split(",")[1];
-      const fileName = `fanfarra-wrapped-${data.year}-slide${idx + 1}.png`;
-      await Filesystem.writeFile({ path: fileName, data: base64, directory: Directory.Documents });
-      toast.success("Imagem salva!");
+      // Directory.Documents é bloqueado pelo scoped storage no Android moderno
+      // (o app não consegue mais escrever lá sem dar erro). Directory.Cache
+      // sempre funciona, e o Share abre o menu nativo com a opção
+      // "Salvar imagem" / "Salvar em Fotos".
+      const fileName = `fanfarra-wrapped-${data.year}-slide${idx + 1}-${Date.now()}.png`;
+      const saved = await Filesystem.writeFile({ path: fileName, data: base64, directory: Directory.Cache });
+      await Share.share({
+        title: "Baixar imagem do Wrapped",
+        text: "Toque em 'Salvar imagem' para baixar.",
+        url: saved.uri,
+      });
     } catch (err) {
       console.error("Falha ao gerar imagem:", err);
-      toast.error("Não foi possível salvar a imagem.");
+      toast.error("Não foi possível gerar a imagem. Tente novamente.");
     }
   }, [generateSlidePng, idx, data.year]);
 
@@ -211,6 +228,35 @@ function WrappedPage() {
     isPro ? <Slide7Achievements key="7" data={data} /> : <WrappedPaywall key="7" />,
     <Slide8End key="8" data={data} onShare={handleShare} />,
   ];
+
+  if (!IS_WRAPPED_SEASON) {
+    return (
+      <div
+        style={{
+          background: "var(--fan-bg)",
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "2rem",
+          textAlign: "center",
+          gap: "1rem",
+        }}
+      >
+        <div style={{ fontSize: "3rem" }}>🎉</div>
+        <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--fan-text)" }}>
+          O Wrapped ainda não chegou
+        </h1>
+        <p style={{ color: "var(--fan-text-2)", maxWidth: 320 }}>
+          O resumo anual do Fanfarra é liberado em dezembro, quando o ano termina. Volte lá pra ver o seu ano em fandom! ✨
+        </p>
+        <button onClick={() => nav({ to: "/" })} className="wrapped-btn" style={{ marginTop: "0.5rem" }}>
+          Voltar para o início
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div

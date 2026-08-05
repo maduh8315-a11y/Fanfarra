@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WrappedRouteImport } from './routes/wrapped'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
+import { Route as UpdatesRouteImport } from './routes/updates'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as StatsRouteImport } from './routes/stats'
 import { Route as SplashRouteImport } from './routes/splash'
@@ -27,6 +28,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as LibraryRouteImport } from './routes/library'
 import { Route as FriendsRouteImport } from './routes/friends'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as CollectionsRouteImport } from './routes/collections'
 import { Route as ChallengesRouteImport } from './routes/challenges'
 import { Route as AwardsRouteImport } from './routes/awards'
@@ -50,6 +52,11 @@ const WrappedRoute = WrappedRouteImport.update({
 const VerifyEmailRoute = VerifyEmailRouteImport.update({
   id: '/verify-email',
   path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UpdatesRoute = UpdatesRouteImport.update({
+  id: '/updates',
+  path: '/updates',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -132,6 +139,11 @@ const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FeedbackRoute = FeedbackRouteImport.update({
+  id: '/feedback',
+  path: '/feedback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CollectionsRoute = CollectionsRouteImport.update({
   id: '/collections',
   path: '/collections',
@@ -211,6 +223,7 @@ export interface FileRoutesByFullPath {
   '/awards': typeof AwardsRoute
   '/challenges': typeof ChallengesRoute
   '/collections': typeof CollectionsRoute
+  '/feedback': typeof FeedbackRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/friends': typeof FriendsRoute
   '/library': typeof LibraryRoute
@@ -227,6 +240,7 @@ export interface FileRoutesByFullPath {
   '/splash': typeof SplashRoute
   '/stats': typeof StatsRoute
   '/terms': typeof TermsRoute
+  '/updates': typeof UpdatesRoute
   '/verify-email': typeof VerifyEmailRoute
   '/wrapped': typeof WrappedRoute
   '/add/$type': typeof AddTypeRoute
@@ -244,6 +258,7 @@ export interface FileRoutesByTo {
   '/awards': typeof AwardsRoute
   '/challenges': typeof ChallengesRoute
   '/collections': typeof CollectionsRoute
+  '/feedback': typeof FeedbackRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/friends': typeof FriendsRoute
   '/library': typeof LibraryRoute
@@ -260,6 +275,7 @@ export interface FileRoutesByTo {
   '/splash': typeof SplashRoute
   '/stats': typeof StatsRoute
   '/terms': typeof TermsRoute
+  '/updates': typeof UpdatesRoute
   '/verify-email': typeof VerifyEmailRoute
   '/wrapped': typeof WrappedRoute
   '/add/$type': typeof AddTypeRoute
@@ -279,6 +295,7 @@ export interface FileRoutesById {
   '/awards': typeof AwardsRoute
   '/challenges': typeof ChallengesRoute
   '/collections': typeof CollectionsRoute
+  '/feedback': typeof FeedbackRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/friends': typeof FriendsRoute
   '/library': typeof LibraryRoute
@@ -295,6 +312,7 @@ export interface FileRoutesById {
   '/splash': typeof SplashRoute
   '/stats': typeof StatsRoute
   '/terms': typeof TermsRoute
+  '/updates': typeof UpdatesRoute
   '/verify-email': typeof VerifyEmailRoute
   '/wrapped': typeof WrappedRoute
   '/add/$type': typeof AddTypeRoute
@@ -315,6 +333,7 @@ export interface FileRouteTypes {
     | '/awards'
     | '/challenges'
     | '/collections'
+    | '/feedback'
     | '/forgot-password'
     | '/friends'
     | '/library'
@@ -331,6 +350,7 @@ export interface FileRouteTypes {
     | '/splash'
     | '/stats'
     | '/terms'
+    | '/updates'
     | '/verify-email'
     | '/wrapped'
     | '/add/$type'
@@ -348,6 +368,7 @@ export interface FileRouteTypes {
     | '/awards'
     | '/challenges'
     | '/collections'
+    | '/feedback'
     | '/forgot-password'
     | '/friends'
     | '/library'
@@ -364,6 +385,7 @@ export interface FileRouteTypes {
     | '/splash'
     | '/stats'
     | '/terms'
+    | '/updates'
     | '/verify-email'
     | '/wrapped'
     | '/add/$type'
@@ -382,6 +404,7 @@ export interface FileRouteTypes {
     | '/awards'
     | '/challenges'
     | '/collections'
+    | '/feedback'
     | '/forgot-password'
     | '/friends'
     | '/library'
@@ -398,6 +421,7 @@ export interface FileRouteTypes {
     | '/splash'
     | '/stats'
     | '/terms'
+    | '/updates'
     | '/verify-email'
     | '/wrapped'
     | '/add/$type'
@@ -417,6 +441,7 @@ export interface RootRouteChildren {
   AwardsRoute: typeof AwardsRoute
   ChallengesRoute: typeof ChallengesRoute
   CollectionsRoute: typeof CollectionsRoute
+  FeedbackRoute: typeof FeedbackRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   FriendsRoute: typeof FriendsRoute
   LibraryRoute: typeof LibraryRoute
@@ -433,6 +458,7 @@ export interface RootRouteChildren {
   SplashRoute: typeof SplashRoute
   StatsRoute: typeof StatsRoute
   TermsRoute: typeof TermsRoute
+  UpdatesRoute: typeof UpdatesRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
   WrappedRoute: typeof WrappedRoute
   ChatUidRoute: typeof ChatUidRoute
@@ -456,6 +482,13 @@ declare module '@tanstack/react-router' {
       path: '/verify-email'
       fullPath: '/verify-email'
       preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/updates': {
+      id: '/updates'
+      path: '/updates'
+      fullPath: '/updates'
+      preLoaderRoute: typeof UpdatesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -568,6 +601,13 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/feedback': {
+      id: '/feedback'
+      path: '/feedback'
+      fullPath: '/feedback'
+      preLoaderRoute: typeof FeedbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/collections': {
@@ -691,6 +731,7 @@ const rootRouteChildren: RootRouteChildren = {
   AwardsRoute: AwardsRoute,
   ChallengesRoute: ChallengesRoute,
   CollectionsRoute: CollectionsRoute,
+  FeedbackRoute: FeedbackRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   FriendsRoute: FriendsRoute,
   LibraryRoute: LibraryRoute,
@@ -707,6 +748,7 @@ const rootRouteChildren: RootRouteChildren = {
   SplashRoute: SplashRoute,
   StatsRoute: StatsRoute,
   TermsRoute: TermsRoute,
+  UpdatesRoute: UpdatesRoute,
   VerifyEmailRoute: VerifyEmailRoute,
   WrappedRoute: WrappedRoute,
   ChatUidRoute: ChatUidRoute,

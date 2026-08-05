@@ -135,7 +135,7 @@ function ProfilePage() {
     e.target.value = "";
     if (!file) return;
     try {
-      const url = await uploadCoverImage(file, "works");
+      const url = await uploadCoverImage(file, "works", { maxDimension: 320, quality: 0.8 });
       updateProfile({ avatar: url });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Erro ao enviar a foto.");

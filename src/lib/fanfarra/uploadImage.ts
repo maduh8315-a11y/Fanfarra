@@ -69,6 +69,7 @@ function compressImage(file: File, maxDimension = 1200, quality = 0.8): Promise<
 export async function uploadCoverImage(
   file: File,
   _folder: "bookcases" | "shelves" | "works",
+  options?: { maxDimension?: number; quality?: number },
 ): Promise<string> {
   if (!file.type.startsWith("image/")) {
     throw new Error("O arquivo selecionado não é uma imagem.");
@@ -77,7 +78,11 @@ export async function uploadCoverImage(
     throw new Error("A imagem é muito grande (máximo 5MB).");
   }
 
-  const compressed = await compressImage(file);
+  const compressed = await compressImage(
+    file,
+    options?.maxDimension ?? 1200,
+    options?.quality ?? 0.8,
+  );
   const base64 = await fileToBase64(compressed);
 
   const result = await uploadCoverImageServer({

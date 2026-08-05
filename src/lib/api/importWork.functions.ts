@@ -13,10 +13,10 @@ import { fetchGoogleBooks } from "./importWork/sources/googleBooks";
 import { fetchSpotify } from "./importWork/sources/spotify";
 import { fetchSteam } from "./importWork/sources/steam";
 import { fetchMyDramaList } from "./importWork/sources/myDramaList";
+import { recordImportResult } from "./importWork/monitor.server";
 
 export type { ImportedWorkData, ImportResult };
 
-// Máx. 20 importações a cada 10 minutos, por IP.
 const IMPORT_LIMIT = 20;
 const IMPORT_WINDOW_MS = 10 * 60 * 1000;
 
@@ -25,7 +25,6 @@ const inputSchema = z.object({
     type: z.string(),
 });
 
-// ─── Handler principal ──────────────────────────────────────────────────────
 export const importWorkFromUrl = createServerFn({ method: "POST" })
     .inputValidator(inputSchema)
     .handler(async ({ data }): Promise<ImportResult> => {
@@ -83,10 +82,8 @@ export const importWorkFromUrl = createServerFn({ method: "POST" })
                 source = "MyDramaList";
             }
 
-            // O domínio foi reconhecido, mas o leitor específico dele não achou
-            // nada — provavelmente o site mudou o HTML. Registra no log do
-            // servidor pra dar pra monitorar isso ao longo do tempo, e segue pro
-            // fallback genérico (Open Graph/JSON-LD) logo abaixo.
+            const dedicatedSource = source;
+
             if (source && !result) {
                 specificParserFailed = true;
                 console.warn(`[importWork] Leitor específico de "${source}" não extraiu dados de: ${url}`);
@@ -101,6 +98,10 @@ export const importWorkFromUrl = createServerFn({ method: "POST" })
                         source = "link";
                     }
                 }
+            }
+
+            if (dedicatedSource) {
+                recordImportResult(dedicatedSource, !specificParserFailed, url).catch(() => {});
             }
         } catch {
             return { ok: false, error: "Não foi possível importar esse link." };

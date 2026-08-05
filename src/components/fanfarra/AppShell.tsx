@@ -230,6 +230,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   iconColor="var(--fan-icon-blue)"
                 />
               )}
+              <DrawerLink to="/updates" icon={Sparkles} label="Novidades" />
               <DrawerLink to="/about" icon={Info} label="Sobre o App" iconColor="var(--fan-icon-blue)" />
               <button
                 onClick={handleLogout}
@@ -270,6 +271,7 @@ function DrawerLink({
   | "/pro"
   | "/settings"
   | "/about"
+  | "/updates"
   | "/stats"
   | "/admin"
   | "/friends";

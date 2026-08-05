@@ -24,7 +24,11 @@ patchServerFnBaseUrl();
 registerServiceWorker();
 
 //Função devtools no celular, usar quando estiver com erros para acha-los
-if (typeof window !== "undefined" && Capacitor.isNativePlatform()) {
+// import.meta.env.DEV só é "true" quando você builda com `bun run build:dev`
+// (build de desenvolvimento). Na build de produção (`bun run build`, a que
+// vai pra loja) isso é sempre "false" — então o Eruda nunca mais aparece
+// pra usuários reais, só pra você quando estiver testando.
+if (import.meta.env.DEV && typeof window !== "undefined" && Capacitor.isNativePlatform()) {
   const script = document.createElement("script");
   script.src = "https://cdn.jsdelivr.net/npm/eruda";
   script.onload = () => {

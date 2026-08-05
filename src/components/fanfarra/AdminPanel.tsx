@@ -14,6 +14,17 @@ import {
   useAwardsConfig,
 } from "@/lib/fanfarra/awardsStore";
 import { triggerAwardsCron } from "@/lib/api/triggerCron.functions";
+import { useEffect } from "react";
+import { getImportHealthServer } from "@/lib/api/importHealth.functions";
+import { auth } from "@/lib/fanfarra/firebase";
+
+interface ImportHealthEntry {
+  source: string;
+  okCount?: number;
+  failCount?: number;
+  lastFailAt?: number;
+  lastFailUrl?: string;
+}
 
 // ===== Painel admin (só visível pro UID em ADMIN_UIDS) =====
 export function AdminPanel() {
@@ -30,6 +41,25 @@ export function AdminPanel() {
   const [finalOpenInput, setFinalOpenInput] = useState("");
   const [finalInput, setFinalInput] = useState("");
   const [saving, setSaving] = useState<null | string>(null);
+
+  const [importHealth, setImportHealth] = useState<ImportHealthEntry[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+    currentUser
+      .getIdToken()
+      .then((idToken) => getImportHealthServer({ data: { idToken } }))
+      .then((res) => {
+        if (!cancelled && res.ok) setImportHealth(res.data);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   // Defesa extra: mesmo que a rota /admin já bloqueie quem não é admin,
   // o componente também se recusa a renderizar pra quem não é.
@@ -351,6 +381,36 @@ const isAdmin = useIsAdmin(user?.uid);
         >
           Enviar aviso
         </button>
+      </div>
+
+      <div className="mt-3 pt-3" style={{ borderTop: "1px dashed var(--fan-pink)" }}>
+        <p className="text-sm font-bold mb-2" style={{ color: "var(--fan-pink-light)" }}>
+          Saúde dos importadores
+        </p>
+        <p className="text-[11px] mb-2" style={{ color: "var(--fan-text-2)" }}>
+          Quando um site muda o layout, o leitor automático dele começa a falhar
+          e aparece aqui. Se "Falhas" ficar sempre alto pra uma fonte, é sinal
+          de que o parser dela precisa ser atualizado.
+        </p>
+        {importHealth.length === 0 ? (
+          <p className="text-[11px]" style={{ color: "var(--fan-text-2)" }}>
+            Sem dados ainda.
+          </p>
+        ) : (
+          importHealth.map((h) => (
+            <div
+              key={h.source}
+              className="flex items-center justify-between mb-1 text-[11px]"
+              style={{ color: "var(--fan-text)" }}
+            >
+              <span>{h.source}</span>
+              <span style={{ color: (h.failCount ?? 0) > 0 ? "var(--fan-pink-light)" : "var(--fan-text-2)" }}>
+                ✅ {h.okCount ?? 0} · ❌ {h.failCount ?? 0}
+                {h.lastFailAt ? ` (última falha: ${new Date(h.lastFailAt).toLocaleString("pt-BR")})` : ""}
+              </span>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

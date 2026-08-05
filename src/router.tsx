@@ -1,15 +1,13 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
-import { SafeArea } from "capacitor-plugin-safe-area";
 
-SafeArea.getSafeAreaInsets().then(({ insets }) => {
-  const root = document.documentElement;
-  root.style.setProperty("--safe-area-inset-top", `${insets.top}px`);
-  root.style.setProperty("--safe-area-inset-bottom", `${insets.bottom}px`);
-  root.style.setProperty("--safe-area-inset-left", `${insets.left}px`);
-  root.style.setProperty("--safe-area-inset-right", `${insets.right}px`);
-});
+// As variáveis --safe-area-inset-* já são injetadas automaticamente pelo
+// plugin nativo SystemBars do @capacitor/core (configurado em
+// capacitor.config.ts com insetsHandling: "css"). O código antigo aqui
+// sobrescrevia esse valor correto com o do pacote capacitor-plugin-safe-area,
+// que ficava desatualizado no Android mais novo e resultava em 0px —
+// fazendo a navbar do app ficar embaixo da barra do sistema.
 
 export const getRouter = () => {
   const queryClient = new QueryClient();
