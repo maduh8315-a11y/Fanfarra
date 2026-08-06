@@ -119,7 +119,7 @@ function SceneMedia() {
           boxShadow: "0 0 60px var(--fan-pink)",
         }}
       >
-        <Sparkles size={28} style={iconStyle("var(--fan-icon-blue)")} />
+        <Sparkles size={28} color="var(--fan-icon-blue)" />
       </motion.div>
     </div>
   );
@@ -270,7 +270,7 @@ function SceneCommunity() {
               boxShadow: `0 12px 34px -6px color-mix(in oklab, ${color} 70%, transparent), 0 0 0 1px color-mix(in oklab, ${color} 25%, transparent) inset`,
             }}
           >
-            <Icon size={size * 0.42} style={iconStyle("var(--fan-text)")} />
+            <Icon size={size * 0.42} color={color} />
           </motion.div>
         </motion.div>
       ))}
@@ -388,7 +388,7 @@ function Onboarding() {
               boxShadow: "0 6px 20px -4px var(--fan-pink)",
             }}
           >
-            <Sparkles size={16} style={iconStyle("var(--fan-text)")} />
+            <Sparkles size={16} color="var(--fan-icon-blue)" />
           </div>
           <span className="text-sm font-black tracking-tight">Fanfarra</span>
         </div>
