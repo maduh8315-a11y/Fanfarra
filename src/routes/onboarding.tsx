@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
+import { getTypeColor } from "@/lib/fanfarra/typeColors";
 import {
   Sparkles,
   BookOpen,
@@ -8,6 +9,8 @@ import {
   Gamepad2,
   Music,
   Tv,
+  Drama,
+  Feather,
   Heart,
   Trophy,
   Users,
@@ -58,12 +61,12 @@ function iconStyle(color: string): React.CSSProperties {
 
 function SceneMedia() {
   const items = [
-    { icon: BookOpen, label: "Mangá", rot: -14, x: -110, y: -30, delay: 0.05, accent: ACCENTS.gold },
-    { icon: Film, label: "Filme", rot: 8, x: 110, y: -60, delay: 0.12, accent: ACCENTS.purple },
-    { icon: Tv, label: "Dorama", rot: -6, x: 120, y: 60, delay: 0.19, accent: ACCENTS.teal },
-    { icon: Music, label: "Música", rot: 12, x: -120, y: 70, delay: 0.26, accent: "var(--fan-icon-blue)" },
-    { icon: Gamepad2, label: "Jogo", rot: -3, x: 0, y: -120, delay: 0.33, accent: ACCENTS.green },
-    { icon: Heart, label: "Fanfic", rot: 4, x: 0, y: 120, delay: 0.4, accent: ACCENTS.magenta },
+    { icon: BookOpen, label: "Mangá", rot: -14, x: -110, y: -30, delay: 0.05, accent: getTypeColor("Manga") },
+    { icon: Film, label: "Filme", rot: 8, x: 110, y: -60, delay: 0.12, accent: getTypeColor("Filme") },
+    { icon: Drama, label: "Dorama", rot: -6, x: 120, y: 60, delay: 0.19, accent: getTypeColor("Dorama") },
+    { icon: Music, label: "Música", rot: 12, x: -120, y: 70, delay: 0.26, accent: getTypeColor("Música") },
+    { icon: Gamepad2, label: "Jogo", rot: -3, x: 0, y: -120, delay: 0.33, accent: getTypeColor("Jogo") },
+    { icon: Feather, label: "Fanfic", rot: 4, x: 0, y: 120, delay: 0.4, accent: getTypeColor("Fanfic") },
   ];
   return (
     <div className="relative h-full w-full">
@@ -116,7 +119,7 @@ function SceneMedia() {
           boxShadow: "0 0 60px var(--fan-pink)",
         }}
       >
-        <Sparkles size={28} style={iconStyle("var(--fan-text)")} />
+        <Sparkles size={28} style={iconStyle("var(--fan-icon-blue)")} />
       </motion.div>
     </div>
   );
@@ -196,8 +199,8 @@ function SceneStats() {
         </div>
       </div>
       {[
-        { icon: BarChart3, x: -130, y: -70, d: 0.9, color: "var(--fan-icon-blue)" },
-        { icon: Flame, x: 130, y: -60, d: 1.0, color: ACCENTS.amber },
+        { icon: BarChart3, x: -130, y: -70, d: 0.9, color: ACCENTS.teal },
+        { icon: Flame, x: 130, y: -60, d: 1.0, color: "var(--fan-pink)" },
         { icon: Star, x: -120, y: 80, d: 1.1, color: ACCENTS.gold },
         { icon: Sparkles, x: 130, y: 80, d: 1.2, color: ACCENTS.purple },
       ].map(({ icon: Icon, x, y, d, color }, i) => (

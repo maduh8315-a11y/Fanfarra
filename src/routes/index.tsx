@@ -3,6 +3,7 @@ import { useMemo, useState, useEffect } from "react";
 import { CATALOG, getTrending, getByType, type RecommendationItem } from "@/lib/fanfarra/recommendations";
 import { getTypeColor, getTypeCardBg, getTypeCardBorder } from "@/lib/fanfarra/typeColors";
 import { CatalogCard } from "./recommendations";
+import { MediaIcon } from "@/components/fanfarra/MediaIcon";
 import {
   tickStreak,
   checkAutoNotifications,
@@ -475,18 +476,35 @@ function PopularShelves() {
     <div className="space-y-6">
       <Shelf title="Populares agora" icon={Flame} items={trending} />
       {shelfTypes.map((type) => (
-        <Shelf key={type} title={`Em alta em ${type}`} items={getByType(CATALOG, type, 12)} />
+        <Shelf
+          key={type}
+          title={`Em alta em ${type}`}
+          mediaType={type as MediaType}
+          items={getByType(CATALOG, type, 12)}
+        />
       ))}
     </div>
   );
 }
 
-function Shelf({ title, icon: Icon, items }: { title: string; icon?: typeof Flame; items: RecommendationItem[] }) {
+function Shelf({
+  title,
+  icon: Icon,
+  mediaType,
+  items,
+}: {
+  title: string;
+  icon?: typeof Flame;
+  mediaType?: MediaType;
+  items: RecommendationItem[];
+}) {
   if (items.length === 0) return null;
   return (
     <section className="px-5">
       <h2 className="text-sm font-bold mb-3 flex items-center gap-1.5" style={{ color: "var(--fan-text-3)" }}>
-        {Icon && <Icon size={14} />} {title}
+        {Icon && <Icon size={14} />}
+        {mediaType && <MediaIcon type={mediaType} size={14} />}
+        {title}
       </h2>
       <div className="flex gap-3.5 overflow-x-auto px-1 py-2 fan-hscroll" style={{ scrollbarWidth: "none" }}>
         {items.map((item) => (

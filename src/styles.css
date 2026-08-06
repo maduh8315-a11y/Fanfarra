@@ -335,8 +335,8 @@ svg {
   color: var(--fan-icon-blue) !important;
 }
 
-.onboarding-screen .text-\[10px\] {
-  font-size: 10px !important;
+.onboarding-screen .text-\[9px\] {
+  font-size: 9px !important;
 }
 
 .onboarding-screen .text-\[11px\] {

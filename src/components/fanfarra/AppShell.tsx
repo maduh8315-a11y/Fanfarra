@@ -74,7 +74,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           Você está offline
         </div>
       )}
-      <main className="flex-1 pb-28">{children}</main>
+      <main className="flex-1" style={{ paddingBottom: "calc(7rem + var(--sab))" }}>{children}</main>
 
       <nav
         className="fixed bottom-0 left-0 right-0 flex flex-row items-center justify-around px-0.5 pt-2 z-40"
