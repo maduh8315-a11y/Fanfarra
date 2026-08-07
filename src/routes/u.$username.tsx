@@ -16,6 +16,8 @@ import {
   ListChecks,
   X,
   Lock,
+  Link2,
+  ChevronRight,
 } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { EmptyState } from "@/components/fanfarra/EmptyState";
@@ -41,6 +43,11 @@ export const Route = createFileRoute("/u/$username")({
   head: () => ({ meta: [{ title: "Perfil — Fanfarra" }] }),
   component: PublicProfilePage,
 });
+
+function normalizeUrl(url: string) {
+  if (!url) return "#";
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+}
 
 function PublicProfilePage() {
   const { username } = Route.useParams();
@@ -97,6 +104,7 @@ function PublicProfilePage() {
       </AppShell>
     );
   }
+  const profile = target;
 
   const isMe = me?.uid === target.uid;
   const isFriend = friends.some((f) => f.friendUid === target.uid);
@@ -416,18 +424,22 @@ function PublicProfilePage() {
                 {socialLinks.map((link) => (
                   <a
                     key={link.url}
-                    href={link.url}
+                    href={normalizeUrl(link.url)}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center justify-between rounded-xl px-3 py-2.5 transition hover:brightness-125"
+                    className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 transition hover:brightness-125"
                     style={{ backgroundColor: "var(--fan-bg-3)", border: "1px solid var(--fan-border)" }}
                   >
-                    <span className="text-sm font-medium" style={{ color: "var(--fan-text)" }}>
-                      {link.platform}
+                    <span
+                      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full"
+                      style={{ backgroundColor: "var(--fan-active-chip)", color: "var(--fan-pink-light)" }}
+                    >
+                      <Link2 className="h-4 w-4" />
                     </span>
-                    <span className="max-w-[220px] truncate text-[11px]" style={{ color: "var(--fan-text-2)" }}>
-                      {link.url}
+                    <span className="min-w-0 flex-1 truncate text-sm font-medium" style={{ color: "var(--fan-text)" }}>
+                      {link.platform || "Link"}
                     </span>
+                    <ChevronRight className="h-4 w-4 shrink-0" style={{ color: "var(--fan-text-3)" }} />
                   </a>
                 ))}
               </div>

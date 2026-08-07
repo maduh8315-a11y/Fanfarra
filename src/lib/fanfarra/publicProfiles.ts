@@ -16,6 +16,8 @@ import { useEffect, useState } from "react";
 import { auth, db } from "./firebase";
 import { stripUndefined } from "./firestoreUtils";
 import type { PinnedWork } from "./types";
+import type { TasteProfile } from "./tasteProfile";
+
 
 const COLLECTION = "public_profiles";
 
@@ -30,7 +32,7 @@ export interface PublicProfile {
   tags?: string[];
   socialLinks?: { platform: string; url: string }[];
   pinnedWorks?: PinnedWork[];
-
+  tasteProfile?: TasteProfile;
 }
 
 // Chamado de dentro de extras.ts toda vez que o perfil do usuário atualiza.
@@ -114,4 +116,22 @@ export async function reportProfile(targetUid: string, targetUsername: string, r
     status: "pending",
     createdAt: Date.now(),
   });
+}
+
+// Salva só o resumo do gosto (contagens de tipo/gênero, sem títulos) no
+// perfil público — é o que alimenta a sugestão de amigos por afinidade.
+export async function syncTasteProfile(uid: string, tasteProfile: TasteProfile): Promise<void> {
+  await setDoc(doc(db, COLLECTION, uid), stripUndefined({ tasteProfile }), { merge: true });
+}
+
+// Busca um lote de perfis públicos que já têm perfil de gosto calculado,
+// pra servir de candidatos na tela de sugestões de amizade.
+export async function getSuggestionCandidates(limitCount = 60): Promise<PublicProfile[]> {
+  const q = query(
+    collection(db, COLLECTION),
+    where("tasteProfile.totalWorks", ">", 0),
+    fsLimit(limitCount),
+  );
+  const snap = await getDocs(q);
+  return snap.docs.map((d) => d.data() as PublicProfile);
 }

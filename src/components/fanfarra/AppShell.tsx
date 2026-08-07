@@ -1,5 +1,4 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
 import { toast } from "sonner";
 import { listenForegroundPush } from "@/lib/fanfarra/pushNotifications";
 import { useIncomingFriendRequests } from "@/lib/fanfarra/friendsStore";
@@ -23,13 +22,16 @@ import {
   BarChart3,
   ShieldCheck,
 } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
 import { useAuthUser, signOut } from "@/lib/fanfarra/auth";
 import { useIsAdmin } from "@/lib/fanfarra/config";
 import { useIsAwardsVotingOpen } from "@/lib/fanfarra/awardsStore";
-import { useNotifications } from "@/lib/fanfarra/extras";
+import { useNotifications, useProfile } from "@/lib/fanfarra/extras";
 import { useIsPro } from "@/lib/fanfarra/config";
 import { useOnlineStatus } from "@/hooks/use-online-status";
+import { useWorks } from "@/lib/fanfarra/store";
+import { buildTasteProfile } from "@/lib/fanfarra/tasteProfile";
+import { syncTasteProfile } from "@/lib/fanfarra/publicProfiles";
 
 const TABS = [
   { to: "/", icon: Home, label: "Início" },
@@ -54,6 +56,25 @@ export function AppShell({ children }: { children: ReactNode }) {
   const incomingFriendRequests = useIncomingFriendRequests();
   const isPro = useIsPro();
   const isOnline = useOnlineStatus();
+
+const profile = useProfile();
+  const works = useWorks();
+  const lastSyncedSignature = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    const tasteProfile = buildTasteProfile(works);
+    const signature = JSON.stringify(tasteProfile.typeCounts) + JSON.stringify(tasteProfile.genreCounts);
+    if (signature === lastSyncedSignature.current) return;
+    const timer = setTimeout(() => {
+      lastSyncedSignature.current = signature;
+      syncTasteProfile(user.uid, tasteProfile).catch((err) =>
+        console.error("Erro ao sincronizar perfil de gosto:", err),
+      );
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [user, works]);
+
   function handleLogout() {
     signOut();
     setDrawerOpen(false);

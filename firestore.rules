@@ -98,6 +98,15 @@ service cloud.firestore {
         resource.data.uid == request.auth.uid;
     }
 
+    match /personal_goals/{goalId} {
+      allow read: if request.auth != null &&
+        resource.data.uid == request.auth.uid;
+      allow create: if request.auth != null &&
+        request.resource.data.uid == request.auth.uid;
+      allow update, delete: if request.auth != null &&
+        resource.data.uid == request.auth.uid;
+    }
+
     // ── Fanfarra Awards ──────────────────────────────────────────────
     match /awards_config/{docId} {
       allow read: if request.auth != null;

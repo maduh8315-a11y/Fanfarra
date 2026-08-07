@@ -135,6 +135,17 @@ function ProfilePage() {
   const earnedIds = useMemo(() => earnedBadges(stats), [stats]);
   const dataReady = useAppDataReady();
 
+  useEffect(() => {
+  if (!dataReady) return;
+  setUsername(profile.username);
+  setBio(profile.bio);
+  setStatusText(profile.statusText ?? "");
+  setTags(profile.tags ?? []);
+  setSocialLinks(profile.socialLinks ?? []);
+  setPinnedIds((profile.pinnedWorks ?? []).map((w) => w.id));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [dataReady]);
+
   const badges = useMemo(
     () =>
       ALL_BADGES.map((b) => ({
