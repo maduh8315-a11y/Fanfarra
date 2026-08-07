@@ -15,6 +15,7 @@ import {
   Link2,
 } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
+import { MediaIcon } from "@/components/fanfarra/MediaIcon";
 import { useWorks } from "@/lib/fanfarra/store";
 import { uploadCoverImage } from "@/lib/fanfarra/uploadImage";
 import { updateUserProfile } from "@/lib/fanfarra/auth";
@@ -51,6 +52,32 @@ function ProfilePage() {
   const [socialLinks, setSocialLinks] = useState<{ platform: string; url: string }[]>(
     profile.socialLinks ?? [],
   );
+
+  const [pinnedIds, setPinnedIds] = useState<string[]>(
+    (profile.pinnedWorks ?? []).map((w) => w.id),
+  );
+  const [pinnedPickerOpen, setPinnedPickerOpen] = useState(false);
+  const [pinnedSearch, setPinnedSearch] = useState("");
+
+  const pinnedWorksList = pinnedIds
+    .map((id) => works.find((w) => w.id === id))
+    .filter((w): w is (typeof works)[number] => Boolean(w));
+
+  const pickerResults = works.filter((w) =>
+    w.title.toLowerCase().includes(pinnedSearch.trim().toLowerCase()),
+  );
+
+  const togglePinned = (workId: string) => {
+    setPinnedIds((prev) => {
+      if (prev.includes(workId)) return prev.filter((id) => id !== workId);
+      if (prev.length >= 5) {
+        toast.error("Você já fixou o máximo de 5 obras.");
+        return prev;
+      }
+      return [...prev, workId];
+    });
+  };
+
   const coverInputRef = useRef<HTMLInputElement | null>(null);
 
   const addTag = () => {
@@ -125,7 +152,21 @@ function ProfilePage() {
   }, [stats, dataReady]);
 
   const save = () => {
-    updateProfile({ username, bio, statusText, tags, socialLinks });
+    updateProfile({
+      username,
+      bio,
+      statusText,
+      tags,
+      socialLinks,
+      pinnedWorks: pinnedWorksList.map((w) => ({
+        id: w.id,
+        title: w.title,
+        type: w.type,
+        cover: w.cover,
+        status: w.status,
+        rating: w.rating,
+      })),
+    });
     updateUserProfile({ displayName: username });
     window.history.back();
   };
@@ -240,6 +281,61 @@ function ProfilePage() {
           </p>
         </section>
       </div>
+
+{/* ---------- OBRAS FIXADAS ---------- */}
+      <section className="px-4 mb-10">
+        <div className="mb-3 flex items-center justify-between px-1">
+          <h2 className="text-sm font-semibold" style={{ color: "var(--fan-text-2)" }}>
+            Obras favoritas fixadas
+          </h2>
+          <span className="text-xs" style={{ color: "var(--fan-text-3)" }}>
+            {pinnedWorksList.length}/5
+          </span>
+        </div>
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+          {pinnedWorksList.map((w) => (
+            <div key={w.id} className="relative">
+              <button
+                onClick={() => togglePinned(w.id)}
+                aria-label={`Remover ${w.title} dos fixados`}
+                className="absolute -top-1.5 -right-1.5 z-10 rounded-full p-1 transition hover:scale-110"
+                style={{ backgroundColor: "var(--fan-bg)", color: "#fff", border: "1px solid var(--fan-border)" }}
+              >
+                <X size={11} />
+              </button>
+              <div
+                className="aspect-[2/3] w-full overflow-hidden rounded-lg flex items-center justify-center"
+                style={{ backgroundColor: "var(--fan-bg-3)", border: "1px solid var(--fan-border)" }}
+              >
+                {w.cover ? (
+                  <img src={w.cover} alt={w.title} className="h-full w-full object-cover" />
+                ) : (
+                  <MediaIcon type={w.type} size={22} />
+                )}
+              </div>
+              <p className="mt-1 truncate text-[11px]" style={{ color: "var(--fan-text-2)" }}>
+                {w.title}
+              </p>
+            </div>
+          ))}
+
+          {pinnedWorksList.length < 5 && (
+            <button
+              onClick={() => setPinnedPickerOpen(true)}
+              className="aspect-[2/3] w-full rounded-lg flex flex-col items-center justify-center gap-1 transition hover:brightness-110 active:scale-95"
+              style={{ backgroundColor: "var(--fan-bg-2)", border: "1px dashed var(--fan-border)", color: "var(--fan-text-3)" }}
+            >
+              <Plus size={18} />
+              <span className="text-[10px] font-medium">Fixar obra</span>
+            </button>
+          )}
+        </div>
+        {pinnedWorksList.length === 0 && (
+          <p className="mt-2 px-1 text-[11px]" style={{ color: "var(--fan-text-3)" }}>
+            Escolha até 5 obras pra aparecerem em destaque no topo do seu perfil.
+          </p>
+        )}
+      </section>
 
       {/* ---------- INFO CARD ---------- */}
       <section className="px-4 mb-10">
@@ -592,6 +688,79 @@ function ProfilePage() {
               >
                 Fechar
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ---------- MODAL: FIXAR OBRA ---------- */}
+      {pinnedPickerOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center p-0 sm:items-center sm:p-4"
+          style={{ backgroundColor: "rgba(0,0,0,0.65)" }}
+          onClick={() => setPinnedPickerOpen(false)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="flex max-h-[80vh] w-full max-w-sm flex-col rounded-t-2xl p-5 sm:rounded-2xl"
+            style={{
+              backgroundColor: "var(--fan-bg-2)",
+              border: "1px solid var(--fan-border)",
+              boxShadow: "0 20px 60px -10px rgba(0,0,0,0.7)",
+            }}
+          >
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-semibold" style={{ color: "var(--fan-text)" }}>
+                Fixar obra ({pinnedWorksList.length}/5)
+              </h3>
+              <button onClick={() => setPinnedPickerOpen(false)} aria-label="Fechar" style={{ color: "var(--fan-text-3)" }}>
+                <X size={18} />
+              </button>
+            </div>
+            <input
+              type="text"
+              value={pinnedSearch}
+              onChange={(e) => setPinnedSearch(e.target.value)}
+              placeholder="Buscar na sua biblioteca..."
+              className="mb-3 w-full rounded-lg px-3 py-2.5 text-sm outline-none"
+              style={{ backgroundColor: "var(--fan-bg-3)", border: "1px solid var(--fan-border)", color: "var(--fan-text)" }}
+            />
+            <div className="flex-1 space-y-1.5 overflow-y-auto">
+              {pickerResults.length === 0 ? (
+                <p className="py-8 text-center text-xs" style={{ color: "var(--fan-text-3)" }}>
+                  Nenhuma obra encontrada.
+                </p>
+              ) : (
+                pickerResults.map((w) => {
+                  const isPinned = pinnedIds.includes(w.id);
+                  return (
+                    <button
+                      key={w.id}
+                      onClick={() => togglePinned(w.id)}
+                      className="flex w-full items-center gap-3 rounded-lg px-2.5 py-2 text-left transition hover:brightness-110"
+                      style={{
+                        backgroundColor: isPinned ? "var(--fan-active-chip)" : "var(--fan-bg-3)",
+                        border: `1px solid ${isPinned ? "var(--fan-pink)" : "var(--fan-border)"}`,
+                      }}
+                    >
+                      <div
+                        className="flex h-10 w-8 shrink-0 items-center justify-center overflow-hidden rounded"
+                        style={{ backgroundColor: "var(--fan-bg)" }}
+                      >
+                        {w.cover ? (
+                          <img src={w.cover} alt="" className="h-full w-full object-cover" />
+                        ) : (
+                          <MediaIcon type={w.type} size={16} />
+                        )}
+                      </div>
+                      <span className="flex-1 truncate text-xs" style={{ color: "var(--fan-text)" }}>
+                        {w.title}
+                      </span>
+                      {isPinned && <CheckCircle2 size={16} style={{ color: "var(--fan-pink-light)" }} />}
+                    </button>
+                  );
+                })
+              )}
             </div>
           </div>
         </div>

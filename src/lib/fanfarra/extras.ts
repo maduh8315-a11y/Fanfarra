@@ -21,7 +21,7 @@ import { auth, db } from "./firebase";
 import { generateId } from "./uuid";
 import { stripUndefined } from "./firestoreUtils";
 import { IN_PROGRESS_STATUSES } from "./types";
-import type { Work } from "./types";
+import type { Work, PinnedWork } from "./types";
 
 // ===== Settings =====
 export interface Settings {
@@ -278,6 +278,7 @@ export interface Profile {
   statusText?: string;
   tags?: string[];
   socialLinks?: { platform: string; url: string }[];
+  pinnedWorks?: PinnedWork[];
   streakDays: number;
   lastActiveDate: string | null;
   earnedBadgeIds: string[];
@@ -293,6 +294,7 @@ const DEFAULT_PROFILE: Profile = {
   bio: "Mergulhada no universo fandom ✦",
   tags: [],
   socialLinks: [],
+  pinnedWorks: [],
   streakDays: 0,
   lastActiveDate: null,
   earnedBadgeIds: [],
@@ -366,6 +368,7 @@ onAuthStateChanged(auth, async (user) => {
         statusText: profileCache.statusText,
         tags: profileCache.tags,
         socialLinks: profileCache.socialLinks,
+        pinnedWorks: profileCache.pinnedWorks, 
       });
     }
     profileLoaded = true;

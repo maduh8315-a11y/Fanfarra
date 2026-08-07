@@ -15,6 +15,7 @@ import {
 import { useEffect, useState } from "react";
 import { auth, db } from "./firebase";
 import { stripUndefined } from "./firestoreUtils";
+import type { PinnedWork } from "./types";
 
 const COLLECTION = "public_profiles";
 
@@ -28,6 +29,8 @@ export interface PublicProfile {
   statusText?: string;
   tags?: string[];
   socialLinks?: { platform: string; url: string }[];
+  pinnedWorks?: PinnedWork[];
+
 }
 
 // Chamado de dentro de extras.ts toda vez que o perfil do usuário atualiza.
@@ -41,6 +44,7 @@ export async function syncPublicProfile(
     statusText?: string;
     tags?: string[];
     socialLinks?: { platform: string; url: string }[];
+    pinnedWorks?: PinnedWork[];
   },
 ): Promise<void> {
   await setDoc(
@@ -55,6 +59,7 @@ export async function syncPublicProfile(
       statusText: p.statusText,
       tags: p.tags,
       socialLinks: p.socialLinks,
+      pinnedWorks: p.pinnedWorks,
     }),
     { merge: true },
   );

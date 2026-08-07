@@ -108,6 +108,17 @@ export interface Work {
   recommendedBy?: string; // @username de quem publicou
 }
 
+// Obra fixada em destaque no perfil — guarda uma "foto" dos dados da obra
+// (não só o id), pra funcionar no perfil público mesmo sem a obra ser pública.
+export interface PinnedWork {
+  id: string;
+  title: string;
+  type: MediaType;
+  cover?: string;
+  status: Status;
+  rating: number;
+}
+
 export const STATUS_COLORS: Record<Status, { bg: string; fg: string }> = {
   Assistindo: { bg: "#1F3A1F", fg: "#4ADE80" },
   "Quero assistir": { bg: "var(--fan-bg-2)", fg: "var(--fan-pink-light)" },
