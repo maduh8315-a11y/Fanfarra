@@ -437,178 +437,175 @@ function PublicProfilePage() {
 
         {canInteract && (
           <>
+            {pinnedWorks.length > 0 && (
+              <div className="mx-auto mt-6 w-full max-w-2xl px-4 sm:px-6">
+                <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider" style={{ color: "var(--fan-text-2)" }}>
+                  Destaques
+                </h2>
+                <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+                  {pinnedWorks.map((w) => (
+                    <div key={w.id}>
+                      <div
+                        className="aspect-[2/3] w-full overflow-hidden rounded-lg flex items-center justify-center"
+                        style={{ backgroundColor: "var(--fan-bg-3)", border: "1px solid var(--fan-border)" }}
+                      >
+                        {w.cover ? (
+                          <img src={w.cover} alt={w.title} className="h-full w-full object-cover" />
+                        ) : (
+                          <MediaIcon type={w.type} size={22} />
+                        )}
+                      </div>
+                      <p className="mt-1 truncate text-[11px]" style={{ color: "var(--fan-text-2)" }}>
+                        {w.title}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
-            {canInteract && (
-              <>
-                {pinnedWorks.length > 0 && (
-                  <div className="mx-auto mt-6 w-full max-w-2xl px-4 sm:px-6">
-                    <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider" style={{ color: "var(--fan-text-2)" }}>
-                      Destaques
-                    </h2>
-                    <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
-                      {pinnedWorks.map((w) => (
-                        <div key={w.id}>
-                          <div
-                            className="aspect-[2/3] w-full overflow-hidden rounded-lg flex items-center justify-center"
-                            style={{ backgroundColor: "var(--fan-bg-3)", border: "1px solid var(--fan-border)" }}
-                          >
-                            {w.cover ? (
-                              <img src={w.cover} alt={w.title} className="h-full w-full object-cover" />
-                            ) : (
-                              <MediaIcon type={w.type} size={22} />
-                            )}
-                          </div>
-                          <p className="mt-1 truncate text-[11px]" style={{ color: "var(--fan-text-2)" }}>
-                            {w.title}
-                          </p>
+            {/* ---------- Stats ---------- */}
+            <div className="mx-auto mt-6 w-full max-w-2xl px-4 sm:px-6">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <StatCard icon={<ListChecks className="h-4 w-4" />} label="Na lista" value={recs.length} />
+                <StatCard icon={<CheckCircle2 className="h-4 w-4" />} label="Recomendações" value={recs.length} />
+                <StatCard icon={<Award className="h-4 w-4" style={{ color: "var(--fan-gold)" }} />} label="Selos" value={0} accent />
+                <StatCard icon={<Flame className="h-4 w-4" style={{ color: "var(--fan-pink-light)" }} />} label="Streak" value={0} />
+              </div>
+            </div>
+
+            {/* ---------- Recomendações ---------- */}
+            <div className="mx-auto mt-6 w-full max-w-2xl px-4 pb-16 sm:px-6">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: "var(--fan-text-2)" }}>
+                  Recomendações de {target.username}
+                </h2>
+                <span className="text-xs" style={{ color: "var(--fan-text-3)" }}>
+                  {recs.length}
+                </span>
+              </div>
+
+              {recs.length === 0 ? (
+                <EmptyState title="Ainda não publicou nenhuma recomendação." />
+              ) : (
+                <ul className="space-y-2">
+                  {recs.map((r) => (
+                    <li key={r.id}>
+                      <Link
+                        to="/rec/$id"
+                        params={{ id: `community_${r.id}` }}
+                        className="flex items-center gap-3 rounded-[12px] px-3 py-2.5"
+                        style={{ backgroundColor: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
+                      >
+                        <div
+                          className="h-[60px] w-11 shrink-0 overflow-hidden rounded-lg flex items-center justify-center"
+                          style={{ background: "var(--fan-border)" }}
+                        >
+                          {r.cover ? (
+                            <img src={r.cover} alt="" className="h-full w-full object-cover" />
+                          ) : (
+                            <MediaIcon type={r.type} size={20} className="opacity-80" />
+                          )}
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-sm font-bold" style={{ color: "var(--fan-text)" }}>
+                            {r.title}
+                          </div>
+                          <div className="text-xs" style={{ color: "var(--fan-text-2)" }}>
+                            {r.type}
+                          </div>
+                        </div>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </>
+        )}
 
-                {/* ---------- Stats ---------- */}
-                <div className="mx-auto mt-6 w-full max-w-2xl px-4 sm:px-6">
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    <StatCard icon={<ListChecks className="h-4 w-4" />} label="Na lista" value={recs.length} />
-                    <StatCard icon={<CheckCircle2 className="h-4 w-4" />} label="Recomendações" value={recs.length} />
-                    <StatCard icon={<Award className="h-4 w-4" style={{ color: "var(--fan-gold)" }} />} label="Selos" value={0} accent />
-                    <StatCard icon={<Flame className="h-4 w-4" style={{ color: "var(--fan-pink-light)" }} />} label="Streak" value={0} />
-                  </div>
-                </div>
-
-                {/* ---------- Recomendações ---------- */}
-                <div className="mx-auto mt-6 w-full max-w-2xl px-4 pb-16 sm:px-6">
-                  <div className="mb-3 flex items-center justify-between">
-                    <h2 className="text-sm font-semibold uppercase tracking-wider" style={{ color: "var(--fan-text-2)" }}>
-                      Recomendações de {target.username}
-                    </h2>
-                    <span className="text-xs" style={{ color: "var(--fan-text-3)" }}>
-                      {recs.length}
-                    </span>
-                  </div>
-
-                  {recs.length === 0 ? (
-                    <EmptyState title="Ainda não publicou nenhuma recomendação." />
-                  ) : (
-                    <ul className="space-y-2">
-                      {recs.map((r) => (
-                        <li key={r.id}>
-                          <Link
-                            to="/rec/$id"
-                            params={{ id: `community_${r.id}` }}
-                            className="flex items-center gap-3 rounded-[12px] px-3 py-2.5"
-                            style={{ backgroundColor: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
-                          >
-                            <div
-                              className="h-[60px] w-11 shrink-0 overflow-hidden rounded-lg flex items-center justify-center"
-                              style={{ background: "var(--fan-border)" }}
-                            >
-                              {r.cover ? (
-                                <img src={r.cover} alt="" className="h-full w-full object-cover" />
-                              ) : (
-                                <MediaIcon type={r.type} size={20} className="opacity-80" />
-                              )}
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <div className="truncate text-sm font-bold" style={{ color: "var(--fan-text)" }}>
-                                {r.title}
-                              </div>
-                              <div className="text-xs" style={{ color: "var(--fan-text-2)" }}>
-                                {r.type}
-                              </div>
-                            </div>
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              </>
-            )}
-
-            {/* ---------- Modal de denúncia ---------- */}
-            {reportOpen && (
-              <div
-                className="fixed inset-0 z-50 flex items-end justify-center"
-                style={{ background: "rgba(0,0,0,0.6)" }}
-                onClick={() => setReportOpen(false)}
-              >
-                <div
-                  onClick={(e) => e.stopPropagation()}
-                  className="w-full max-w-md rounded-t-2xl p-5"
-                  style={{ background: "var(--fan-bg)", border: "1px solid var(--fan-border)" }}
+        {/* ---------- Modal de denúncia ---------- */}
+        {reportOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-end justify-center"
+            style={{ background: "rgba(0,0,0,0.6)" }}
+            onClick={() => setReportOpen(false)}
+          >
+            <div
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-md rounded-t-2xl p-5"
+              style={{ background: "var(--fan-bg)", border: "1px solid var(--fan-border)" }}
+            >
+              <h2 className="mb-3 text-[15px] font-bold" style={{ color: "var(--fan-text)" }}>
+                Denunciar @{target.username}
+              </h2>
+              <textarea
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+                placeholder="Descreva o motivo da denúncia..."
+                rows={4}
+                className="mb-3 w-full rounded-[10px] px-3 py-2.5 text-sm outline-none"
+                style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)", color: "var(--fan-text)" }}
+              />
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setReportOpen(false)}
+                  className="flex-1 rounded-full py-2.5 text-sm font-bold"
+                  style={{ background: "var(--fan-active-chip)", color: "var(--fan-text-2)" }}
                 >
-                  <h2 className="mb-3 text-[15px] font-bold" style={{ color: "var(--fan-text)" }}>
-                    Denunciar @{target.username}
-                  </h2>
-                  <textarea
-                    value={reportReason}
-                    onChange={(e) => setReportReason(e.target.value)}
-                    placeholder="Descreva o motivo da denúncia..."
-                    rows={4}
-                    className="mb-3 w-full rounded-[10px] px-3 py-2.5 text-sm outline-none"
-                    style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)", color: "var(--fan-text)" }}
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setReportOpen(false)}
-                      className="flex-1 rounded-full py-2.5 text-sm font-bold"
-                      style={{ background: "var(--fan-active-chip)", color: "var(--fan-text-2)" }}
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      onClick={handleReport}
-                      disabled={reporting}
-                      className="flex-1 rounded-full py-2.5 text-sm font-bold"
-                      style={{ background: "#ff6b6b", color: "#fff" }}
-                    >
-                      {reporting ? "Enviando..." : "Enviar denúncia"}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* ---------- Modal de selo (placeholder, sem dados de selo público ainda) ---------- */}
-            {openBadge && (
-              <div
-                className="fixed inset-0 z-50 flex items-center justify-center p-4"
-                style={{ backgroundColor: "rgba(0,0,0,0.75)" }}
-                onClick={() => setOpenBadge(null)}
-              >
-                <div
-                  className="w-full max-w-sm rounded-2xl p-6"
-                  style={{ backgroundColor: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
-                  onClick={(e) => e.stopPropagation()}
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleReport}
+                  disabled={reporting}
+                  className="flex-1 rounded-full py-2.5 text-sm font-bold"
+                  style={{ background: "#ff6b6b", color: "#fff" }}
                 >
-                  <div className="flex items-start justify-between">
-                    <div
-                      className="inline-flex h-14 w-14 items-center justify-center rounded-full"
-                      style={{ backgroundColor: "rgba(230,182,76,0.15)", color: "var(--fan-gold)", border: "1px solid var(--fan-gold)" }}
-                    >
-                      <Award className="h-7 w-7" />
-                    </div>
-                    <button
-                      onClick={() => setOpenBadge(null)}
-                      className="rounded-full p-1 transition hover:opacity-80"
-                      style={{ color: "var(--fan-text-2)" }}
-                      aria-label="Fechar"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                  </div>
-                  <h3 className="mt-4 text-lg font-bold" style={{ color: "var(--fan-text)" }}>
-                    {openBadge.name}
-                  </h3>
-                  <p className="mt-1 text-sm" style={{ color: "var(--fan-text-3)" }}>
-                    {openBadge.description}
-                  </p>
-                </div>
+                  {reporting ? "Enviando..." : "Enviar denúncia"}
+                </button>
               </div>
-            )}
+            </div>
           </div>
+        )}
+
+        {/* ---------- Modal de selo (placeholder, sem dados de selo público ainda) ---------- */}
+        {openBadge && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            style={{ backgroundColor: "rgba(0,0,0,0.75)" }}
+            onClick={() => setOpenBadge(null)}
+          >
+            <div
+              className="w-full max-w-sm rounded-2xl p-6"
+              style={{ backgroundColor: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start justify-between">
+                <div
+                  className="inline-flex h-14 w-14 items-center justify-center rounded-full"
+                  style={{ backgroundColor: "rgba(230,182,76,0.15)", color: "var(--fan-gold)", border: "1px solid var(--fan-gold)" }}
+                >
+                  <Award className="h-7 w-7" />
+                </div>
+                <button
+                  onClick={() => setOpenBadge(null)}
+                  className="rounded-full p-1 transition hover:opacity-80"
+                  style={{ color: "var(--fan-text-2)" }}
+                  aria-label="Fechar"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <h3 className="mt-4 text-lg font-bold" style={{ color: "var(--fan-text)" }}>
+                {openBadge.name}
+              </h3>
+              <p className="mt-1 text-sm" style={{ color: "var(--fan-text-3)" }}>
+                {openBadge.description}
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
     </AppShell>
   );
 }
