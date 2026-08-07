@@ -9,6 +9,7 @@ import { useAuthUser } from "@/lib/fanfarra/auth";
 import { toast } from "sonner";
 import { signOut } from "@/lib/fanfarra/auth";
 import { enablePushNotifications } from "@/lib/fanfarra/pushNotifications";
+import { exportMyData } from "@/lib/fanfarra/dataExport";
 import {
   ChangeEmailModal,
   ChangePasswordModal,
@@ -27,6 +28,19 @@ function SettingsPage() {
   const s = useSettings();
   const isPro = useIsPro();
   const [modal, setModal] = useState<"email" | "password" | "delete" | null>(null);
+
+  const [exporting, setExporting] = useState(false);
+
+  const handleExportData = async () => {
+    setExporting(true);
+    try {
+      await exportMyData();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Não foi possível exportar seus dados.");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
     <AppShell>
@@ -47,6 +61,11 @@ function SettingsPage() {
           </Link>
           <Item label="Alterar e-mail" variant="modal" onClick={() => setModal("email")} />
           <Item label="Alterar senha" variant="modal" onClick={() => setModal("password")} />
+          <Item
+            label={exporting ? "Preparando arquivo..." : "Baixar meus dados"}
+            variant="modal"
+            onClick={exporting ? undefined : handleExportData}
+          />
           <Item
             label="Excluir conta"
             destructive
