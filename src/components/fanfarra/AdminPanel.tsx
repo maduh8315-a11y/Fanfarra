@@ -18,6 +18,9 @@ import { useEffect } from "react";
 import { getImportHealthServer } from "@/lib/api/importHealth.functions";
 import { auth } from "@/lib/fanfarra/firebase";
 import { CheckCircle2, XCircle } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { AlertTriangle } from "lucide-react";
+import { useModerationReports, setReportStatus, type ModerationReport } from "@/lib/fanfarra/moderationStore";
 
 interface ImportHealthEntry {
   source: string;
@@ -44,6 +47,24 @@ export function AdminPanel() {
   const [saving, setSaving] = useState<null | string>(null);
 
   const [importHealth, setImportHealth] = useState<ImportHealthEntry[]>([]);
+
+  const reports = useModerationReports();
+  const [reportFilter, setReportFilter] = useState<"pending" | "all">("pending");
+  const [resolvingId, setResolvingId] = useState<string | null>(null);
+  const pendingCount = reports.filter((r) => r.status === "pending").length;
+  const visibleReports = reportFilter === "pending" ? reports.filter((r) => r.status === "pending") : reports;
+
+  const handleReportAction = async (report: ModerationReport, status: "resolved" | "dismissed") => {
+    setResolvingId(report.id);
+    try {
+      await setReportStatus(report, status);
+      toast.success(status === "resolved" ? "Denúncia marcada como resolvida." : "Denúncia descartada.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Não foi possível atualizar a denúncia.");
+    } finally {
+      setResolvingId(null);
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -414,6 +435,103 @@ const isAdmin = useIsAdmin(user?.uid);
               </span>
             </div>
           ))
+        )}
+      </div>
+
+      <div className="mt-3 pt-3" style={{ borderTop: "1px dashed var(--fan-pink)" }}>
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-sm font-bold flex items-center gap-1.5" style={{ color: "var(--fan-pink-light)" }}>
+            <AlertTriangle size={14} /> Denúncias {pendingCount > 0 && `(${pendingCount} pendente${pendingCount > 1 ? "s" : ""})`}
+          </p>
+          <div className="flex gap-1">
+            <button
+              onClick={() => setReportFilter("pending")}
+              className="text-[11px] px-2 py-1 rounded-full"
+              style={{
+                border: "1px solid var(--fan-pink)",
+                color: reportFilter === "pending" ? "#fff" : "var(--fan-pink-light)",
+                background: reportFilter === "pending" ? "var(--fan-pink)" : "transparent",
+              }}
+            >
+              Pendentes
+            </button>
+            <button
+              onClick={() => setReportFilter("all")}
+              className="text-[11px] px-2 py-1 rounded-full"
+              style={{
+                border: "1px solid var(--fan-pink)",
+                color: reportFilter === "all" ? "#fff" : "var(--fan-pink-light)",
+                background: reportFilter === "all" ? "var(--fan-pink)" : "transparent",
+              }}
+            >
+              Todas
+            </button>
+          </div>
+        </div>
+
+        {visibleReports.length === 0 ? (
+          <p className="text-[11px]" style={{ color: "var(--fan-text-2)" }}>
+            {reportFilter === "pending" ? "Nenhuma denúncia pendente." : "Nenhuma denúncia ainda."}
+          </p>
+        ) : (
+          <div className="space-y-2">
+            {visibleReports.map((r) => (
+              <div
+                key={`${r.collection}_${r.id}`}
+                className="rounded-[10px] p-2.5 text-[11px]"
+                style={{ background: "var(--fan-bg-2)", border: "0.5px solid var(--fan-border)" }}
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="font-bold" style={{ color: "var(--fan-text)" }}>
+                    {r.kindLabel} · {r.reason}
+                  </span>
+                  <span style={{ color: "var(--fan-text-3)" }}>
+                    {new Date(r.createdAt).toLocaleString("pt-BR")}
+                  </span>
+                </div>
+
+                <div style={{ color: "var(--fan-text-2)" }}>
+                  Alvo:{" "}
+                  {r.targetUsername ? (
+                    <Link to="/u/$username" params={{ username: r.targetUsername }} className="underline">
+                      {r.targetLabel}
+                    </Link>
+                  ) : (
+                    r.targetLabel
+                  )}
+                </div>
+                {r.details && (
+                  <div className="mt-1" style={{ color: "var(--fan-text-2)" }}>
+                    "{r.details}"
+                  </div>
+                )}
+                <div className="mt-1" style={{ color: "var(--fan-text-3)" }}>
+                  Status: {r.status}
+                </div>
+
+                {r.status === "pending" && (
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={() => handleReportAction(r, "resolved")}
+                      disabled={resolvingId === r.id}
+                      className="flex-1 py-1.5 rounded-lg text-[11px] font-bold flex items-center justify-center gap-1"
+                      style={{ background: "var(--fan-pink)", color: "#fff" }}
+                    >
+                      <CheckCircle2 size={12} /> Resolver
+                    </button>
+                    <button
+                      onClick={() => handleReportAction(r, "dismissed")}
+                      disabled={resolvingId === r.id}
+                      className="flex-1 py-1.5 rounded-lg text-[11px] font-bold flex items-center justify-center gap-1"
+                      style={{ background: "transparent", color: "var(--fan-text-2)", border: "0.5px solid var(--fan-border)" }}
+                    >
+                      <XCircle size={12} /> Descartar
+                    </button>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </div>
