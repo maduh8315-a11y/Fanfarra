@@ -24,12 +24,22 @@ export const MATURE_TAG = "Conteúdo adulto (18+)";
 // não tiver data (usuário deslogado ou conta antiga sem esse campo).
 export function calculateAge(birthDate: string | undefined): number | null {
   if (!birthDate) return null;
-  const b = new Date(birthDate);
-  if (Number.isNaN(b.getTime())) return null;
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(birthDate);
+  if (!match) return null;
+  const year = Number(match[1]);
+  const month = Number(match[2]) - 1;
+  const day = Number(match[3]);
+
+  // valida que é uma data real (ex: rejeita 2023-02-30)
+  const check = new Date(year, month, day);
+  if (check.getFullYear() !== year || check.getMonth() !== month || check.getDate() !== day) {
+    return null;
+  }
+
   const now = new Date();
-  let age = now.getFullYear() - b.getFullYear();
+  let age = now.getFullYear() - year;
   const hasHadBirthdayThisYear =
-    now.getMonth() > b.getMonth() || (now.getMonth() === b.getMonth() && now.getDate() >= b.getDate());
+    now.getMonth() > month || (now.getMonth() === month && now.getDate() >= day);
   if (!hasHadBirthdayThisYear) age -= 1;
   return age;
 }

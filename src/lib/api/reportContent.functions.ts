@@ -11,7 +11,7 @@ const REPORTS_COLLECTION = "content_reports";
 const LIMIT = 5;
 const WINDOW_MS = 10 * 60 * 1000;
 
-const inputSchema = z.object({
+export const inputSchema = z.object({
   idToken: z.string().min(1),
   contentType: z.enum(["recommendation", "comment", "profile"]),
   contentId: z.string().min(1),

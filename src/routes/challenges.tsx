@@ -134,7 +134,7 @@ function ChallengesPage() {
               key={t.id}
               onClick={() => goTab(t.id)}
               className="relative flex-1 py-2.5 text-sm font-bold rounded-full transition-colors"
-              style={{ color: tab === t.id ? "#fff" : "var(--fan-text-2)" }}
+              style={{ color: tab === t.id ? "var(--fan-text)" : "var(--fan-text-2)" }}
             >
               {tab === t.id && (
                 <motion.div
@@ -362,7 +362,7 @@ function ChallengesPage() {
                 onClick={handleCreateGoal}
                 disabled={creatingGoal}
                 className="flex-1 rounded-full py-2.5 text-sm font-bold"
-                style={{ background: "var(--fan-pink)", color: "#fff" }}
+                style={{ background: "var(--fan-pink)", color: "var(--fan-text)" }}
               >
                 {creatingGoal ? "Criando..." : "Criar meta"}
               </button>

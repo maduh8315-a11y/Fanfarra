@@ -9,6 +9,9 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
+    "test": "vitest run",
+    "test:rules": "firebase emulators:exec --only firestore \"vitest run --config vitest.rules.config.ts\"",
+    "test:watch": "vitest",
     "format": "prettier --write .",
     "cron": "node scripts/cron.mjs",
     "cap:sync": "bunx cap sync",
@@ -88,6 +91,7 @@
     "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^8.4.1",
     "@eslint/js": "^9.32.0",
+    "@firebase/rules-unit-testing": "^5.0.1",
     "@lovable.dev/vite-tanstack-config": "2.3.2",
     "@types/node": "^22.16.5",
     "@types/react": "^19.2.0",
@@ -99,12 +103,14 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "firebase-admin": "^14.1.0",
+    "firebase-tools": "^15.26.0",
     "globals": "^15.15.0",
     "nitro": "3.0.260603-beta",
     "prettier": "^3.7.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
     "vite": "^7.3.1",
+    "vitest": "^4.1.10",
     "wrangler": "^4.110.0"
   }
 }
