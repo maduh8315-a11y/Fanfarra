@@ -8,6 +8,7 @@ export const Route = createFileRoute("/about")({
 });
 
 const LINKS = [
+  { label: "Central de ajuda", url: "/help" },
   { label: "Site oficial", url: "https://fanfarra.app" },
   { label: "Instagram do Fanfarra", url: "https://instagram.com/fanfarra.app" },
   { label: "Política de privacidade", url: "/privacy" },

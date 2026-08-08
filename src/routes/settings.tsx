@@ -280,6 +280,7 @@ function SettingsPage() {
         </Group>
 
         <Group title="Suporte">
+          <Item label="Central de ajuda" variant="navigate" onClick={() => nav({ to: "/help" })} />
           <Item label="Enviar feedback" variant="navigate" onClick={() => nav({ to: "/feedback" })} />
         </Group>
       </div>

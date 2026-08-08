@@ -26,6 +26,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as LibraryRouteImport } from './routes/library'
+import { Route as HelpRouteImport } from './routes/help'
 import { Route as FriendsRouteImport } from './routes/friends'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as FeedbackRouteImport } from './routes/feedback'
@@ -129,6 +130,11 @@ const LibraryRoute = LibraryRouteImport.update({
   path: '/library',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HelpRoute = HelpRouteImport.update({
+  id: '/help',
+  path: '/help',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FriendsRoute = FriendsRouteImport.update({
   id: '/friends',
   path: '/friends',
@@ -226,6 +232,7 @@ export interface FileRoutesByFullPath {
   '/feedback': typeof FeedbackRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/friends': typeof FriendsRoute
+  '/help': typeof HelpRoute
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
   '/notifications': typeof NotificationsRoute
@@ -261,6 +268,7 @@ export interface FileRoutesByTo {
   '/feedback': typeof FeedbackRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/friends': typeof FriendsRoute
+  '/help': typeof HelpRoute
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
   '/notifications': typeof NotificationsRoute
@@ -298,6 +306,7 @@ export interface FileRoutesById {
   '/feedback': typeof FeedbackRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/friends': typeof FriendsRoute
+  '/help': typeof HelpRoute
   '/library': typeof LibraryRoute
   '/login': typeof LoginRoute
   '/notifications': typeof NotificationsRoute
@@ -336,6 +345,7 @@ export interface FileRouteTypes {
     | '/feedback'
     | '/forgot-password'
     | '/friends'
+    | '/help'
     | '/library'
     | '/login'
     | '/notifications'
@@ -371,6 +381,7 @@ export interface FileRouteTypes {
     | '/feedback'
     | '/forgot-password'
     | '/friends'
+    | '/help'
     | '/library'
     | '/login'
     | '/notifications'
@@ -407,6 +418,7 @@ export interface FileRouteTypes {
     | '/feedback'
     | '/forgot-password'
     | '/friends'
+    | '/help'
     | '/library'
     | '/login'
     | '/notifications'
@@ -444,6 +456,7 @@ export interface RootRouteChildren {
   FeedbackRoute: typeof FeedbackRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   FriendsRoute: typeof FriendsRoute
+  HelpRoute: typeof HelpRoute
   LibraryRoute: typeof LibraryRoute
   LoginRoute: typeof LoginRoute
   NotificationsRoute: typeof NotificationsRoute
@@ -587,6 +600,13 @@ declare module '@tanstack/react-router' {
       path: '/library'
       fullPath: '/library'
       preLoaderRoute: typeof LibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/help': {
+      id: '/help'
+      path: '/help'
+      fullPath: '/help'
+      preLoaderRoute: typeof HelpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/friends': {
@@ -734,6 +754,7 @@ const rootRouteChildren: RootRouteChildren = {
   FeedbackRoute: FeedbackRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   FriendsRoute: FriendsRoute,
+  HelpRoute: HelpRoute,
   LibraryRoute: LibraryRoute,
   LoginRoute: LoginRoute,
   NotificationsRoute: NotificationsRoute,
