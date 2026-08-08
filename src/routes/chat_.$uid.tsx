@@ -19,7 +19,7 @@ import {
   type ChatMessage,
 } from "@/lib/fanfarra/chatStore";
 
-export const Route = createFileRoute("/chat/$uid")({
+export const Route = createFileRoute("/chat_/$uid")({
   head: () => ({ meta: [{ title: "Conversa — Fanfarra" }] }),
   component: ChatPage,
 });
@@ -39,6 +39,24 @@ function formatLastSeen(ts: number): string {
 
 function ChatPage() {
   const { uid: otherUid } = Route.useParams();
+
+  if (!otherUid) {
+    return (
+      <AppShell>
+        <header className="flex items-center gap-3 px-4 pt-4 pb-3">
+          <button onClick={() => nav({ to: "/chat" })} aria-label="Voltar">
+            <ArrowLeft size={22} color="var(--fan-text-2)" />
+          </button>
+        </header>
+        <EmptyState
+          icon={MessageCircle}
+          title="Não foi possível abrir esta conversa"
+          description="Os dados dessa conversa estão incompletos. Tente removê-la e começar de novo."
+        />
+      </AppShell>
+    );
+  }
+
   const nav = useNavigate();
   const me = useAuthUser();
   const profile = useProfile();

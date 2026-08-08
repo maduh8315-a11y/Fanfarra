@@ -321,7 +321,8 @@ function DrawerLink({
   | "/updates"
   | "/stats"
   | "/admin"
-  | "/friends";
+  | "/friends"
+  | "/chat";
   icon: typeof Home;
   label: string;
   // true = recurso tem partes gratuitas e partes PRO (badge dourado "PRO")
