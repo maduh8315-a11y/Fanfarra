@@ -8,6 +8,8 @@ export function pushAllowedForIcon(icon, settings) {
   if (["pause-circle", "calendar-clock"].includes(icon)) return settings.notif_paused !== false;
   if (["award", "vote", "bar-chart", "check-circle"].includes(icon)) return settings.notif_events !== false;
   if (icon === "play-circle") return settings.notif_episodes !== false;
+  if (["user-plus", "users"].includes(icon)) return settings.notif_friends !== false;
+  if (icon === "message-circle") return settings.notif_messages !== false;
   return true;
 }
 

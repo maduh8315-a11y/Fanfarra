@@ -30,6 +30,8 @@ export interface Settings {
   notif_news: boolean;
   notif_sound: boolean;
   notif_episodes: boolean;
+  notif_friends: boolean;
+  notif_messages: boolean;
   privacy_public: boolean;
   privacy_library: boolean;
   privacy_email: boolean;
@@ -50,6 +52,8 @@ const DEFAULT_SETTINGS: Settings = {
   notif_news: true,
   notif_sound: true,
   notif_episodes: true,
+  notif_friends: true,
+  notif_messages: true,
   privacy_public: false,
   privacy_library: false,
   privacy_email: false,

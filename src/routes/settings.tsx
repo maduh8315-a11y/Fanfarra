@@ -78,6 +78,21 @@ function SettingsPage() {
 
         <Group title="Notificações">
           <Toggle
+            label="Pedidos e aceites de amizade"
+            value={s.notif_friends}
+            onChange={(v) => updateSettings({ notif_friends: v })}
+          />
+          <Toggle
+            label="Mensagens"
+            value={s.notif_messages}
+            onChange={(v) => updateSettings({ notif_messages: v })}
+          />
+          <Toggle
+            label="Awards e desafios"
+            value={s.notif_events}
+            onChange={(v) => updateSettings({ notif_events: v })}
+          />
+          <Toggle
             label="Lembretes de obras pausadas"
             value={s.notif_paused}
             onChange={(v) => updateSettings({ notif_paused: v })}

@@ -285,7 +285,7 @@ export async function startNewCycle(categories: AwardCategory[], recomendacaoDea
     );
   });
 
-  await notifyAllUsers("calendar-clock", "O Fanfarra Awards começou! Vote nas suas recomendações favoritas.").catch(() => {});
+  await notifyAllUsers("award", "O Fanfarra Awards começou! Vote nas suas recomendações favoritas.").catch(() => {});
 }
 
 // ===== Catálogo de categorias/indicados — editável no Console do Firebase =====
