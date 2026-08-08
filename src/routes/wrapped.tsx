@@ -17,7 +17,8 @@ import domtoimage from "dom-to-image-more";
 import { BookMarked, Trophy, Gamepad2, Flame, Zap, Star, Sparkles, Sprout, ArrowLeft, Share2, Download, type LucideIcon } from "lucide-react";
 import type { MediaType } from "@/lib/fanfarra/types";
 import { useWorks } from "@/lib/fanfarra/store";
-import { useProfile } from "@/lib/fanfarra/extras";
+import { useProfile, ALL_BADGES, earnedBadges } from "@/lib/fanfarra/extras";
+import { useGoals } from "@/lib/fanfarra/goalsStore";
 import "@/components/fanfarra/wrapped/wrapped.css";
 import Slide1Intro from "@/components/fanfarra/wrapped/Slide1Intro";
 import Slide2Type from "@/components/fanfarra/wrapped/Slide2Type";
@@ -45,7 +46,11 @@ const IS_WRAPPED_SEASON = new Date().getMonth() === 11;
 
 // ─── helpers para calcular dados reais da biblioteca ────────────────────────
 
-function calcWrappedData(works: Work[], userName: string) {
+function calcWrappedData(
+  works: Work[],
+  userName: string,
+  earnedIds: string[],
+) {
   const thisYear = works.filter((w) => {
     const d = new Date(w.updatedAt);
     return d.getFullYear() === YEAR;
@@ -86,16 +91,12 @@ function calcWrappedData(works: Work[], userName: string) {
   const daySet = new Set(works.map((w) => new Date(w.updatedAt).toDateString()));
   const streak = Math.min(daySet.size, 365);
 
-  // Conquistas (baseadas nos selos do extras.ts — aqui mocadas para não depender de importação circular)
-  const achievements: { Icon: LucideIcon; name: string }[] = [
-    works.length >= 10 ? { Icon: BookMarked, name: "Bibliófilo" } : null,
-    works.length >= 50 ? { Icon: Trophy, name: "Colecionador" } : null,
-    gamesBeaten >= 1 ? { Icon: Gamepad2, name: "Platinador" } : null,
-    streak >= 7 ? { Icon: Flame, name: "Streak 7+" } : null,
-    streak >= 30 ? { Icon: Zap, name: "Streak 30+" } : null,
-    rated.length >= 5 ? { Icon: Star, name: "Crítico" } : null,
-    thisYear.length >= 5 ? { Icon: Sparkles, name: "Ativo " + YEAR } : null,
-  ].filter(Boolean) as { Icon: LucideIcon; name: string }[];
+  // Conquistas reais: usa os mesmos selos do perfil (ALL_BADGES), em vez de
+  // recalcular uma lista separada — assim Wrapped, perfil, desafios e metas
+  // mostram sempre os mesmos selos conquistados.
+  const achievements: { Icon: LucideIcon; name: string }[] = ALL_BADGES.filter((b) =>
+    earnedIds.includes(b.id),
+  ).map((b) => ({ Icon: b.Icon, name: b.name }));
 
   return {
     year: YEAR,
@@ -130,12 +131,25 @@ function WrappedPage() {
   const nav = useNavigate();
   const works = useWorks();
   const profile = useProfile();
+  const goals = useGoals();
   const isPro = useIsPro();
   const [idx, setIdx] = useState(0);
   const slideRef = useRef<HTMLDivElement>(null);
   const touchStart = useRef<number | null>(null);
 
-  const data = calcWrappedData(works, profile.username ?? "");
+  const completedWorks = works.filter((w) => w.status === "Concluído").length;
+  const ratedWorks = works.filter((w) => w.rating > 0).length;
+  const goalsCompleted = goals.filter((g) => g.progress >= g.target).length;
+  const earnedIds = earnedBadges({
+    total: works.length,
+    completed: completedWorks,
+    rated: ratedWorks,
+    streak: profile.streakDays,
+    pro: isPro,
+    goalsCompleted,
+  });
+
+  const data = calcWrappedData(works, profile.username ?? "", earnedIds);
 
   const go = useCallback((n: number) => {
     setIdx((cur) => Math.max(0, Math.min(TOTAL - 1, n)));

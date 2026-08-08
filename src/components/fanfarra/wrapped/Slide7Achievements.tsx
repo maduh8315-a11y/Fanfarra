@@ -36,7 +36,7 @@ export default function Slide7Achievements({ data }: { data: WrappedData }) {
           Conquistas <span style={{ color: "var(--fan-pink)" }}>desbloqueadas</span>
         </h2>
         <p style={{ color: "var(--fan-pink-light)", marginBottom: "2rem" }}>
-          {data.achievements.length} novos selos este ano
+          {data.achievements.length} selos conquistados
         </p>
         <div
           style={{

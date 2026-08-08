@@ -29,6 +29,7 @@ import {
   useProfile,
   useSettings,
 } from "@/lib/fanfarra/extras";
+import { useGoals } from "@/lib/fanfarra/goalsStore";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "Meu perfil — Fanfarra" }] }),
@@ -126,11 +127,21 @@ function ProfilePage() {
     earned: boolean;
   } | null>(null);
 
+  const goals = useGoals();
+
   const stats = useMemo(() => {
     const completed = works.filter((w) => w.status === "Concluído").length;
     const rated = works.filter((w) => w.rating > 0).length;
-    return { total: works.length, completed, rated, streak: profile.streakDays, pro: settings.pro };
-  }, [works, profile.streakDays, settings.pro]);
+    const goalsCompleted = goals.filter((g) => g.progress >= g.target).length;
+    return {
+      total: works.length,
+      completed,
+      rated,
+      streak: profile.streakDays,
+      pro: settings.pro,
+      goalsCompleted,
+    };
+  }, [works, profile.streakDays, settings.pro, goals]);
 
   const earnedIds = useMemo(() => earnedBadges(stats), [stats]);
   const dataReady = useAppDataReady();

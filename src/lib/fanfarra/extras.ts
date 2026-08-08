@@ -1,5 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { Medal, BookMarked, Library, CircleCheck, Flame, Vote, Trophy, Target, Star, Gift, type LucideIcon } from "lucide-react";
+import { Medal, BookMarked, Library, CircleCheck, Flame, Vote, Trophy, Target, Star, Gift, Flag, type LucideIcon } from "lucide-react";
 import { onAuthStateChanged } from "firebase/auth";
 import { syncPublicProfile } from "./publicProfiles";
 import {
@@ -480,6 +480,8 @@ export const ALL_BADGES: Badge[] = [
   { id: "awards", Icon: Vote, name: "Votou no Awards", description: "Participe do Fanfarra Awards" },
   { id: "winner", Icon: Trophy, name: "Vencedor Awards", description: "Indicou um vencedor no Awards" },
   { id: "challenge", Icon: Target, name: "Desafio Fandom", description: "Conclua um Desafio Fandom" },
+  { id: "goal_first", Icon: Flag, name: "Primeira meta", description: "Complete sua primeira meta pessoal" },
+  { id: "goal_five", Icon: Flag, name: "5 metas pessoais", description: "Complete 5 metas pessoais" },
   { id: "rated20", Icon: Star, name: "Avaliou 20 obras", description: "Avalie 20 obras diferentes" },
   { id: "pro", Icon: Gift, name: "Assinante PRO", description: "Apoie o app como assinante PRO" },
 ];
@@ -490,6 +492,7 @@ type BadgeStats = {
   rated: number;
   streak: number;
   pro: boolean;
+  goalsCompleted: number;
 };
 
 // Calcula quais selos as estatísticas atuais qualificam — SEM side effects.
@@ -504,6 +507,8 @@ function computeQualifyingBadgeIds(stats: BadgeStats): string[] {
   if (stats.streak >= 30) computed.push("streak30");
   if (stats.rated >= 20) computed.push("rated20");
   if (stats.pro) computed.push("pro");
+  if (stats.goalsCompleted >= 1) computed.push("goal_first");
+  if (stats.goalsCompleted >= 5) computed.push("goal_five");
   return computed;
 }
 

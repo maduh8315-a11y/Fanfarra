@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
 import { CATALOG, getTrending, getByType, type RecommendationItem } from "@/lib/fanfarra/recommendations";
 import { getTypeColor, getTypeCardBg, getTypeCardBorder } from "@/lib/fanfarra/typeColors";
+import { useGoals } from "@/lib/fanfarra/goalsStore";
 import { filterBlockedForAge } from "@/lib/fanfarra/contentGate";
 import { CatalogCard } from "./recommendations";
 import { MediaIcon } from "@/components/fanfarra/MediaIcon";
@@ -529,6 +530,7 @@ function Index() {
   const settings = useSettings();
   const notifications = useNotifications();
   const dataReady = useAppDataReady();
+  const goals = useGoals();
   const [filter, setFilter] = useState<TypeFilter>("Todos");
 
   useEffect(() => {
@@ -537,14 +539,16 @@ function Index() {
     checkAutoNotifications(works);
     const completed = works.filter((w) => w.status === "Concluído").length;
     const rated = works.filter((w) => w.rating > 0).length;
+    const goalsCompleted = goals.filter((g) => g.progress >= g.target).length;
     syncEarnedBadges({
       total: works.length,
       completed,
       rated,
       streak: profile.streakDays,
       pro: settings.pro,
+      goalsCompleted,
     });
-  }, [works, profile.streakDays, settings.pro, dataReady]);
+  }, [works, profile.streakDays, settings.pro, goals, dataReady]);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
