@@ -4,6 +4,7 @@ import {
   setDoc,
   updateDoc,
   deleteDoc,
+  getDocs,
   onSnapshot,
   query,
   where,
@@ -262,4 +263,26 @@ export function useBlockedByMe(): string[] {
     return () => unsub();
   }, [uid]);
   return list;
+}
+
+// Apaga pedidos de amizade, amizades e bloqueios feitos POR este usuário —
+// chamado na exclusão de conta (auth.ts). Bloqueios feitos CONTRA esse uid
+// por outras pessoas não dá pra apagar daqui (regra do Firestore só deixa
+// quem criou o bloqueio apagar), mas isso não deixa rastro visível porque
+// o perfil (public_profiles) já é removido junto.
+export async function deleteFriendGraphForUser(uid: string): Promise<void> {
+  const [asFrom, asTo, friendships, blocksCreated] = await Promise.all([
+    getDocs(query(collection(db, REQUESTS_COLLECTION), where("fromUid", "==", uid))),
+    getDocs(query(collection(db, REQUESTS_COLLECTION), where("toUid", "==", uid))),
+    getDocs(query(collection(db, FRIENDSHIPS_COLLECTION), where("members", "array-contains", uid))),
+    getDocs(query(collection(db, BLOCKS_COLLECTION), where("blockerUid", "==", uid))),
+  ]);
+
+  const deletions = [
+    ...asFrom.docs.map((d) => deleteDoc(d.ref)),
+    ...asTo.docs.map((d) => deleteDoc(d.ref)),
+    ...friendships.docs.map((d) => deleteDoc(d.ref)),
+    ...blocksCreated.docs.map((d) => deleteDoc(d.ref)),
+  ];
+  await Promise.allSettled(deletions);
 }

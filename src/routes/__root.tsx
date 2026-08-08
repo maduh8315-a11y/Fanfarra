@@ -200,7 +200,7 @@ function AuthGuard() {
     if (!authReady) return; // espera o Firebase confirmar a sessão antes de decidir
     if (typeof window === "undefined") return;
 
-    const decide = () => {
+   const decide = () => {
       const isPublic = PUBLIC_ROUTES.has(pathname);
       if (!user && !isPublic) {
         const seen = !import.meta.env.DEV && localStorage.getItem("fanfarra:onboarding_done") === "1";
@@ -211,8 +211,19 @@ function AuthGuard() {
         // próxima vez.
         return;
       }
-      if (user && AUTH_ONLY_PUBLIC.has(pathname)) {
-        navigate({ to: "/" });
+
+      if (user) {
+        // Contas de e-mail/senha precisam confirmar o e-mail antes de
+        // acessar qualquer tela do app. Contas Google já vêm verificadas
+        // pelo próprio Google, então ficam de fora dessa checagem.
+        const needsVerification = user.provider === "email" && !user.emailVerified;
+        if (needsVerification && pathname !== "/verify-email") {
+          navigate({ to: "/verify-email" });
+          return;
+        }
+        if (!needsVerification && AUTH_ONLY_PUBLIC.has(pathname)) {
+          navigate({ to: "/" });
+        }
       }
     };
 

@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Mail } from "lucide-react";
-import { checkEmailVerified, useAuthUser, sendEmailVerification } from "@/lib/fanfarra/auth";
+import { checkEmailVerified, useAuthUser, sendEmailVerification, signOut } from "@/lib/fanfarra/auth";
 
 export const Route = createFileRoute("/verify-email")({
   component: VerifyEmailPage,
@@ -88,11 +88,11 @@ function VerifyEmailPage() {
         Usar outro e-mail
       </Link>
       <button
-        onClick={() => navigate({ to: "/" })}
+        onClick={() => signOut()}
         className="mt-3 text-sm"
         style={{ color: "var(--fan-text-2)" }}
       >
-        Confirmar depois — quero explorar agora
+        Sair
       </button>
     </div>
   );

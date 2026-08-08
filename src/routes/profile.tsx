@@ -162,23 +162,32 @@ function ProfilePage() {
     syncEarnedBadges(stats);
   }, [stats, dataReady]);
 
-  const save = () => {
-    updateProfile({
-      username,
-      bio,
-      statusText,
-      tags,
-      socialLinks,
-      pinnedWorks: pinnedWorksList.map((w) => ({
-        id: w.id,
-        title: w.title,
-        type: w.type,
-        cover: w.cover,
-        status: w.status,
-        rating: w.rating,
-      })),
-    });
-    updateUserProfile({ displayName: username });
+  const save = async () => {
+    try {
+      await updateProfile({
+        username,
+        bio,
+        statusText,
+        tags,
+        socialLinks,
+        pinnedWorks: pinnedWorksList.map((w) => ({
+          id: w.id,
+          title: w.title,
+          type: w.type,
+          cover: w.cover,
+          status: w.status,
+          rating: w.rating,
+        })),
+      });
+      await updateUserProfile({ displayName: username.trim() });
+    } catch (err) {
+      // Antes, se uma dessas duas gravações falhasse, ninguém ficava
+      // sabendo — o nome do menu (Auth) e o @usuário buscável (Firestore)
+      // saíam de sincronia sem aviso nenhum. Agora pelo menos avisa.
+      console.error("Falha ao salvar perfil:", err);
+      toast.error("Não deu pra salvar tudo. Tenta de novo em alguns segundos.");
+      return;
+    }
     window.history.back();
   };
 

@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState, useEffect } from "react";
 import { CATALOG, getTrending, getByType, type RecommendationItem } from "@/lib/fanfarra/recommendations";
 import { getTypeColor, getTypeCardBg, getTypeCardBorder } from "@/lib/fanfarra/typeColors";
+import { filterBlockedForAge } from "@/lib/fanfarra/contentGate";
 import { CatalogCard } from "./recommendations";
 import { MediaIcon } from "@/components/fanfarra/MediaIcon";
 import {
@@ -318,7 +319,7 @@ function EmptyHome({ worksCount }: { worksCount: number }) {
         >
           <Sparkles size={28} color="var(--fan-icon-blue)" fill="var(--fan-icon-blue)" />
         </div>
-        <h1 className="text-xl font-bold mb-1 flex items-center gap-1.5" style={{ color: "var(--fan-text)" }}>
+        <h1 className="text-xl font-bold mb-1 flex items-center justify-center gap-1.5" style={{ color: "var(--fan-text)" }}>
           Olá, {name}! <Sparkles size={16} />
         </h1>
         <p className="text-sm leading-relaxed" style={{ color: "var(--fan-text-2)" }}>
@@ -326,18 +327,22 @@ function EmptyHome({ worksCount }: { worksCount: number }) {
           {"\n"}
           {subheading}
         </p>
-        <div className="flex items-center justify-center gap-1.5 mt-4">
-          {[0, 1, 2].map((i) => (
+        <div className="flex flex-col items-center gap-1.5 mt-4">
+          <div
+            className="w-full max-w-[160px] h-2 rounded-full overflow-hidden"
+            style={{ background: "var(--fan-border)" }}
+          >
             <div
-              key={i}
-              className="rounded-full transition-all"
+              className="h-full rounded-full transition-all"
               style={{
-                width: i < worksCount ? 22 : 8,
-                height: 8,
-                background: i < worksCount ? "var(--fan-pink)" : "var(--fan-border)",
+                width: `${(Math.min(worksCount, 3) / 3) * 100}%`,
+                background: "var(--fan-pink)",
               }}
             />
-          ))}
+          </div>
+          <span className="text-sm" style={{ color: "var(--fan-text-2)" }}>
+            {Math.min(worksCount, 3)} de 3 obras
+          </span>
         </div>
       </div>
 
@@ -462,15 +467,17 @@ function EmptyHome({ worksCount }: { worksCount: number }) {
 // pra personalizar ainda). Objetivo: dar pra pessoa algo pra tocar/adicionar
 // nos primeiros segundos, em vez de só formulário em branco.
 function PopularShelves() {
-  const trending = useMemo(() => getTrending(CATALOG, 14), []);
+  const { birthDate } = useProfile();
+  const safeCatalog = useMemo(() => filterBlockedForAge(CATALOG, birthDate), [birthDate]);
+  const trending = useMemo(() => getTrending(safeCatalog, 14), [safeCatalog]);
   const shelfTypes = useMemo(() => {
     const counts: Record<string, number> = {};
-    CATALOG.forEach((c) => (counts[c.type] = (counts[c.type] ?? 0) + 1));
+    safeCatalog.forEach((c) => (counts[c.type] = (counts[c.type] ?? 0) + 1));
     return Object.entries(counts)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3)
       .map(([t]) => t);
-  }, []);
+  }, [safeCatalog]);
 
   return (
     <div className="space-y-6">
@@ -480,7 +487,7 @@ function PopularShelves() {
           key={type}
           title={`Em alta em ${type}`}
           mediaType={type as MediaType}
-          items={getByType(CATALOG, type, 12)}
+          items={getByType(safeCatalog, type, 12)}
         />
       ))}
     </div>

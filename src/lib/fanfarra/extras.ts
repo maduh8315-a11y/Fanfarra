@@ -285,6 +285,9 @@ export interface Profile {
   birthDate?: string;
   needsParentalSupervision?: boolean;
   guardianEmail?: string; // e-mail do responsável — coletado no cadastro se a pessoa é menor de idade
+  isPrivate?: boolean; // perfil privado: só amigos veem bio/tags/links/destaques/stats/recomendações
+  whoCanFollow?: "everyone" | "nobody"; // quem pode me seguir
+  whoCanFriendRequest?: "everyone" | "nobody"; // quem pode me enviar pedido de amizade
 }
 
 const PROFILES_COLLECTION = "profiles";
@@ -298,6 +301,9 @@ const DEFAULT_PROFILE: Profile = {
   streakDays: 0,
   lastActiveDate: null,
   earnedBadgeIds: [],
+  isPrivate: false,
+  whoCanFollow: "everyone",
+  whoCanFriendRequest: "everyone",
 };
 
 let profileCache: Profile = DEFAULT_PROFILE;
@@ -360,6 +366,10 @@ onAuthStateChanged(auth, async (user) => {
   profileUnsub = onSnapshot(ref, (snap) => {
     if (snap.exists()) {
       profileCache = { ...DEFAULT_PROFILE, ...(snap.data() as Profile) };
+      // Contas de menores de 12 anos ficam privadas e sem pedidos de
+      // amizade PERMANENTEMENTE — não dá pra reverter pela UI. Usa
+      // `needsParentalSupervision`, calculado 1x no cadastro (auth.ts).
+      const isChild = !!profileCache.needsParentalSupervision;
       syncPublicProfile(user.uid, {
         username: profileCache.username,
         avatar: profileCache.avatar,
@@ -368,7 +378,16 @@ onAuthStateChanged(auth, async (user) => {
         statusText: profileCache.statusText,
         tags: profileCache.tags,
         socialLinks: profileCache.socialLinks,
-        pinnedWorks: profileCache.pinnedWorks, 
+        pinnedWorks: profileCache.pinnedWorks,
+        isPrivate: isChild ? true : profileCache.isPrivate,
+        whoCanFollow: profileCache.whoCanFollow,
+        whoCanFriendRequest: isChild ? "nobody" : profileCache.whoCanFriendRequest,
+        isChildAccount: isChild,
+      }).catch((err) => {
+        // Antes essa falha era engolida em silêncio — por isso tinha conta
+        // que existia mas nunca aparecia na busca. Agora pelo menos fica
+        // registrado no console pra dar pra investigar.
+        console.error("Falha ao sincronizar perfil público (conta pode não aparecer na busca):", err);
       });
     }
     profileLoaded = true;
@@ -722,6 +741,7 @@ export async function deleteRemainingUserData(uid: string): Promise<void> {
   const deletions = [
     deleteDoc(doc(db, PROFILES_COLLECTION, uid)),
     deleteDoc(doc(db, SETTINGS_COLLECTION, uid)),
+    deleteDoc(doc(db, "public_profiles", uid)),
     ...notifSnap.docs.map((d) => deleteDoc(d.ref)),
     ...challengesSnap.docs.map((d) => deleteDoc(d.ref)),
   ];

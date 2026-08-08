@@ -33,6 +33,10 @@ export interface PublicProfile {
   socialLinks?: { platform: string; url: string }[];
   pinnedWorks?: PinnedWork[];
   tasteProfile?: TasteProfile;
+  isPrivate?: boolean;
+  whoCanFollow?: "everyone" | "nobody";
+  whoCanFriendRequest?: "everyone" | "nobody";
+  isChildAccount?: boolean;
 }
 
 // Chamado de dentro de extras.ts toda vez que o perfil do usuário atualiza.
@@ -47,6 +51,10 @@ export async function syncPublicProfile(
     tags?: string[];
     socialLinks?: { platform: string; url: string }[];
     pinnedWorks?: PinnedWork[];
+    isPrivate?: boolean;
+    whoCanFollow?: "everyone" | "nobody";
+    whoCanFriendRequest?: "everyone" | "nobody";
+    isChildAccount?: boolean;
   },
 ): Promise<void> {
   await setDoc(
@@ -62,6 +70,10 @@ export async function syncPublicProfile(
       tags: p.tags,
       socialLinks: p.socialLinks,
       pinnedWorks: p.pinnedWorks,
+      isPrivate: p.isPrivate,
+      whoCanFollow: p.whoCanFollow,
+      whoCanFriendRequest: p.whoCanFriendRequest,
+      isChildAccount: p.isChildAccount,
     }),
     { merge: true },
   );

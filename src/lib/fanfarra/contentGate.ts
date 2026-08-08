@@ -48,27 +48,35 @@ export type ContentGateLevel = "blocked" | "warn" | "clear";
 
 // Regra:
 // - Obra sem nenhuma tag sensível -> sempre "clear".
-// - Menor de 10 anos -> "blocked" (bloqueio total).
-// - 10 anos ou mais, OU idade desconhecida (deslogado / conta antiga sem
-//   data cadastrada) -> "warn" (aviso, com opção de continuar). Idade
-//   desconhecida cai em "warn" e não em "clear" de propósito — é o lado
-//   mais seguro por padrão.
+// - Menor de 12 anos -> "blocked" (bloqueio total — nem aparece na lista,
+//   nem abre direto pelo link).
+// - 12 a 17 anos -> "warn" (aviso, com opção de continuar).
+// - 18+ -> "clear" (sem gate, a pessoa já é adulta).
+// - Idade desconhecida (deslogado / conta antiga sem data cadastrada) ->
+//   "warn" por segurança, já que não dá pra confirmar que é maior de idade.
 export function getContentGateLevel(
   contentWarnings: string[] | undefined,
   birthDate: string | undefined,
+  options?: { isUserGenerated?: boolean },
 ): ContentGateLevel {
-  if (!contentWarnings || contentWarnings.length === 0) return "clear";
   const age = calculateAge(birthDate);
-  if (age !== null && age < 10) return "blocked";
-  return "warn";
+
+  if (!contentWarnings || contentWarnings.length === 0) return "clear";
+  if (age !== null && age < 12) return "blocked";
+  if (age !== null && age < 18) return "warn";
+  return age === null ? "warn" : "clear";
 }
 
-// Usado em listagens (feed de recomendações) pra tirar da lista qualquer
-// item bloqueado pra idade do usuário — itens em "warn" continuam
-// aparecendo na lista normalmente; o aviso só entra ao abrir o item.
+// Usado em listagens (feed de recomendações, catálogo, prateleiras) pra
+// tirar da lista qualquer item bloqueado pra idade do usuário — itens em
+// "warn" continuam aparecendo na lista normalmente; o aviso só entra ao
+// abrir o item.
 export function filterBlockedForAge<T extends { contentWarnings?: string[] }>(
   items: T[],
   birthDate: string | undefined,
+  options?: { isUserGenerated?: boolean },
 ): T[] {
-  return items.filter((item) => getContentGateLevel(item.contentWarnings, birthDate) !== "blocked");
+  return items.filter(
+    (item) => getContentGateLevel(item.contentWarnings, birthDate, options) !== "blocked",
+  );
 }

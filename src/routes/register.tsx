@@ -79,6 +79,13 @@ function RegisterPage() {
       }
       if (isMinor && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guardianEmail.trim())) {
         e.guardianEmail = "Informe o e-mail de um responsável válido.";
+      } else if (
+        isMinor &&
+        guardianEmail.trim() &&
+        email.trim() &&
+        guardianEmail.trim().toLowerCase() === email.trim().toLowerCase()
+      ) {
+        e.guardianEmail = "O e-mail do responsável precisa ser diferente do e-mail de login da conta.";
       }
       if (!acceptedTerms) {
         e.terms = "Você precisa ler e aceitar os Termos de Uso e a Política de Privacidade.";
@@ -152,27 +159,38 @@ function RegisterPage() {
           max={new Date().toISOString().split("T")[0]}
           required
         />
-        {isMinor && (
+        <div>
           <AuthInput
-            label="E-mail de um responsável"
+            label="E-mail"
             type="email"
-            placeholder="responsavel@email.com"
-            value={guardianEmail}
-            onChange={(e) => setGuardianEmail(e.target.value)}
-            error={errors.guardianEmail}
+            autoComplete="email"
+            placeholder="voce@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            error={errors.email}
             required
           />
+          <p className="mt-1.5 text-sm" style={{ color: "var(--fan-text-2)" }}>
+            É esse e-mail que vai ser usado pra entrar na conta.
+          </p>
+        </div>
+        {isMinor && (
+          <div>
+            <AuthInput
+              label="E-mail de um responsável"
+              type="email"
+              placeholder="responsavel@email.com"
+              value={guardianEmail}
+              onChange={(e) => setGuardianEmail(e.target.value)}
+              error={errors.guardianEmail}
+              required
+            />
+            <p className="mt-1.5 text-sm" style={{ color: "var(--fan-text-2)" }}>
+              Precisa ser diferente do e-mail de login acima. Usamos só pra confirmar a conta —
+              não é usado pra entrar.
+            </p>
+          </div>
         )}
-        <AuthInput
-          label="E-mail"
-          type="email"
-          autoComplete="email"
-          placeholder="voce@email.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          error={errors.email}
-          required
-        />
         <div>
           <AuthInput
             label="Senha"

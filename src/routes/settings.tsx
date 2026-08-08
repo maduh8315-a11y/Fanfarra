@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ChevronRight, PanelBottomOpen, Sun, Moon } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { ToggleField } from "@/components/fanfarra/forms/FormFields";
-import { updateSettings, useSettings } from "@/lib/fanfarra/extras";
+import { updateSettings, useSettings, useProfile, updateProfile } from "@/lib/fanfarra/extras";
 import { DEV_MODE, useIsPro, useIsAdmin } from "@/lib/fanfarra/config";
 import { useAuthUser } from "@/lib/fanfarra/auth";
 import { toast } from "sonner";
@@ -26,6 +26,8 @@ function SettingsPage() {
   const user = useAuthUser();
   const isAdmin = useIsAdmin(user?.uid);
   const s = useSettings();
+  const profile = useProfile();
+  const isChildAccount = !!profile.needsParentalSupervision;
   const isPro = useIsPro();
   const [modal, setModal] = useState<"email" | "password" | "delete" | null>(null);
 
@@ -111,10 +113,32 @@ function SettingsPage() {
         </Group>
 
         <Group title="Privacidade">
+          {isChildAccount && (
+            <p className="text-xs pb-2" style={{ color: "var(--fan-pink-light)" }}>
+             Perfil protegido: contas de menores de 12 anos ficam privadas e sem pedidos de amizade/conversas, por segurança. Isso não pode ser desativado.
+            </p>
+          )}
           <Toggle
-            label="Perfil público"
-            value={s.privacy_public}
-            onChange={(v) => updateSettings({ privacy_public: v })}
+            label="Perfil privado"
+            value={isChildAccount ? true : !!profile.isPrivate}
+            onChange={(v) => updateProfile({ isPrivate: v })}
+            locked={isChildAccount}
+          />
+          <p className="text-xs pb-2" style={{ color: "var(--fan-text-2)" }}>
+            {isChildAccount || profile.isPrivate
+              ? "Só amigos veem sua bio, tags, links, destaques, estatísticas e recomendações no seu perfil."
+              : "Qualquer pessoa logada pode ver seu perfil completo."}
+          </p>
+          <Choice
+            label="Quem pode me seguir"
+            value={profile.whoCanFollow ?? "everyone"}
+            onChange={(v) => updateProfile({ whoCanFollow: v })}
+          />
+          <Choice
+            label="Quem pode me enviar pedido de amizade"
+            value={isChildAccount ? "nobody" : (profile.whoCanFriendRequest ?? "everyone")}
+            onChange={(v) => updateProfile({ whoCanFriendRequest: v })}
+            locked={isChildAccount}
           />
         </Group>
 
@@ -309,20 +333,57 @@ function Toggle({
   label,
   value,
   onChange,
+  locked,
 }: {
   label: string;
   value: boolean;
   onChange: (v: boolean) => void;
+  locked?: boolean;
 }) {
   return (
     <div
       className="flex items-center justify-between py-2.5"
-      style={{ borderBottom: "0.5px solid var(--fan-border)" }}
+      style={{ borderBottom: "0.5px solid var(--fan-border)", opacity: locked ? 0.6 : 1, pointerEvents: locked ? "none" : undefined }}
     >
       <span className="text-sm" style={{ color: "var(--fan-text-3)" }}>
         {label}
       </span>
       <ToggleField value={value} onChange={onChange} />
+    </div>
+  );
+}
+
+function Choice({
+  label,
+  value,
+  onChange,
+  locked,
+}: {
+  label: string;
+  value: "everyone" | "nobody";
+  onChange: (v: "everyone" | "nobody") => void;
+  locked?: boolean;
+}) {
+  return (
+    <div className="py-2.5" style={{ borderBottom: "0.5px solid var(--fan-border)", opacity: locked ? 0.6 : 1 }}>
+      <span className="text-sm" style={{ color: "var(--fan-text-3)" }}>
+        {label}
+      </span>
+      <div className="flex gap-2 mt-2">
+        {([
+          { id: "everyone" as const, label: "Todos" },
+          { id: "nobody" as const, label: "Ninguém" },
+        ]).map((opt) => (
+          <button
+            key={opt.id}
+            disabled={locked}
+            onClick={() => onChange(opt.id)}
+            className={`fan-chip ${value === opt.id ? "fan-chip-active" : ""}`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

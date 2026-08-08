@@ -8,6 +8,8 @@ const REQUESTS_COLLECTION = "friend_requests";
 const FRIENDSHIPS_COLLECTION = "friendships";
 const BLOCKS_COLLECTION = "blocks";
 const NOTIF_COLLECTION = "notifications";
+const PUBLIC_PROFILES_COLLECTION = "public_profiles";
+const PROFILES_COLLECTION = "profiles";
 
 const LIMIT = 10;
 const WINDOW_MS = 60_000;
@@ -60,13 +62,32 @@ export const sendFriendRequestServer = createServerFn({ method: "POST" })
 
     const tx = await FirestoreTransaction.begin();
     try {
-      const [blockedByMe, blockedMe] = await Promise.all([
+      const [blockedByMe, blockedMe, senderProfile, targetProfile, senderPrivateProfile] = await Promise.all([
         tx.get(BLOCKS_COLLECTION, `${uid}_${data.toUid}`),
         tx.get(BLOCKS_COLLECTION, `${data.toUid}_${uid}`),
+        tx.get<{ isChildAccount?: boolean }>(PUBLIC_PROFILES_COLLECTION, uid),
+        tx.get<{ isChildAccount?: boolean; whoCanFriendRequest?: string }>(PUBLIC_PROFILES_COLLECTION, data.toUid),
+        tx.get<{ needsParentalSupervision?: boolean }>(PROFILES_COLLECTION, uid),
       ]);
       if (blockedByMe.exists || blockedMe.exists) {
         await tx.rollback();
         return { ok: false, error: "Não é possível enviar pedido de amizade para este usuário." };
+      }
+
+      // Checa os dois: o espelho público (rápido) e o documento privado
+      // (fonte da verdade, gravado no cadastro — não depende de sync
+      // assíncrono terminar a tempo).
+      const senderIsChild =
+        (senderProfile.exists && senderProfile.data.isChildAccount === true) ||
+        (senderPrivateProfile.exists && senderPrivateProfile.data.needsParentalSupervision === true);
+      const targetIsChild = targetProfile.exists && targetProfile.data.isChildAccount === true;
+      if (senderIsChild || targetIsChild) {
+        await tx.rollback();
+        return { ok: false, error: "Pedidos de amizade não estão disponíveis para contas de menores de 12 anos, por segurança." };
+      }
+      if (targetProfile.exists && targetProfile.data.whoCanFriendRequest === "nobody") {
+        await tx.rollback();
+        return { ok: false, error: "Este usuário não está aceitando pedidos de amizade no momento." };
       }
 
       const now = Date.now();

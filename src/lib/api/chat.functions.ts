@@ -8,6 +8,7 @@ const CHATS_COLLECTION = "chats";
 const FRIENDSHIPS_COLLECTION = "friendships";
 const BLOCKS_COLLECTION = "blocks";
 const NOTIF_COLLECTION = "notifications";
+const PUBLIC_PROFILES_COLLECTION = "public_profiles";
 
 const SEND_LIMIT = 20;
 const SEND_WINDOW_MS = 10_000;
@@ -63,10 +64,12 @@ export const sendChatMessageServer = createServerFn({ method: "POST" })
 
     const tx = await FirestoreTransaction.begin();
     try {
-      const [friendship, blockedByMe, blockedMe] = await Promise.all([
+      const [friendship, blockedByMe, blockedMe, myProfile, otherProfile] = await Promise.all([
         tx.get(FRIENDSHIPS_COLLECTION, chatId),
         tx.get(BLOCKS_COLLECTION, `${uid}_${data.otherUid}`),
         tx.get(BLOCKS_COLLECTION, `${data.otherUid}_${uid}`),
+        tx.get<{ isChildAccount?: boolean }>(PUBLIC_PROFILES_COLLECTION, uid),
+        tx.get<{ isChildAccount?: boolean }>(PUBLIC_PROFILES_COLLECTION, data.otherUid),
       ]);
       if (!friendship.exists) {
         await tx.rollback();
@@ -75,6 +78,13 @@ export const sendChatMessageServer = createServerFn({ method: "POST" })
       if (blockedByMe.exists || blockedMe.exists) {
         await tx.rollback();
         return { ok: false, error: "Não é possível enviar mensagem para este usuário." };
+      }
+      // Trava permanente, mesmo que exista uma amizade antiga (de antes
+      // dessa proteção existir): chat nunca fica disponível pra conta de
+      // criança, em nenhuma direção.
+      if ((myProfile.exists && myProfile.data.isChildAccount) || (otherProfile.exists && otherProfile.data.isChildAccount)) {
+        await tx.rollback();
+        return { ok: false, error: "O chat não está disponível para contas de menores de 12 anos, por segurança." };
       }
 
       const now = Date.now();

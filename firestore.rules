@@ -251,8 +251,9 @@ match /rec_reaction_counts/{itemId} {
       allow create: if request.auth != null &&
         request.auth.uid == request.resource.data.followerUid &&
         request.resource.data.followerUid != request.resource.data.followingUid &&
-        id == request.resource.data.followerUid + '_' + request.resource.data.followingUid;
-      allow delete: if request.auth != null && request.auth.uid == resource.data.followerUid;
+        id == request.resource.data.followerUid + '_' + request.resource.data.followingUid &&
+        (!exists(/databases/$(database)/documents/public_profiles/$(request.resource.data.followingUid)) ||
+         get(/databases/$(database)/documents/public_profiles/$(request.resource.data.followingUid)).data.whoCanFollow != 'nobody');
     }
 
    match /chats/{chatId} {

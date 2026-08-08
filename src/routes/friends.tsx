@@ -117,7 +117,10 @@ function FriendsPage() {
                 key={t.id}
                 onClick={() => setTab(t.id)}
                 className="relative flex-1 py-2.5 text-sm font-bold rounded-full transition-colors"
-                style={{ color: tab === t.id ? "#fff" : "var(--fan-text-2)" }}
+                style={{
+                  color: tab === t.id ? "#fff" : "var(--fan-text-2)",
+                  background: tab === t.id ? "var(--fan-pink)" : "transparent",
+                }}
               >
                 {tab === t.id && (
                   <motion.div
@@ -169,7 +172,7 @@ function FriendsPage() {
                     <span className="text-xs" style={{ color: "var(--fan-text-2)" }}>
                       Te pediu amizade
                     </span>
-                  ) : (
+                 ) : r.whoCanFriendRequest === "nobody" || profile.needsParentalSupervision ? null : (
                     <button
                       onClick={async () => {
                         try {
@@ -341,7 +344,9 @@ function SuggestionsList({
   ]);
 
   const suggestions: SuggestedUser[] = candidates
-    .filter((c) => c.tasteProfile && !excludeUids.has(c.uid))
+    .filter(
+      (c) => c.tasteProfile && !excludeUids.has(c.uid) && c.whoCanFriendRequest !== "nobody",
+    )
     .map((c) => ({
       ...c,
       _score: tasteSimilarity(myTaste, c.tasteProfile as TasteProfile),
@@ -396,20 +401,22 @@ function SuggestionsList({
               {s._score}% parecido{s._shared.length > 0 ? ` · ${s._shared.join(", ")}` : ""}
             </div>
           </Link>
-          <button
-            onClick={async () => {
-              try {
-                await sendFriendRequest(s.uid, s.username, s.avatar, profile.username, profile.avatar);
-                toast.success("Pedido de amizade enviado!");
-              } catch (err) {
-                toast.error(err instanceof Error ? err.message : "Erro ao enviar pedido.");
-              }
-            }}
-            className="text-xs font-bold px-2.5 py-1.5 rounded-lg shrink-0"
-            style={{ background: "var(--fan-pink)", color: "#fff" }}
-          >
-            Adicionar
-          </button>
+          {s.whoCanFriendRequest !== "nobody" && !profile.needsParentalSupervision && (
+            <button
+              onClick={async () => {
+                try {
+                  await sendFriendRequest(s.uid, s.username, s.avatar, profile.username, profile.avatar);
+                  toast.success("Pedido de amizade enviado!");
+                } catch (err) {
+                  toast.error(err instanceof Error ? err.message : "Erro ao enviar pedido.");
+                }
+              }}
+              className="text-xs font-bold px-2.5 py-1.5 rounded-lg shrink-0"
+              style={{ background: "var(--fan-pink)", color: "#fff" }}
+            >
+              Adicionar
+            </button>
+          )}
         </li>
       ))}
     </ul>

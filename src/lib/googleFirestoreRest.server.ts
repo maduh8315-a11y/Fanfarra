@@ -228,3 +228,73 @@ export class FirestoreTransaction {
     }
   }
 }
+
+// ── Purge de conta: acesso fora de transação, pra coleções que o client   ──
+// ── não tem permissão de apagar sozinho (chats, follows, blocks alheios) ──
+
+// Busca todos os caminhos de documento de `collectionId` que batem com um
+// filtro de igualdade OU array-contains. `parentPath` (ex: "chats/abc123")
+// escopa a busca pra uma subcoleção específica em vez da raiz do banco.
+export async function queryDocPaths(
+  collectionId: string,
+  filter: { field: string; op: "EQUAL" | "ARRAY_CONTAINS"; value: string },
+  parentPath?: string,
+): Promise<string[]> {
+  const token = await getAccessToken();
+  const url = parentPath ? `${docsBase()}/${parentPath}:runQuery` : `${docsBase()}:runQuery`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      structuredQuery: {
+        from: [{ collectionId }],
+        where: {
+          fieldFilter: {
+            field: { fieldPath: filter.field },
+            op: filter.op,
+            value: { stringValue: filter.value },
+          },
+        },
+        limit: 1000,
+      },
+    }),
+  });
+  if (!res.ok) throw new Error(`Firestore query error (${collectionId}): ${await res.text()}`);
+  const data = (await res.json()) as any[];
+  return data.filter((r) => r.document).map((r) => r.document.name as string);
+}
+
+// Lista TODOS os documentos de uma (sub)coleção, sem filtro — usado pra
+// pegar todas as mensagens de um chat antes de apagar o chat em si.
+export async function listAllDocPaths(
+  collectionId: string,
+  parentPath?: string,
+  limit = 5000,
+): Promise<string[]> {
+  const token = await getAccessToken();
+  const url = parentPath ? `${docsBase()}/${parentPath}:runQuery` : `${docsBase()}:runQuery`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ structuredQuery: { from: [{ collectionId }], limit } }),
+  });
+  if (!res.ok) throw new Error(`Firestore query error (${collectionId}): ${await res.text()}`);
+  const data = (await res.json()) as any[];
+  return data.filter((r) => r.document).map((r) => r.document.name as string);
+}
+
+// Apaga em lotes de 400 (limite do Firestore é 500 por commit, deixamos
+// margem). Cada `path` deve ser o caminho completo retornado por
+// queryDocPaths/listAllDocPaths.
+export async function deleteDocsBatch(paths: string[]): Promise<void> {
+  const token = await getAccessToken();
+  for (let i = 0; i < paths.length; i += 400) {
+    const chunk = paths.slice(i, i + 400);
+    const res = await fetch(`${docsBase()}:commit`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ writes: chunk.map((p) => ({ delete: p })) }),
+    });
+    if (!res.ok) throw new Error(`Firestore commit error: ${await res.text()}`);
+  }
+}

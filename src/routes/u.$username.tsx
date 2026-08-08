@@ -113,6 +113,8 @@ function PublicProfilePage() {
   const isFollowing = following.some((f) => f.followingUid === target.uid);
   const recs = allRecs.filter((r) => r.uid === target.uid);
   const canInteract = !amIBlocked && !isBlockedByMe;
+  const isPrivate = !!target.isPrivate;
+  const hasFullAccess = isMe || isFriend || !isPrivate;
 
   const handleToggleBlock = async () => {
     const msg = isBlockedByMe
@@ -287,7 +289,14 @@ function PublicProfilePage() {
 
             {!isMe && canInteract && (
               <div className="mt-4 flex items-center gap-2">
-                {isFriend ? (
+                {target.isChildAccount ? (
+                  <span
+                    className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs"
+                    style={{ backgroundColor: "var(--fan-active-chip)", color: "var(--fan-text-2)" }}
+                  >
+                    <Lock size={14} /> Perfil protegido
+                  </span>
+                ) : isFriend ? (
                   <Link
                     to="/chat/$uid"
                     params={{ uid: target.uid }}
@@ -311,6 +320,13 @@ function PublicProfilePage() {
                   >
                     <UserCheck size={16} /> Aceitar pedido
                   </button>
+                ) : target.whoCanFriendRequest === "nobody" || myProfile.needsParentalSupervision ? (
+                  <span
+                    className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs"
+                    style={{ backgroundColor: "var(--fan-active-chip)", color: "var(--fan-text-2)" }}
+                  >
+                    Não está aceitando pedidos
+                  </span>
                 ) : (
                   <button
                     onClick={async () => {
@@ -332,6 +348,7 @@ function PublicProfilePage() {
                   </button>
                 )}
 
+                {(isFollowing || target.whoCanFollow !== "nobody") && (
                 <button
                   onClick={handleToggleFollow}
                   className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-bold transition active:scale-95"
@@ -356,6 +373,7 @@ function PublicProfilePage() {
                     </>
                   )}
                 </button>
+                )}
               </div>
             )}
 
@@ -399,13 +417,13 @@ function PublicProfilePage() {
               )}
             </div>
 
-            {target.bio && canInteract && (
+            {target.bio && canInteract && hasFullAccess && (
               <p className="mt-4 text-center text-sm leading-relaxed" style={{ color: "var(--fan-text-3)" }}>
                 {target.bio}
               </p>
             )}
 
-            {genreTags.length > 0 && (
+            {genreTags.length > 0 && canInteract && hasFullAccess && (
               <div className="mt-4 flex flex-wrap justify-center gap-2">
                 {genreTags.map((tag) => (
                   <span
@@ -419,7 +437,7 @@ function PublicProfilePage() {
               </div>
             )}
 
-            {socialLinks.length > 0 && (
+            {socialLinks.length > 0 && canInteract && hasFullAccess && (
               <div className="mt-5 flex flex-col gap-2 border-t pt-4" style={{ borderColor: "var(--fan-border)" }}>
                 {socialLinks.map((link) => (
                   <a
@@ -447,7 +465,21 @@ function PublicProfilePage() {
           </div>
         </div>
 
-        {canInteract && (
+        {canInteract && isPrivate && !hasFullAccess && (
+          <div className="mx-auto mt-6 w-full max-w-2xl px-4 sm:px-6">
+            <div
+              className="flex flex-col items-center gap-2 rounded-2xl p-6 text-center"
+              style={{ backgroundColor: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
+            >
+              <Lock className="h-6 w-6" style={{ color: "var(--fan-text-2)" }} />
+              <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
+                Este perfil é privado. Envie um pedido de amizade para ver destaques, estatísticas e recomendações.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {canInteract && hasFullAccess && (
           <>
             {pinnedWorks.length > 0 && (
               <div className="mx-auto mt-6 w-full max-w-2xl px-4 sm:px-6">

@@ -56,12 +56,15 @@ function RecPage() {
   const hasMoreCommunity = useCommunityHasMore();
   const loadingMoreCommunity = useCommunityLoadingMore();
   const communityItems = useMemo<RecommendationItem[]>(
-    () => filterBlockedForAge(community.map(communityToRecommendationItem), birthDate),
+    () =>
+      filterBlockedForAge(community.map(communityToRecommendationItem), birthDate, {
+        isUserGenerated: true,
+      }),
     [community, birthDate],
   );
 
   const scored = useMemo(() => {
-    const items = scoreItems(CATALOG, works);
+    const items = filterBlockedForAge(scoreItems(CATALOG, works), birthDate);
     // Marca itens que o usuário tem na biblioteca com seu @username
     const libraryTitles = new Set(works.map((w) => w.title.toLowerCase()));
     const withOwn = items.map((item) =>
@@ -78,7 +81,7 @@ function RecPage() {
       (item) => !communityTitles.has(item.title.toLowerCase()),
     );
     return [...communityItems, ...withoutDuplicates];
-  }, [works, profile.username, communityItems]);
+  }, [works, profile.username, communityItems, birthDate]);
   const trending = useMemo(() => getTrending(scored, 12), [scored]);
 
   const topTypes = useMemo(() => {

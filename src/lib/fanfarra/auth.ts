@@ -18,8 +18,10 @@ import {
   type User as FirebaseUser,
 } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
+import { purgeRemainingAccountDataServer } from "@/lib/api/purgeAccount.functions";
 import { deleteNominationsAndReactionsForUser } from "./nominationsStore";
 import { auth, db } from "./firebase";
+import { syncPublicProfile } from "./publicProfiles";
 import { deleteAllWorksForUser } from "./store";
 import { deleteAllBookcasesForUser } from "./bookcaseStore";
 import { deleteAwardVotesForUser } from "./awardsStore";
@@ -28,6 +30,8 @@ import { deleteRemainingUserData, setSkipNextProfileAutoSeed } from "./extras";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { initPurchases, logOutPurchases } from "./purchases";
 import { calculateAge } from "./contentGate";
+import { toast } from "sonner";
+import { deleteFriendGraphForUser } from "./friendsStore";
 
 export interface AuthUser {
   uid: string;
@@ -63,7 +67,7 @@ onAuthStateChanged(auth, (u) => {
   if (u) {
     initPurchases(u.uid).catch((e) => console.error("RevenueCat initPurchases falhou:", e));
   } else {
-    logOutPurchases().catch(() => {});
+    logOutPurchases().catch(() => { });
   }
 });
 
@@ -123,6 +127,16 @@ export async function signUpWithEmail(
       password.trim(),
     );
     await updateProfile(cred.user, { displayName: username });
+
+    // Atualiza o cache local na hora — sem isso a tela fica com "Olá, !"
+    // até a pessoa deslogar e logar de novo.
+    cache = toAuthUser(cred.user);
+    listeners.forEach((l) => l());
+
+    // LGPD art. 14 — menor de 12 anos precisa de responsável. Não
+    // bloqueamos o cadastro, só marcamos a conta pra exibir o aviso.
+    const needsParentalSupervision =
+      calculateAge(birthDate) !== null && calculateAge(birthDate)! < 12;
     await setDoc(
       doc(db, "profiles", cred.user.uid),
       {
@@ -133,13 +147,23 @@ export async function signUpWithEmail(
         lastActiveDate: null,
         earnedBadgeIds: [],
         birthDate,
-        // LGPD art. 14 — menor de 12 anos precisa de responsável. Não
-        // bloqueamos o cadastro, só marcamos a conta pra exibir o aviso.
-        needsParentalSupervision: calculateAge(birthDate) !== null && calculateAge(birthDate)! < 12,
+        needsParentalSupervision,
         ...(guardianEmail ? { guardianEmail: guardianEmail.trim().toLowerCase() } : {}),
       },
       { merge: true },
     );
+    // Sincroniza o perfil PÚBLICO já aqui, no cadastro, em vez de esperar o
+    // listener assíncrono de extras.ts. Isso fecha a brecha onde, por
+    // alguns instantes logo após criar a conta, uma criança aparecia como
+    // conta pública/adulta pra outros usuários (dava pra ver o perfil e
+    // mandar pedido de amizade nesse intervalo).
+    await syncPublicProfile(cred.user.uid, {
+      username,
+      isPrivate: needsParentalSupervision,
+      whoCanFollow: "everyone",
+      whoCanFriendRequest: needsParentalSupervision ? "nobody" : "everyone",
+      isChildAccount: needsParentalSupervision,
+    });
     await firebaseSendEmailVerification(cred.user);
     return toAuthUser(cred.user);
   } catch (err) {
@@ -180,10 +204,10 @@ export async function checkEmailVerified(): Promise<boolean> {
   return verified;
 }
 
-export function updateUserProfile(
+export async function updateUserProfile(
   patch: Partial<Pick<AuthUser, "displayName" | "photoURL">>,
-): void {
-  if (auth.currentUser) updateProfile(auth.currentUser, patch);
+): Promise<void> {
+  if (auth.currentUser) await updateProfile(auth.currentUser, patch);
 }
 
 // Reautentica o usuário atual — exigido pelo Firebase antes de operações
@@ -243,13 +267,16 @@ export async function deleteUserAccount(currentPassword?: string): Promise<void>
   await reauthenticate(currentPassword);
 
   const uid = user.uid;
- const results = await Promise.allSettled([
+  const idToken = await user.getIdToken();
+  const results = await Promise.allSettled([
     deleteAllWorksForUser(uid),
     deleteAllBookcasesForUser(uid),
     deleteAwardVotesForUser(uid),
     deleteAllRecommendationsForUser(uid),
-    deleteNominationsAndReactionsForUser(uid), // ← nova linha
+    deleteNominationsAndReactionsForUser(uid),
+    deleteFriendGraphForUser(uid), // ← da correção anterior (friendsStore.ts)
     deleteRemainingUserData(uid),
+    purgeRemainingAccountDataServer({ data: { idToken } }), // ← chats/follows/blocks
   ]);
   results.forEach((r) => {
     if (r.status === "rejected") {
