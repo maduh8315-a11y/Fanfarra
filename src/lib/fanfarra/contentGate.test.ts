@@ -34,15 +34,15 @@ describe("getContentGateLevel", () => {
     expect(getContentGateLevel([], "2000-01-01")).toBe("clear");
   });
 
-  it("bloqueia totalmente para menores de 10 anos", () => {
+  it("bloqueia totalmente para menores de 12 anos", () => {
     const hoje = new Date();
     const nascimento = `${hoje.getFullYear() - 8}-01-01`;
     expect(getContentGateLevel(["Violência gráfica"], nascimento)).toBe("blocked");
   });
 
-  it("apenas avisa (não bloqueia) para quem tem 10 anos ou mais", () => {
+  it("apenas avisa (não bloqueia) para quem tem 12 anos ou mais", () => {
     const hoje = new Date();
-    const nascimento = `${hoje.getFullYear() - 10}-01-01`;
+    const nascimento = `${hoje.getFullYear() - 12}-01-01`;
     expect(getContentGateLevel(["Conteúdo sexual / nudez"], nascimento)).toBe("warn");
   });
 

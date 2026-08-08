@@ -1,6 +1,7 @@
 import {
   collection,
   doc,
+  setDoc,
   updateDoc,
   onSnapshot,
   query,
@@ -130,9 +131,79 @@ export async function sendChatMessage(
   if (!result.ok) throw new Error(result.error);
 }
 
-
 export async function markChatRead(chatId: string): Promise<void> {
   const uid = auth.currentUser?.uid;
   if (!uid || !chatId) return;
   await updateDoc(doc(db, CHATS_COLLECTION, chatId), { [`readAt.${uid}`]: Date.now() }).catch(() => {});
+}
+
+// ===== Indicador "digitando..." =====
+// Guardado dentro do próprio doc do chat, em typing.{uid} = timestamp.
+// Não precisa "apagar" depois — o timestamp expira sozinho na leitura (5s).
+const TYPING_TTL_MS = 5000;
+
+export async function setTyping(chatId: string, isTyping: boolean): Promise<void> {
+  const uid = auth.currentUser?.uid;
+  if (!uid || !chatId) return;
+  await updateDoc(doc(db, CHATS_COLLECTION, chatId), {
+    [`typing.${uid}`]: isTyping ? Date.now() : 0,
+  }).catch(() => {});
+}
+
+export function useOtherTyping(chatId: string, otherUid: string): boolean {
+  const [typingAt, setTypingAt] = useState(0);
+  const [, tick] = useState(0);
+
+  useEffect(() => {
+    setTypingAt(0);
+    if (!chatId) return;
+    const unsub = onSnapshot(doc(db, CHATS_COLLECTION, chatId), (snap) => {
+      const data = snap.data() as any;
+      setTypingAt(data?.typing?.[otherUid] ?? 0);
+    });
+    return () => unsub();
+  }, [chatId, otherUid]);
+
+  // reavalia a cada segundo pra o aviso sumir sozinho se a pessoa parar de digitar
+  useEffect(() => {
+    const t = setInterval(() => tick((n) => n + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  return typingAt > 0 && Date.now() - typingAt < TYPING_TTL_MS;
+}
+
+// ===== Presença ("visto por último") =====
+const PRESENCE_COLLECTION = "presence";
+const ONLINE_THRESHOLD_MS = 90_000; // até 90s sem heartbeat ainda conta "online agora"
+
+// Chamado periodicamente pelo AppShell enquanto a pessoa está logada.
+export async function touchPresence(): Promise<void> {
+  const uid = auth.currentUser?.uid;
+  if (!uid) return;
+  await setDoc(doc(db, PRESENCE_COLLECTION, uid), { lastActiveAt: Date.now() }, { merge: true }).catch(() => {});
+}
+
+export function usePresence(uid: string | undefined): { online: boolean; lastActiveAt: number | null } {
+  const [lastActiveAt, setLastActiveAt] = useState<number | null>(null);
+  const [, tick] = useState(0);
+
+  useEffect(() => {
+    setLastActiveAt(null);
+    if (!uid) return;
+    const unsub = onSnapshot(
+      doc(db, PRESENCE_COLLECTION, uid),
+      (snap) => setLastActiveAt((snap.data() as any)?.lastActiveAt ?? null),
+      () => setLastActiveAt(null),
+    );
+    return () => unsub();
+  }, [uid]);
+
+  useEffect(() => {
+    const t = setInterval(() => tick((n) => n + 1), 30_000);
+    return () => clearInterval(t);
+  }, []);
+
+  const online = lastActiveAt != null && Date.now() - lastActiveAt < ONLINE_THRESHOLD_MS;
+  return { online, lastActiveAt };
 }

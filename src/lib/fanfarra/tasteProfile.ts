@@ -1,9 +1,11 @@
-import type { Work } from "./types";
+import { COMPLETED_STATUSES, type Work } from "./types";
 
 export interface TasteProfile {
   typeCounts: Record<string, number>;
   genreCounts: Record<string, number>;
   totalWorks: number;
+  completedThisMonth: number;
+  monthKey: string; // ex.: "2026-08" — pra saber se o número ainda é deste mês
   updatedAt: number;
 }
 
@@ -26,10 +28,20 @@ export function buildTasteProfile(works: Work[]): TasteProfile {
     .sort((a, b) => b[1] - a[1])
     .slice(0, MAX_GENRES);
 
+  const now = new Date();
+  const monthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const completedThisMonth = works.filter((w) => {
+    if (!(COMPLETED_STATUSES as readonly string[]).includes(w.status)) return false;
+    const d = new Date(w.updatedAt);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  }).length;
+
   return {
     typeCounts,
     genreCounts: Object.fromEntries(topGenres),
     totalWorks: works.length,
+    completedThisMonth,
+    monthKey,
     updatedAt: Date.now(),
   };
 }

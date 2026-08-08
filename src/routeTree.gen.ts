@@ -31,6 +31,7 @@ import { Route as FriendsRouteImport } from './routes/friends'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as FeedbackRouteImport } from './routes/feedback'
 import { Route as CollectionsRouteImport } from './routes/collections'
+import { Route as ChatRouteImport } from './routes/chat'
 import { Route as ChallengesRouteImport } from './routes/challenges'
 import { Route as AwardsRouteImport } from './routes/awards'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -155,6 +156,11 @@ const CollectionsRoute = CollectionsRouteImport.update({
   path: '/collections',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChatRoute = ChatRouteImport.update({
+  id: '/chat',
+  path: '/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ChallengesRoute = ChallengesRouteImport.update({
   id: '/challenges',
   path: '/challenges',
@@ -206,9 +212,9 @@ const RecIdRoute = RecIdRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChatUidRoute = ChatUidRouteImport.update({
-  id: '/chat/$uid',
-  path: '/chat/$uid',
-  getParentRoute: () => rootRouteImport,
+  id: '/$uid',
+  path: '/$uid',
+  getParentRoute: () => ChatRoute,
 } as any)
 const AddTypeRoute = AddTypeRouteImport.update({
   id: '/$type',
@@ -228,6 +234,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/awards': typeof AwardsRoute
   '/challenges': typeof ChallengesRoute
+  '/chat': typeof ChatRouteWithChildren
   '/collections': typeof CollectionsRoute
   '/feedback': typeof FeedbackRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -264,6 +271,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/awards': typeof AwardsRoute
   '/challenges': typeof ChallengesRoute
+  '/chat': typeof ChatRouteWithChildren
   '/collections': typeof CollectionsRoute
   '/feedback': typeof FeedbackRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -302,6 +310,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/awards': typeof AwardsRoute
   '/challenges': typeof ChallengesRoute
+  '/chat': typeof ChatRouteWithChildren
   '/collections': typeof CollectionsRoute
   '/feedback': typeof FeedbackRoute
   '/forgot-password': typeof ForgotPasswordRoute
@@ -341,6 +350,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/awards'
     | '/challenges'
+    | '/chat'
     | '/collections'
     | '/feedback'
     | '/forgot-password'
@@ -377,6 +387,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/awards'
     | '/challenges'
+    | '/chat'
     | '/collections'
     | '/feedback'
     | '/forgot-password'
@@ -414,6 +425,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/awards'
     | '/challenges'
+    | '/chat'
     | '/collections'
     | '/feedback'
     | '/forgot-password'
@@ -452,6 +464,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AwardsRoute: typeof AwardsRoute
   ChallengesRoute: typeof ChallengesRoute
+  ChatRoute: typeof ChatRouteWithChildren
   CollectionsRoute: typeof CollectionsRoute
   FeedbackRoute: typeof FeedbackRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
@@ -474,7 +487,6 @@ export interface RootRouteChildren {
   UpdatesRoute: typeof UpdatesRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
   WrappedRoute: typeof WrappedRoute
-  ChatUidRoute: typeof ChatUidRoute
   RecIdRoute: typeof RecIdRoute
   UUsernameRoute: typeof UUsernameRoute
   WorkIdRoute: typeof WorkIdRoute
@@ -637,6 +649,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CollectionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/chat': {
+      id: '/chat'
+      path: '/chat'
+      fullPath: '/chat'
+      preLoaderRoute: typeof ChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/challenges': {
       id: '/challenges'
       path: '/challenges'
@@ -709,10 +728,10 @@ declare module '@tanstack/react-router' {
     }
     '/chat/$uid': {
       id: '/chat/$uid'
-      path: '/chat/$uid'
+      path: '/$uid'
       fullPath: '/chat/$uid'
       preLoaderRoute: typeof ChatUidRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ChatRoute
     }
     '/add/$type': {
       id: '/add/$type'
@@ -743,6 +762,16 @@ const AddRouteChildren: AddRouteChildren = {
 
 const AddRouteWithChildren = AddRoute._addFileChildren(AddRouteChildren)
 
+interface ChatRouteChildren {
+  ChatUidRoute: typeof ChatUidRoute
+}
+
+const ChatRouteChildren: ChatRouteChildren = {
+  ChatUidRoute: ChatUidRoute,
+}
+
+const ChatRouteWithChildren = ChatRoute._addFileChildren(ChatRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
@@ -750,6 +779,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AwardsRoute: AwardsRoute,
   ChallengesRoute: ChallengesRoute,
+  ChatRoute: ChatRouteWithChildren,
   CollectionsRoute: CollectionsRoute,
   FeedbackRoute: FeedbackRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
@@ -772,7 +802,6 @@ const rootRouteChildren: RootRouteChildren = {
   UpdatesRoute: UpdatesRoute,
   VerifyEmailRoute: VerifyEmailRoute,
   WrappedRoute: WrappedRoute,
-  ChatUidRoute: ChatUidRoute,
   RecIdRoute: RecIdRoute,
   UUsernameRoute: UUsernameRoute,
   WorkIdRoute: WorkIdRoute,

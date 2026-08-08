@@ -21,6 +21,7 @@ import {
   Bell,
   BarChart3,
   ShieldCheck,
+  MessageCircle,
 } from "lucide-react";
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { useAuthUser, signOut } from "@/lib/fanfarra/auth";
@@ -32,6 +33,7 @@ import { useOnlineStatus } from "@/hooks/use-online-status";
 import { useWorks } from "@/lib/fanfarra/store";
 import { buildTasteProfile } from "@/lib/fanfarra/tasteProfile";
 import { syncTasteProfile } from "@/lib/fanfarra/publicProfiles";
+import { useUnreadChatsCount, touchPresence } from "@/lib/fanfarra/chatStore";
 
 const TABS = [
   { to: "/", icon: Home, label: "Início" },
@@ -48,11 +50,20 @@ export function AppShell({ children }: { children: ReactNode }) {
     if (!user) return;
     return listenForegroundPush((title, body) => toast(title, { description: body }));
   }, [user]);
+  // Heartbeat de presença: avisa "estou online" a cada 60s enquanto o app
+  // está aberto e logado — é isso que alimenta o "visto por último".
+  useEffect(() => {
+    if (!user) return;
+    touchPresence();
+    const interval = setInterval(touchPresence, 60_000);
+    return () => clearInterval(interval);
+  }, [user]);
   const isAdmin = useIsAdmin(user?.uid);
   const isVotingOpen = useIsAwardsVotingOpen();
   const navigate = useNavigate();
   const notifications = useNotifications();
   const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadChats = useUnreadChatsCount();
   const incomingFriendRequests = useIncomingFriendRequests();
   const isPro = useIsPro();
   const isOnline = useOnlineStatus();
@@ -64,7 +75,11 @@ const profile = useProfile();
   useEffect(() => {
     if (!user) return;
     const tasteProfile = buildTasteProfile(works);
-    const signature = JSON.stringify(tasteProfile.typeCounts) + JSON.stringify(tasteProfile.genreCounts);
+    const signature =
+      JSON.stringify(tasteProfile.typeCounts) +
+      JSON.stringify(tasteProfile.genreCounts) +
+      tasteProfile.completedThisMonth +
+      tasteProfile.monthKey;
     if (signature === lastSyncedSignature.current) return;
     const timer = setTimeout(() => {
       lastSyncedSignature.current = signature;
@@ -231,6 +246,13 @@ const profile = useProfile();
                 badge={isVotingOpen ? "Votação aberta" : undefined}
               />
               <DrawerLink to="/challenges" icon={Award} label="Desafios Fandom" />
+
+              <DrawerLink
+                to="/chat"
+                icon={MessageCircle}
+                label="Mensagens"
+                badge={unreadChats > 0 ? String(unreadChats) : undefined}
+              />
 
               <DrawerLink
                 to="/friends"

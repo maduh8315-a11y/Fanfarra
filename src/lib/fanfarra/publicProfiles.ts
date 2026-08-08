@@ -5,6 +5,7 @@ import {
   addDoc,
   collection,
   doc,
+  documentId,
   getDocs,
   onSnapshot,
   query,
@@ -146,4 +147,23 @@ export async function getSuggestionCandidates(limitCount = 60): Promise<PublicPr
   );
   const snap = await getDocs(q);
   return snap.docs.map((d) => d.data() as PublicProfile);
+}
+
+// Busca vários perfis públicos de uma vez, pelo uid — usado no ranking de
+// amigos em /stats. Firestore limita "in" a 10 itens por consulta, então
+// quebramos em lotes.
+export async function getPublicProfilesByUids(uids: string[]): Promise<PublicProfile[]> {
+  if (uids.length === 0) return [];
+  const chunks: string[][] = [];
+  for (let i = 0; i < uids.length; i += 10) {
+    chunks.push(uids.slice(i, i + 10));
+  }
+  const results = await Promise.all(
+    chunks.map(async (chunk) => {
+      const q = query(collection(db, COLLECTION), where(documentId(), "in", chunk));
+      const snap = await getDocs(q);
+      return snap.docs.map((d) => d.data() as PublicProfile);
+    }),
+  );
+  return results.flat();
 }

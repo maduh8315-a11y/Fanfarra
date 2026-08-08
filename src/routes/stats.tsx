@@ -1,11 +1,14 @@
 // src/routes/stats.tsx
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { EmptyState } from "@/components/fanfarra/EmptyState";
 import { ArrowLeft, Lock, TrendingUp, BarChart3 } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { useWorks } from "@/lib/fanfarra/store";
 import { useIsPro } from "@/lib/fanfarra/config";
+import { useProfile } from "@/lib/fanfarra/extras";
+import { useFriends } from "@/lib/fanfarra/friendsStore";
+import { getPublicProfilesByUids, type PublicProfile } from "@/lib/fanfarra/publicProfiles";
 import {
   IN_PROGRESS_STATUSES,
   WISHLIST_STATUSES,
@@ -505,6 +508,104 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
   );
 }
 
+// Ranking social: compara quantas obras cada amigo concluiu este mês.
+// Usa o mesmo tasteProfile.completedThisMonth já sincronizado publicamente
+// pra sugestões de amigos — não precisa de nenhuma coleção nova.
+function FriendsLeaderboard() {
+  const works = useWorks();
+  const profile = useProfile();
+  const friends = useFriends();
+  const [friendProfiles, setFriendProfiles] = useState<PublicProfile[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (friends.length === 0) {
+      setFriendProfiles([]);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    getPublicProfilesByUids(friends.map((f) => f.friendUid))
+      .then((res) => {
+        if (!cancelled) setFriendProfiles(res);
+      })
+      .catch(() => {
+        if (!cancelled) setFriendProfiles([]);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [friends]);
+
+  const myCompleted = useMemo(() => {
+    const now = new Date();
+    return works.filter((w) => {
+      if (!(COMPLETED_STATUSES as readonly string[]).includes(w.status)) return false;
+      const d = new Date(w.updatedAt);
+      return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+    }).length;
+  }, [works]);
+
+  if (friends.length === 0) return null;
+
+  const ranking = [
+    { uid: "me", username: profile.username || "Você", avatar: profile.avatar, value: myCompleted, isMe: true },
+    ...friendProfiles.map((p) => ({
+      uid: p.uid,
+      username: p.username,
+      avatar: p.avatar,
+      value: p.tasteProfile?.completedThisMonth ?? 0,
+      isMe: false,
+    })),
+  ].sort((a, b) => b.value - a.value);
+
+  return (
+    <Card title="Quem concluiu mais obras este mês">
+      {loading && friendProfiles.length === 0 ? (
+        <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
+          Carregando ranking...
+        </p>
+      ) : (
+        <div className="space-y-2">
+          {ranking.map((r, i) => (
+            <div
+              key={r.uid}
+              className="flex items-center gap-3 rounded-[10px] px-3 py-2"
+              style={{
+                background: r.isMe ? "color-mix(in srgb, var(--fan-pink) 12%, transparent)" : "var(--fan-bg)",
+                border: r.isMe ? "0.5px solid var(--fan-pink)" : "0.5px solid var(--fan-border)",
+              }}
+            >
+              <span className="text-sm font-bold w-5 text-center" style={{ color: "var(--fan-text-2)" }}>
+                {i + 1}º
+              </span>
+              {r.avatar ? (
+                <img src={r.avatar} alt="" className="w-8 h-8 rounded-full object-cover shrink-0" />
+              ) : (
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
+                  style={{ background: "var(--fan-red-dark)", color: "var(--fan-icon-blue)" }}
+                >
+                  {(r.username ?? "?").slice(0, 1).toUpperCase()}
+                </div>
+              )}
+              <span className="flex-1 text-sm font-bold truncate" style={{ color: "var(--fan-text)" }}>
+                {r.isMe ? "Você" : r.username}
+              </span>
+              <span className="text-sm font-bold" style={{ color: "var(--fan-pink-light)" }}>
+                {r.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
+
 function ProGate({ locked, children }: { locked: boolean; children: React.ReactNode }) {
   const nav = useNavigate();
   if (!locked) return <>{children}</>;
@@ -741,6 +842,10 @@ function StatsPage() {
       </header>
 
       <ModeChips value={mode} onChange={setMode} />
+
+      <div className="px-4">
+        <FriendsLeaderboard />
+      </div>
 
       {total === 0 ? (
         <div className="px-4 pb-8">

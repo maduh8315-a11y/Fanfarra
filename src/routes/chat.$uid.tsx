@@ -13,6 +13,9 @@ import {
   useChatMessages,
   sendChatMessage,
   markChatRead,
+  setTyping,
+  useOtherTyping,
+  usePresence,
   type ChatMessage,
 } from "@/lib/fanfarra/chatStore";
 
@@ -20,6 +23,19 @@ export const Route = createFileRoute("/chat/$uid")({
   head: () => ({ meta: [{ title: "Conversa — Fanfarra" }] }),
   component: ChatPage,
 });
+
+function formatLastSeen(ts: number): string {
+  const diffMs = Date.now() - ts;
+  const min = Math.floor(diffMs / 60000);
+  if (min < 1) return "agora mesmo";
+  if (min < 60) return `há ${min} min`;
+  const hours = Math.floor(min / 60);
+  if (hours < 24) return `há ${hours}h`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return "ontem";
+  if (days < 7) return `há ${days} dias`;
+  return new Date(ts).toLocaleDateString("pt-BR");
+}
 
 function ChatPage() {
   const { uid: otherUid } = Route.useParams();
@@ -32,10 +48,29 @@ function ChatPage() {
   const amIBlocked = useAmIBlockedBy(otherUid);
   const chatId = me ? chatIdFor(me.uid, otherUid) : "";
   const messages = useChatMessages(chatId);
+  const isOtherTyping = useOtherTyping(chatId, otherUid);
+  const presence = usePresence(otherUid);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [pending, setPending] = useState<ChatMessage[]>([]);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Avisa a outra pessoa que parou de digitar ao sair da tela
+  useEffect(() => {
+    return () => {
+      if (chatId) setTyping(chatId, false);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    };
+  }, [chatId]);
+
+  function handleTextChange(value: string) {
+    setText(value);
+    if (!chatId) return;
+    setTyping(chatId, true);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => setTyping(chatId, false), 3000);
+  }
 
   useEffect(() => {
     if (chatId) markChatRead(chatId);
@@ -68,6 +103,10 @@ function ChatPage() {
     if (!trimmed || sending || !me) return;
     setSending(true);
     setText("");
+    if (chatId) {
+      setTyping(chatId, false);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    }
 
     const optimisticMsg: ChatMessage = {
       id: `temp-${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -133,6 +172,15 @@ function ChatPage() {
           <div className="text-sm font-bold truncate" style={{ color: "var(--fan-text)" }}>
             {other?.username ?? "..."}
           </div>
+          <div className="text-xs truncate" style={{ color: "var(--fan-pink-light)" }}>
+            {isOtherTyping
+              ? "digitando..."
+              : presence.online
+                ? "online agora"
+                : presence.lastActiveAt
+                  ? `visto por último ${formatLastSeen(presence.lastActiveAt)}`
+                  : ""}
+          </div>
         </div>
       </header>
 
@@ -168,7 +216,7 @@ function ChatPage() {
       >
         <input
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => handleTextChange(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
           placeholder="Escreva uma mensagem..."
           className="flex-1 rounded-full px-4 py-2.5 text-sm outline-none"
