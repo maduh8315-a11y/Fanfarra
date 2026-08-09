@@ -101,7 +101,7 @@ function NotificationsPage() {
         <button onClick={() => nav({ to: "/" })} aria-label="Voltar">
           <ArrowLeft size={22} color="var(--fan-text-2)" />
         </button>
-        <h1 className="text-lg font-bold" style={{ color: "var(--fan-text)" }}>
+        <h1 id="tour-notifications-title" className="text-lg font-bold" style={{ color: "var(--fan-text)" }}>
           Notificações
         </h1>
         <button

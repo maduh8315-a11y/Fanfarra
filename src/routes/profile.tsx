@@ -271,7 +271,7 @@ function ProfilePage() {
         </div>
 
         {/* ---------- AVATAR ---------- */}
-        <section className="relative -mt-14 flex flex-col items-center px-4 mb-10">
+        <section id="tour-profile-avatar" className="relative -mt-14 flex flex-col items-center px-4 mb-10">
           <div className="relative group">
             <div
               className="w-28 h-28 rounded-full overflow-hidden flex items-center justify-center"
@@ -314,7 +314,7 @@ function ProfilePage() {
       </div>
 
 {/* ---------- OBRAS FIXADAS ---------- */}
-      <section className="px-4 mb-10">
+      <section id="tour-profile-pinned" className="px-4 mb-10">
         <div className="mb-3 flex items-center justify-between px-1">
           <h2 className="text-sm font-semibold" style={{ color: "var(--fan-text-2)" }}>
             Obras favoritas fixadas
@@ -607,7 +607,7 @@ function ProfilePage() {
       </section>
 
       {/* ---------- STATS ---------- */}
-      <section className="px-4 mb-10">
+      <section id="tour-profile-stats" className="px-4 mb-10">
         <h2 className="text-sm font-semibold mb-3 px-1" style={{ color: "var(--fan-text-2)" }}>
           Estatísticas
         </h2>
@@ -625,7 +625,7 @@ function ProfilePage() {
       </section>
 
       {/* ---------- BADGES ---------- */}
-      <section className="px-4 mb-10">
+      <section id="tour-profile-badges" className="px-4 mb-10">
         <div className="flex items-center gap-2 mb-4 px-1">
           <Sparkles size={16} style={{ color: "var(--fan-gold)" }} />
           <h2 className="text-sm font-semibold" style={{ color: "var(--fan-text-2)" }}>

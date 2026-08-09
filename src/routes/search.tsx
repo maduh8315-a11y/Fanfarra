@@ -100,6 +100,7 @@ function SearchPage() {
     <AppShell>
       <header className="px-4 pt-4 pb-3">
         <div
+          id="tour-search-input"
           className="flex items-center gap-2 rounded-[10px] px-3 py-2.5"
           style={{ background: "var(--fan-bg-2)", border: "0.5px solid var(--fan-rose-mid)" }}
         >

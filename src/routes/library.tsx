@@ -132,7 +132,7 @@ function LibraryPage() {
       </header>
 
       {/* ── Nível 1: MODO de consumo — separação definitiva Ler/Assistir/Jogar/Ouvir ── */}
-      <div className="flex gap-2 overflow-x-auto px-4 pb-3" style={{ scrollbarWidth: "none" }}>
+      <div id="tour-library-modes" className="flex gap-2 overflow-x-auto px-4 pb-3" style={{ scrollbarWidth: "none" }}>
         {MODE_TABS.map((m) => {
           const active = mode === m;
           return (
@@ -157,7 +157,7 @@ function LibraryPage() {
       </div>
 
       {/* ── Nível 2: sub-abas de status, filtradas pelo modo selecionado acima ── */}
-      <div className="flex gap-4 overflow-x-auto px-4 pb-2" style={{ scrollbarWidth: "none" }}>
+      <div id="tour-library-status" className="flex gap-4 overflow-x-auto px-4 pb-2" style={{ scrollbarWidth: "none" }}>
         {statusTabsForMode.map((s) => {
           const active = tab === s;
           return (

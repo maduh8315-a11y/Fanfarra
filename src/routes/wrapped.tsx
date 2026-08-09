@@ -259,7 +259,7 @@ function WrappedPage() {
         }}
       >
         <div style={{ display: "flex", justifyContent: "center" }}><Sparkles size={48} /></div>
-        <h1 style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--fan-text)" }}>
+        <h1 id="tour-wrapped-content" style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--fan-text)" }}>
           O Wrapped ainda não chegou
         </h1>
         <p style={{ color: "var(--fan-text-2)", maxWidth: 320 }}>
@@ -303,8 +303,8 @@ function WrappedPage() {
         <ArrowLeft size={18} />
       </button>
 
-      {/* Slide */}
-      <div ref={slideRef}>{slides[idx]}</div>
+     {/* Slide */}
+      <div id="tour-wrapped-content" ref={slideRef}>{slides[idx]}</div>
 
       {/* ── SETAS: movidas para baixo (acima dos dots) para não cobrir conteúdo ── */}
       <button

@@ -125,7 +125,7 @@ function RecPage() {
     <AppShell>
       {/* Header — sem seta de voltar */}
       <header className="flex items-center justify-between px-4 pt-4 pb-3">
-        <h1 className="text-lg font-bold" style={{ color: "var(--fan-text)" }}>
+        <h1 id="tour-recommendations-title" className="text-lg font-bold" style={{ color: "var(--fan-text)" }}>
           Recomendações
         </h1>
         <button

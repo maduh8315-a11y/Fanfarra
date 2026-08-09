@@ -34,17 +34,30 @@ import { useWorks } from "@/lib/fanfarra/store";
 import { buildTasteProfile } from "@/lib/fanfarra/tasteProfile";
 import { syncTasteProfile } from "@/lib/fanfarra/publicProfiles";
 import { useUnreadChatsCount, touchPresence } from "@/lib/fanfarra/chatStore";
+import { CLOSE_DRAWER_EVENT } from "./AppTour";
 
 const TABS = [
-  { to: "/", icon: Home, label: "Início" },
-  { to: "/library", icon: Library, label: "Biblioteca" },
-  { to: "/add", icon: Plus, label: "Adicionar" },
-  { to: "/recommendations", icon: Wand2, label: "Para você" },
+  { to: "/", icon: Home, label: "Início", tourId: "tour-home" },
+  { to: "/library", icon: Library, label: "Biblioteca", tourId: "tour-library" },
+  { to: "/add", icon: Plus, label: "Adicionar", tourId: "tour-add" },
+  { to: "/recommendations", icon: Wand2, label: "Para você", tourId: "tour-recommendations" },
 ] as const;
+
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // Escuta o pedido do tour pra fechar o menu lateral (ver AppTour.tsx).
+  useEffect(() => {
+    function onCloseDrawer() {
+      setDrawerOpen(false);
+    }
+    window.addEventListener(CLOSE_DRAWER_EVENT, onCloseDrawer);
+    return () => window.removeEventListener(CLOSE_DRAWER_EVENT, onCloseDrawer);
+  }, []);
+
   const user = useAuthUser();
   useEffect(() => {
     if (!user) return;
@@ -68,7 +81,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const isPro = useIsPro();
   const isOnline = useOnlineStatus();
 
-const profile = useProfile();
+  const profile = useProfile();
   const works = useWorks();
   const lastSyncedSignature = useRef<string | null>(null);
 
@@ -127,10 +140,11 @@ const profile = useProfile();
           return (
             <Link
               key={t.to}
+              id={t.tourId}
               to={t.to}
               className="flex flex-col items-center gap-0.5 px-1 py-1 relative"
             >
-             {isAdd ? (
+              {isAdd ? (
                 <div
                   className="w-9 h-9 rounded-full flex items-center justify-center transition-colors duration-200"
                   style={{ background: active ? "var(--fan-pink)" : "var(--fan-active-chip)" }}
@@ -161,6 +175,7 @@ const profile = useProfile();
           );
         })}
         <button
+          id="tour-menu"
           onClick={() => setDrawerOpen(true)}
           className="flex flex-col items-center gap-0.5 px-1 py-1"
           aria-label="Abrir menu"
@@ -173,9 +188,8 @@ const profile = useProfile();
       </nav>
 
       <div
-        className={`fixed inset-0 z-50 flex transition-opacity duration-300 ${
-          drawerOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 z-50 flex transition-opacity duration-300 ${drawerOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          }`}
       >
         <div
           className="flex-1"
@@ -183,113 +197,117 @@ const profile = useProfile();
           onClick={() => setDrawerOpen(false)}
         />
         <aside
-          className={`w-[80%] max-w-[320px] h-full overflow-y-auto transition-transform duration-300 ease-out ${
-            drawerOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+          className={`w-[80%] max-w-[320px] h-full overflow-y-auto transition-transform duration-300 ease-out ${drawerOpen ? "translate-x-0" : "translate-x-full"
+            }`}
           style={{
             background: "var(--fan-bg)",
             paddingTop: "var(--sat)",
             paddingBottom: "calc(1.5rem + var(--sab))",
           }}
         >
-            <div className="p-5 flex items-center justify-between">
-              {user ? (
-                <Link
-                  to="/profile"
-                  onClick={() => setDrawerOpen(false)}
-                  className="flex items-center gap-3"
-                >
-                  {user.photoURL ? (
-                    <img
-                      src={user.photoURL}
-                      alt={user.displayName}
-                      className="w-12 h-12 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div
-                      className="w-12 h-12 rounded-full flex items-center justify-center"
-                      style={{ background: "var(--fan-red-dark)" }}
-                    >
-                      <User size={22} color="var(--fan-icon-blue)" />
-                    </div>
-                  )}
-                  <div>
-                    <div className="text-sm font-bold" style={{ color: "var(--fan-text)" }}>
-                      {user.displayName || "Fã Anônimo"}
-                    </div>
-                    <div className="text-[11px]" style={{ color: "var(--fan-text-2)" }}>
-                      {user.email}
-                    </div>
-                  </div>
-                </Link>
-              ) : (
-                <div />
-              )}
-              <button onClick={() => setDrawerOpen(false)} aria-label="Fechar">
-                <X size={22} color="var(--fan-text-2)" />
-              </button>
-            </div>
-            <div className="h-px mx-5" style={{ background: "var(--fan-rose-mid)" }} />
-            <nav className="p-3 space-y-1" onClick={() => setDrawerOpen(false)}>
-              <DrawerSection label="Principal" />
-              <DrawerLink to="/search" icon={Search} label="Buscar" />
-
-              <DrawerSection label="Descobrir" />
-              <DrawerLink to="/stats" icon={BarChart3} label="Estatísticas Avançadas" iconColor="var(--fan-icon-blue)" pro={isPro ? undefined : "full"} />
-              <DrawerLink to="/wrapped" icon={Sparkles} label="Wrapped Anual" pro={isPro ? undefined : true} />
-
-              <DrawerSection label="Comunidade" />
-              <DrawerLink
-                to="/awards"
-                icon={Trophy}
-                label="Fanfarra Awards"
-                badge={isVotingOpen ? "Votação aberta" : undefined}
-              />
-              <DrawerLink to="/challenges" icon={Award} label="Desafios Fandom" />
-
-              <DrawerLink
-                to="/chat"
-                icon={MessageCircle}
-                label="Mensagens"
-                badge={unreadChats > 0 ? String(unreadChats) : undefined}
-              />
-
-              <DrawerLink
-                to="/friends"
-                icon={UserPlus}
-                label="Amigos"
-                badge={incomingFriendRequests.length > 0 ? String(incomingFriendRequests.length) : undefined}
-              />
-
-              <DrawerSection label="Conta" />
-              <DrawerLink
-                to="/notifications"
-                icon={Bell}
-                label="Notificações"
-                badge={unreadCount > 0 ? String(unreadCount) : undefined}
-              />
-              <DrawerLink to="/settings" icon={Settings} label="Configurações" />
-              {isAdmin && (
-                <DrawerLink
-                  to="/admin"
-                  icon={ShieldCheck}
-                  label="Painel Admin"
-                  iconColor="var(--fan-icon-blue)"
-                />
-              )}
-              <DrawerLink to="/updates" icon={Sparkles} label="Novidades" />
-              <DrawerLink to="/about" icon={Info} label="Sobre o App" iconColor="var(--fan-icon-blue)" />
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center gap-3 px-3 py-3 rounded-lg"
+          <div className="p-5 flex items-center justify-between">
+            {user ? (
+              <Link
+                id="tour-profile"
+                to="/profile"
+                onClick={() => setDrawerOpen(false)}
+                className="flex items-center gap-3"
               >
-                <LogOut size={18} color="var(--fan-icon-blue)" />
-                <span className="text-sm flex-1 text-left" style={{ color: "var(--fan-text-3)" }}>
-                  Sair
-                </span>
-              </button>
-            </nav>
-          </aside>
+                {user.photoURL ? (
+                  <img
+                    src={user.photoURL}
+                    alt={user.displayName}
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
+                ) : (
+                  <div
+                    className="w-12 h-12 rounded-full flex items-center justify-center"
+                    style={{ background: "var(--fan-red-dark)" }}
+                  >
+                    <User size={22} color="var(--fan-icon-blue)" />
+                  </div>
+                )}
+                <div>
+                  <div className="text-sm font-bold" style={{ color: "var(--fan-text)" }}>
+                    {user.displayName || "Fã Anônimo"}
+                  </div>
+                  <div className="text-[11px]" style={{ color: "var(--fan-text-2)" }}>
+                    {user.email}
+                  </div>
+                </div>
+              </Link>
+            ) : (
+              <div />
+            )}
+            <button onClick={() => setDrawerOpen(false)} aria-label="Fechar">
+              <X size={22} color="var(--fan-text-2)" />
+            </button>
+          </div>
+          <div className="h-px mx-5" style={{ background: "var(--fan-rose-mid)" }} />
+          <nav className="p-3 space-y-1" onClick={() => setDrawerOpen(false)}>
+            <DrawerSection label="Principal" />
+            <DrawerLink id="tour-search" to="/search" icon={Search} label="Buscar" />
+
+            <DrawerSection label="Descobrir" />
+            <DrawerLink id="tour-stats" to="/stats" icon={BarChart3} label="Estatísticas Avançadas" iconColor="var(--fan-icon-blue)" pro={isPro ? undefined : "full"} />
+            <DrawerLink id="tour-wrapped" to="/wrapped" icon={Sparkles} label="Wrapped Anual" pro={isPro ? undefined : true} />
+
+            <DrawerSection label="Comunidade" />
+            <DrawerLink
+              id="tour-awards"
+              to="/awards"
+              icon={Trophy}
+              label="Fanfarra Awards"
+              badge={isVotingOpen ? "Votação aberta" : undefined}
+            />
+            <DrawerLink id="tour-challenges" to="/challenges" icon={Award} label="Desafios Fandom" />
+
+            <DrawerLink
+              id="tour-chat"
+              to="/chat"
+              icon={MessageCircle}
+              label="Mensagens"
+              badge={unreadChats > 0 ? String(unreadChats) : undefined}
+            />
+
+            <DrawerLink
+              id="tour-friends"
+              to="/friends"
+              icon={UserPlus}
+              label="Amigos"
+              badge={incomingFriendRequests.length > 0 ? String(incomingFriendRequests.length) : undefined}
+            />
+
+            <DrawerSection label="Conta" />
+            <DrawerLink
+              id="tour-notifications"
+              to="/notifications"
+              icon={Bell}
+              label="Notificações"
+              badge={unreadCount > 0 ? String(unreadCount) : undefined}
+            />
+            <DrawerLink id="tour-settings" to="/settings" icon={Settings} label="Configurações" />
+            {isAdmin && (
+              <DrawerLink
+                to="/admin"
+                icon={ShieldCheck}
+                label="Painel Admin"
+                iconColor="var(--fan-icon-blue)"
+              />
+            )}
+            <DrawerLink to="/updates" icon={Sparkles} label="Novidades" />
+            <DrawerLink to="/about" icon={Info} label="Sobre o App" iconColor="var(--fan-icon-blue)" />
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3 px-3 py-3 rounded-lg"
+            >
+              <LogOut size={18} color="var(--fan-icon-blue)" />
+              <span className="text-sm flex-1 text-left" style={{ color: "var(--fan-text-3)" }}>
+                Sair
+              </span>
+            </button>
+          </nav>
+        </aside>
       </div>
     </div>
   );
@@ -302,8 +320,9 @@ function DrawerLink({
   pro,
   badge,
   iconColor,
+  id,
 }: {
- to:
+  to:
   | "/"
   | "/library"
   | "/search"
@@ -330,9 +349,10 @@ function DrawerLink({
   pro?: boolean | "full";
   badge?: string;
   iconColor?: string;
+  id?: string;
 }) {
   return (
-    <Link to={to} className="w-full flex items-center gap-3 px-3 py-3 rounded-lg">
+    <Link id={id} to={to} className="w-full flex items-center gap-3 px-3 py-3 rounded-lg">
       <Icon size={18} color={iconColor ?? "var(--fan-pink)"} />
       <span
         className="text-sm flex-1 text-left"

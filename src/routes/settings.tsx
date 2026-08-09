@@ -15,6 +15,7 @@ import {
   ChangePasswordModal,
   DeleteAccountModal,
 } from "@/components/fanfarra/AccountModals";
+import { START_TOUR_EVENT } from "@/components/fanfarra/AppTour";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({ meta: [{ title: "Configurações — Fanfarra" }] }),
@@ -279,9 +280,18 @@ function SettingsPage() {
           </div>
         </Group>
 
-        <Group title="Suporte">
+        <Group id="tour-settings-support" title="Suporte">
           <Item label="Central de ajuda" variant="navigate" onClick={() => nav({ to: "/help" })} />
           <Item label="Enviar feedback" variant="navigate" onClick={() => nav({ to: "/feedback" })} />
+          <Item
+            label="Rever tutorial do app"
+            variant="navigate"
+            onClick={() => {
+              localStorage.removeItem("fanfarra:tour_done");
+              nav({ to: "/" });
+              setTimeout(() => window.dispatchEvent(new Event(START_TOUR_EVENT)), 300);
+            }}
+          />
         </Group>
       </div>
 
@@ -300,9 +310,9 @@ function SettingsPage() {
   );
 }
 
-function Group({ title, children }: { title: string; children: React.ReactNode }) {
+function Group({ title, id, children }: { title: string; id?: string; children: React.ReactNode }) {
   return (
-    <div>
+    <div id={id}>
       <h3 className="text-xs uppercase font-bold mb-2" style={{ color: "var(--fan-text-2)" }}>
         {title}
       </h3>

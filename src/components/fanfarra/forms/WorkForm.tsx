@@ -283,7 +283,7 @@ export function WorkForm({
   };
 
   return (
-  <div className="px-4 space-y-5 pb-10">
+  <div id="tour-add-form" className="px-4 space-y-5 pb-10">
       <div className="space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-sm font-bold" style={{ color: "var(--fan-text-3)" }}>

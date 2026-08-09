@@ -37,6 +37,23 @@ function formatLastSeen(ts: number): string {
   return new Date(ts).toLocaleDateString("pt-BR");
 }
 
+function isSameDay(a: number, b: number): boolean {
+  const da = new Date(a);
+  const db = new Date(b);
+  return da.getFullYear() === db.getFullYear() && da.getMonth() === db.getMonth() && da.getDate() === db.getDate();
+}
+
+function formatDayLabel(ts: number): string {
+  const now = Date.now();
+  if (isSameDay(ts, now)) return "Hoje";
+  if (isSameDay(ts, now - 24 * 60 * 60 * 1000)) return "Ontem";
+  return new Date(ts).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
+}
+
+function formatMessageTime(ts: number): string {
+  return new Date(ts).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+}
+
 function ChatPage() {
   const { uid: otherUid } = Route.useParams();
 
@@ -206,25 +223,59 @@ function ChatPage() {
         {displayMessages.length === 0 ? (
           <EmptyState icon={MessageCircle} title="Comecem a conversa!" description="Fale sobre a última obra que vocês curtiram." />
         ) : (
-          displayMessages.map((m) => {
+          displayMessages.map((m, i) => {
             const mine = m.senderUid === me?.uid;
+            const prevMsg = displayMessages[i - 1];
+            const showDaySeparator = !prevMsg || !isSameDay(prevMsg.createdAt, m.createdAt);
             return (
-              <div key={m.id} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                <div
-                  className="max-w-[75%] px-3 py-2 rounded-2xl text-sm"
-                  style={{
-                    background: mine ? "var(--fan-pink)" : "var(--fan-bg-2)",
-                    color: mine ? "#fff" : "var(--fan-text)",
-                    border: mine ? "none" : "0.5px solid var(--fan-border)",
-                    opacity: m.id.startsWith("temp-") ? 0.6 : 1,
-                  }}
-                >
-                  {m.text}
+              <div key={m.id}>
+                {showDaySeparator && (
+                  <div className="flex justify-center my-2">
+                    <span
+                      className="text-[11px] font-semibold px-2.5 py-1 rounded-full"
+                      style={{ background: "var(--fan-bg-2)", color: "var(--fan-text-2)" }}
+                    >
+                      {formatDayLabel(m.createdAt)}
+                    </span>
+                  </div>
+                )}
+                <div className={`flex ${mine ? "justify-end" : "justify-start"}`}>
+                  <div
+                    className="max-w-[75%] px-3 py-2 rounded-2xl text-sm"
+                    style={{
+                      background: mine ? "var(--fan-pink)" : "var(--fan-bg-2)",
+                      color: mine ? "#fff" : "var(--fan-text)",
+                      border: mine ? "none" : "0.5px solid var(--fan-border)",
+                      opacity: m.id.startsWith("temp-") ? 0.6 : 1,
+                    }}
+                  >
+                    <div>{m.text}</div>
+                    <div
+                      className="text-[10px] text-right mt-1"
+                      style={{ color: mine ? "rgba(255,255,255,0.7)" : "var(--fan-text-3)" }}
+                    >
+                      {formatMessageTime(m.createdAt)}
+                    </div>
+                  </div>
                 </div>
               </div>
             );
           })
         )}
+
+        {isOtherTyping && (
+          <div className="flex justify-start">
+            <div
+              className="flex items-center gap-1 px-3 py-2.5 rounded-2xl"
+              style={{ background: "var(--fan-bg-2)", border: "0.5px solid var(--fan-border)" }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: "var(--fan-text-2)" }} />
+              <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: "var(--fan-text-2)", animationDelay: "0.15s" }} />
+              <span className="w-1.5 h-1.5 rounded-full animate-bounce" style={{ background: "var(--fan-text-2)", animationDelay: "0.3s" }} />
+            </div>
+          </div>
+        )}
+
         <div ref={bottomRef} />
       </div>
 

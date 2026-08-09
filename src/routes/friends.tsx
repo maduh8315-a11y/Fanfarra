@@ -75,7 +75,7 @@ function FriendsPage() {
   return (
     <AppShell>
       <header className="flex items-center justify-between px-4 pt-4 pb-3">
-        <h1 className="text-lg font-bold" style={{ color: "var(--fan-text)" }}>
+        <h1 id="tour-friends-title" className="text-lg font-bold" style={{ color: "var(--fan-text)" }}>
           Amigos ({friends.length})
         </h1>
         {incoming.length > 0 && (
