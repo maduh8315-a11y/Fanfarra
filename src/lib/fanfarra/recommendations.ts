@@ -1,4 +1,4 @@
-import type { Work } from "./types";
+import type { Work, DateParts } from "./types";
 import type { PostedRecommendation } from "./communityStore";
 import type { RelatedWork } from "./formConfig";
 export interface RecommendationItem {
@@ -33,11 +33,19 @@ export interface RecommendationItem {
   words?: number;
   related?: RelatedWork[]; // obras relacionadas escolhidas manualmente pelo autor da obra
   contentWarnings?: string[];
+  lastUpdate?: DateParts; // última atualização da obra (preenchida pelo usuário)
+  postUpdatedAt?: number; // última atualização da recomendação, feita por quem publicou
 }
 
 
 
-export { CATALOG } from "./recommendationsData";
+import { CATALOG as CATALOG_BASE } from "./recommendationsData";
+import { CURATION } from "./recommendationsCuration";
+
+export const CATALOG: RecommendationItem[] = CATALOG_BASE.map((item) => ({
+  ...item,
+  ...CURATION[item.id],
+}));
 type ScoredItem = RecommendationItem & { _score: number };
 
 // Calcula score de cada item baseado no perfil do usuário + popularidade
@@ -125,5 +133,7 @@ export function communityToRecommendationItem(r: PostedRecommendation): Recommen
     issues: toNum(d.totalIssues),
     platform: (d.platform as string) || undefined,
     related: (d.related as RelatedWork[]) || undefined,
+    lastUpdate: (d.lastUpdate as DateParts) || undefined,
+    postUpdatedAt: r.updatedAt,
   };
 }

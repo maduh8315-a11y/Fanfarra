@@ -180,7 +180,8 @@ export function postWorkAsRecommendation(work: Work, username: string): void {
       username,
       title: work.title,
       type: work.type,
-      author: (work.details?.author as string | undefined) || undefined,
+      author: (work.details?.author as string | undefined) ||
+        (work.details?.creator as string | undefined) || undefined,
       genres: work.genres ?? [],
       cover: work.cover || undefined,
       rating: work.rating,

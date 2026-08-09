@@ -209,6 +209,7 @@ export const TYPE_FIELDS: Record<MediaType, FieldDef[]> = {
     },
     { kind: "text", key: "studio", label: "Estúdio (opcional)" },
     { kind: "url", key: "link", label: "Link MAL/AniList (opcional)" },
+    { kind: "date", key: "lastUpdate", label: "Última atualização (opcional)" },
   ],
   Manga: [
     { kind: "number", key: "chapter", label: "Capítulo atual" },
@@ -218,6 +219,7 @@ export const TYPE_FIELDS: Record<MediaType, FieldDef[]> = {
     { kind: "text", key: "serialization", label: "Serialização (opcional)" },
     { kind: "text", key: "author", label: "Autor (opcional)" },
     { kind: "url", key: "link", label: "Link MAL/MangaDex (opcional)" },
+    { kind: "date", key: "lastUpdate", label: "Última atualização (opcional)" },
   ],
   Manhwa: [
     { kind: "number", key: "chapter", label: "Capítulo atual" },
@@ -230,6 +232,7 @@ export const TYPE_FIELDS: Record<MediaType, FieldDef[]> = {
     },
     { kind: "text", key: "author", label: "Autor (opcional)" },
     { kind: "url", key: "link", label: "Link da plataforma (opcional)" },
+    { kind: "date", key: "lastUpdate", label: "Última atualização (opcional)" },
   ],
   Manhua: [
     { kind: "number", key: "chapter", label: "Capítulo atual" },
@@ -237,6 +240,7 @@ export const TYPE_FIELDS: Record<MediaType, FieldDef[]> = {
     { kind: "text", key: "platform", label: "Plataforma (opcional)" },
     { kind: "text", key: "author", label: "Autor (opcional)" },
     { kind: "url", key: "link", label: "Link da plataforma (opcional)" },
+    { kind: "date", key: "lastUpdate", label: "Última atualização (opcional)" },
   ],
   Fanfic: [
     { kind: "number", key: "chapter", label: "Capítulo atual" },
@@ -256,6 +260,7 @@ export const TYPE_FIELDS: Record<MediaType, FieldDef[]> = {
       multi: true,
     },
     { kind: "url", key: "link", label: "Link da fanfic (opcional)" },
+    { kind: "date", key: "lastUpdate", label: "Última atualização (opcional)" },
   ],
   Série: [
     { kind: "number", key: "episode", label: "Episódio atual" },
@@ -264,15 +269,43 @@ export const TYPE_FIELDS: Record<MediaType, FieldDef[]> = {
     { kind: "number", key: "totalSeasons", label: "Total de temporadas" },
     {
       kind: "chips",
+      key: "country",
+      label: "País",
+      options: ["EUA", "Brasil", "Coreia", "Reino Unido", "Japão", "Outro"],
+    },
+    {
+      kind: "chips",
+      key: "language",
+      label: "Idioma original",
+      options: ["PT", "EN", "ES", "Outro"],
+      multi: true,
+    },
+    {
+      kind: "chips",
       key: "platform",
       label: "Plataforma",
       options: ["Netflix", "Disney+", "Prime", "HBO Max", "Globoplay", "Outro"],
       multi: true,
     },
     { kind: "url", key: "link", label: "Link da plataforma (opcional)" },
+    { kind: "date", key: "lastUpdate", label: "Última atualização (opcional)" },
   ],
   Filme: [
     { kind: "toggle", key: "rewatch", label: "Reassistir" },
+    { kind: "text", key: "director", label: "Diretor (opcional)" },
+    {
+      kind: "chips",
+      key: "country",
+      label: "País",
+      options: ["EUA", "Brasil", "Reino Unido", "Coreia", "Japão", "França", "Outro"],
+    },
+    {
+      kind: "chips",
+      key: "language",
+      label: "Idioma original",
+      options: ["PT", "EN", "ES", "Outro"],
+      multi: true,
+    },
     {
       kind: "chips",
       key: "platform",
@@ -281,6 +314,7 @@ export const TYPE_FIELDS: Record<MediaType, FieldDef[]> = {
       multi: true,
     },
     { kind: "url", key: "link", label: "Link do trailer (opcional)" },
+    { kind: "date", key: "lastUpdate", label: "Última atualização (opcional)" },
   ],
   Livro: [
     { kind: "number", key: "page", label: "Página atual" },
@@ -289,10 +323,12 @@ export const TYPE_FIELDS: Record<MediaType, FieldDef[]> = {
     { kind: "text", key: "publisher", label: "Editora (opcional)" },
     { kind: "text", key: "isbn", label: "ISBN (opcional)" },
     { kind: "url", key: "link", label: "Link Goodreads/Amazon (opcional)" },
+    { kind: "date", key: "lastUpdate", label: "Última atualização (opcional)" },
   ],
   Jogo: [
     { kind: "number", key: "hours", label: "Horas jogadas" },
     { kind: "slider", key: "completion", label: "% de conclusão", min: 0, max: 100 },
+    { kind: "text", key: "developer", label: "Desenvolvedora (opcional)" },
     {
       kind: "chips",
       key: "platform",
@@ -301,6 +337,7 @@ export const TYPE_FIELDS: Record<MediaType, FieldDef[]> = {
       multi: true,
     },
     { kind: "url", key: "link", label: "Link Steam/Epic (opcional)" },
+    { kind: "date", key: "lastUpdate", label: "Última atualização (opcional)" },
   ],
   Webtoon: [
     { kind: "number", key: "episode", label: "Episódio atual" },
@@ -308,6 +345,7 @@ export const TYPE_FIELDS: Record<MediaType, FieldDef[]> = {
     { kind: "chips", key: "platform", label: "Plataforma", options: ["Webtoon", "Tapas", "Outro"] },
     { kind: "text", key: "author", label: "Autor (opcional)" },
     { kind: "url", key: "link", label: "Link da plataforma (opcional)" },
+    { kind: "date", key: "lastUpdate", label: "Última atualização (opcional)" },
   ],
   "Light Novel": [
     { kind: "number", key: "volume", label: "Volume atual" },
@@ -315,6 +353,7 @@ export const TYPE_FIELDS: Record<MediaType, FieldDef[]> = {
     { kind: "text", key: "author", label: "Autor (opcional)" },
     { kind: "text", key: "publisher", label: "Editora/Tradutora (opcional)" },
     { kind: "url", key: "link", label: "Link (opcional)" },
+    { kind: "date", key: "lastUpdate", label: "Última atualização (opcional)" },
   ],
   Donghua: [
     { kind: "number", key: "episode", label: "Episódio atual" },
@@ -328,6 +367,7 @@ export const TYPE_FIELDS: Record<MediaType, FieldDef[]> = {
       multi: true,
     },
     { kind: "url", key: "link", label: "Link da plataforma (opcional)" },
+    { kind: "date", key: "lastUpdate", label: "Última atualização (opcional)" },
   ],
   HQ: [
     { kind: "number", key: "issue", label: "Issue/edição atual" },
@@ -335,6 +375,7 @@ export const TYPE_FIELDS: Record<MediaType, FieldDef[]> = {
     { kind: "text", key: "publisher", label: "Editora (ex: Marvel, DC)" },
     { kind: "text", key: "author", label: "Autor/Roteirista (opcional)" },
     { kind: "url", key: "link", label: "Link (opcional)" },
+    { kind: "date", key: "lastUpdate", label: "Última atualização (opcional)" },
   ],
   Dorama: [
     { kind: "number", key: "episode", label: "Episódio atual" },
@@ -353,11 +394,19 @@ export const TYPE_FIELDS: Record<MediaType, FieldDef[]> = {
       multi: true,
     },
     { kind: "url", key: "link", label: "Link da plataforma (opcional)" },
+    { kind: "date", key: "lastUpdate", label: "Última atualização (opcional)" },
   ],
   Música: [
     { kind: "text", key: "artist", label: "Artista/Banda" },
     { kind: "text", key: "album", label: "Álbum (opcional)" },
     { kind: "number", key: "plays", label: "Quantidade de escutas" },
+    {
+      kind: "chips",
+      key: "language",
+      label: "Idioma",
+      options: ["PT", "EN", "ES", "Outro"],
+      multi: true,
+    },
     {
       kind: "chips",
       key: "platform",
@@ -366,6 +415,7 @@ export const TYPE_FIELDS: Record<MediaType, FieldDef[]> = {
       multi: true,
     },
     { kind: "url", key: "link", label: "Link da música/álbum (opcional)" },
+    { kind: "date", key: "lastUpdate", label: "Última atualização (opcional)" },
   ],
   Vídeos: [
     { kind: "number", key: "part", label: "Vídeo/parte atual" },
@@ -379,6 +429,7 @@ export const TYPE_FIELDS: Record<MediaType, FieldDef[]> = {
     },
     { kind: "text", key: "creator", label: "Criador/Canal" },
     { kind: "url", key: "link", label: "Link do vídeo (opcional)" },
+    { kind: "date", key: "lastUpdate", label: "Última atualização (opcional)" },
   ],
   "Gacha Videos": [
     {
@@ -399,6 +450,7 @@ export const TYPE_FIELDS: Record<MediaType, FieldDef[]> = {
       multi: true,
     },
     { kind: "url", key: "link", label: "Link do vídeo (opcional)" },
+    { kind: "date", key: "lastUpdate", label: "Última atualização (opcional)" },
   ],
 };
 

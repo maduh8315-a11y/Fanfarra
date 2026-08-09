@@ -29,6 +29,7 @@ export interface RecComment {
   username: string;
   text: string;
   createdAt: number;
+  parentId?: string; // se preenchido, é resposta ao comentário com esse id
 }
 
 // ── Comentários de um item, em tempo real (mais antigos primeiro) ──────────
@@ -90,8 +91,13 @@ export function useRecComments(itemId: string): UseRecCommentsResult {
   return { comments, hasMore, loadingMore, loadMore };
 }
 
-// ── Postar um comentário ────────────────────────────────────────────────────
-export async function postRecComment(itemId: string, username: string, text: string): Promise<void> {
+// ── Postar um comentário (ou uma resposta, se passar parentId) ─────────────
+export async function postRecComment(
+  itemId: string,
+  username: string,
+  text: string,
+  parentId?: string,
+): Promise<void> {
   const uid = auth.currentUser?.uid;
   if (!uid) throw new Error("Você precisa estar logado para comentar.");
   checkClientCooldown(`rec-comment:${uid}`, 3_000);
@@ -104,6 +110,7 @@ export async function postRecComment(itemId: string, username: string, text: str
     username,
     text: trimmed,
     createdAt: Date.now(),
+    ...(parentId ? { parentId } : {}),
   });
 }
 

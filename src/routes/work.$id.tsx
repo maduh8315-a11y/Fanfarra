@@ -157,6 +157,10 @@ function WorkDetail() {
     () => (work ? Math.max(0, Math.floor((Date.now() - work.createdAt) / 86_400_000)) : 0),
     [work],
   );
+  const daysSinceUpdated = useMemo(
+    () => (work ? Math.max(0, Math.floor((Date.now() - work.updatedAt) / 86_400_000)) : 0),
+    [work],
+  );
 
   if (!work) {
     return (
@@ -478,6 +482,13 @@ function WorkDetail() {
             <InfoRow icon={<CalendarCheck size={16} />} label="Fim" value={formatDate(work.endDate)!} />
           )}
           <InfoRow icon={<Clock size={16} />} label="Adicionado" value={`há ${daysSinceAdded} dia${daysSinceAdded === 1 ? "" : "s"}`} />
+          {work.updatedAt !== work.createdAt && (
+            <InfoRow
+              icon={<Pencil size={16} />}
+              label="Última atualização"
+              value={daysSinceUpdated === 0 ? "Hoje" : `há ${daysSinceUpdated} dia${daysSinceUpdated === 1 ? "" : "s"}`}
+            />
+          )}
           {work.recommendedBy && (
             <div
               className="flex items-center justify-between px-4 py-3"

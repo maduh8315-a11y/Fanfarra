@@ -1,6 +1,6 @@
 import { useIsAdmin } from "@/lib/fanfarra/config";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import type { MediaType } from "@/lib/fanfarra/types";
+import type { MediaType, DateParts } from "@/lib/fanfarra/types";
 import { useMemo, useState } from "react";
 import { getTypeColor, getTypeCardBg, getTypeCardBorder } from "@/lib/fanfarra/typeColors";
 import { ContentGate } from "@/components/fanfarra/ContentGate";
@@ -17,6 +17,8 @@ import {
   Users2,
   Trash2,
   Crown,
+  FileText,
+  Clock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { AppShell } from "@/components/fanfarra/AppShell";
@@ -53,6 +55,15 @@ function buildTotals(item: RecommendationItem): string[] {
   if (item.words) t.push(`${item.words.toLocaleString("pt-BR")} palavras`);
   return t;
 }
+
+function formatDate(d?: DateParts) {
+  if (!d?.y) return null;
+  const dd = String(d.d ?? 1).padStart(2, "0");
+  const mm = String(d.m ?? 1).padStart(2, "0");
+  return `${dd}/${mm}/${d.y}`;
+}
+
+
 type FichaFieldKey = "total" | "duration" | "studio" | "platform" | "fandom" | "status";
 
 interface FichaField {
@@ -198,6 +209,37 @@ function RecDetail() {
       toast.error(err instanceof Error ? err.message : "Não foi possível comentar.");
     } finally {
       setPosting(false);
+    }
+  };
+
+  // ── Respostas a comentários ──────────────────────────────────────────────
+  const topLevelComments = useMemo(() => comments.filter((c) => !c.parentId), [comments]);
+  const repliesByParent = useMemo(() => {
+    const map: Record<string, typeof comments> = {};
+    for (const c of comments) {
+      if (c.parentId) {
+        if (!map[c.parentId]) map[c.parentId] = [];
+        map[c.parentId].push(c);
+      }
+    }
+    return map;
+  }, [comments]);
+
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
+  const [postingReply, setPostingReply] = useState(false);
+
+  const handlePostReply = async (parentId: string) => {
+    if (!item) return;
+    setPostingReply(true);
+    try {
+      await postRecComment(item.id, user?.displayName || "Usuário", replyText, parentId);
+      setReplyText("");
+      setReplyingTo(null);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Não foi possível responder.");
+    } finally {
+      setPostingReply(false);
     }
   };
 
@@ -379,7 +421,7 @@ function RecDetail() {
               : `Venceu ${awardWins.length} vezes o Fanfarra Awards`}
           </div>
         )}
-        <div className="flex items-center justify-center gap-8 mt-4">
+        <div className="relative flex items-center justify-center gap-8 mt-4">
           <button
             onClick={() => handleReact("like")}
             className="flex flex-col items-center gap-1"
@@ -391,9 +433,25 @@ function RecDetail() {
               fill={myReaction === "like" ? "var(--fan-pink)" : "transparent"}
             />
             <span className="text-sm font-semibold" style={{ color: "var(--fan-text-2)" }}>
-              {reactionCounts.likes}
+              {reactionCounts.boos}
             </span>
           </button>
+
+          {/* Últimas atualizações — canto direito da linha do aplaudir/vaiar */}
+          <div
+            className="absolute right-0 top-0 flex flex-col items-end gap-0.5"
+            style={{ color: "var(--fan-text-2)" }}
+          >
+            <span className="flex items-center gap-1 text-[10px]">
+              <Clock size={10} />
+              Obra: {formatDate(item.lastUpdate) ?? "—"}
+            </span>
+            <span className="flex items-center gap-1 text-[10px]">
+              <Clock size={10} />
+              Autor: {item.postUpdatedAt ? new Date(item.postUpdatedAt).toLocaleDateString("pt-BR") : "—"}
+            </span>
+          </div>
+      
           <button
             onClick={() => handleReact("boo")}
             className="flex flex-col items-center gap-1"
@@ -408,28 +466,25 @@ function RecDetail() {
               {reactionCounts.boos}
             </span>
           </button>
+
+          {/* Resumo + últimas atualizações — canto direito da linha do aplaudir/vaiar */}
+          <div
+            className="absolute right-0 top-0 flex flex-col items-end gap-0.5"
+            style={{ color: "var(--fan-text-2)" }}
+          >
+          </div>
         </div>
       </div>
 
-      {/* Avaliação */}
+      {/* Resumo */}
       <section className="mt-5 px-5">
-        <SectionCard icon={<Star size={13} color="var(--fan-icon-blue)" />} title="Avaliação">
-          {item.rating ? (
-            <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5].map((n) => (
-                <Star
-                  key={n}
-                  size={16}
-                  color={item.rating! >= n ? "var(--fan-pink-light)" : "var(--fan-rose-mid)"}
-                  fill={item.rating! >= n ? "var(--fan-pink-light)" : "transparent"}
-                />
-              ))}
-              <span className="text-sm ml-1" style={{ color: "var(--fan-text-2)" }}>
-                {item.rating}/5
-              </span>
-            </div>
+        <SectionCard icon={<FileText size={13} color="var(--fan-icon-blue)" />} title="Resumo">
+          {item.synopsis ? (
+            <p className="text-sm leading-relaxed" style={{ color: "var(--fan-text-3)" }}>
+              {item.synopsis}
+            </p>
           ) : (
-            <EmptyValue text="Sem avaliação registrada" />
+            <EmptyValue text="Nenhum resumo informado" />
           )}
         </SectionCard>
       </section>
@@ -463,6 +518,48 @@ function RecDetail() {
         </SectionCard>
       </section>
 
+      {/* Link */}
+      <section className="mt-3 px-5">
+        <SectionCard icon={<LinkIcon size={13} color="var(--fan-icon-blue)" />} title="Link">
+        {item.link ? (
+          <a
+            href={item.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm font-semibold break-all"
+            style={{ color: "var(--fan-pink-light)" }}
+          >
+            {item.link}
+          </a>
+        ) : (
+          <EmptyValue text="Nenhum link informado" />
+        )}
+      </SectionCard>
+      </section>
+
+      {/* Avaliação */}
+      <section className="mt-3 px-5">
+        <SectionCard icon={<Star size={13} color="var(--fan-icon-blue)" />} title="Avaliação">
+          {item.rating ? (
+            <div className="flex items-center gap-1">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <Star
+                  key={n}
+                  size={16}
+                  color={item.rating! >= n ? "var(--fan-pink-light)" : "var(--fan-rose-mid)"}
+                  fill={item.rating! >= n ? "var(--fan-pink-light)" : "transparent"}
+                />
+              ))}
+              <span className="text-sm ml-1" style={{ color: "var(--fan-text-2)" }}>
+                {item.rating}/5
+              </span>
+            </div>
+          ) : (
+            <EmptyValue text="Sem avaliação registrada" />
+          )}
+        </SectionCard>
+      </section>
+
       {/* Reação do usuário */}
       <section className="mt-3 px-5">
         <SectionCard icon={<Heart size={13} color="var(--fan-icon-blue)" />} title="Reação do usuário">
@@ -485,106 +582,8 @@ function RecDetail() {
         </SectionCard>
       </section>
 
-      {/* Link */}
-      <section className="mt-3 px-5">
-        <SectionCard icon={<LinkIcon size={13} color="var(--fan-icon-blue)" />} title="Link">
-          {item.link ? (
-            <a
-              href={item.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm font-semibold break-all"
-              style={{ color: "var(--fan-pink-light)" }}
-            >
-              {item.link}
-            </a>
-          ) : (
-            <EmptyValue text="Nenhum link informado" />
-          )}
-        </SectionCard>
-      </section>
-
-      {/* Comentários da comunidade */}
-      <section className="mt-3 px-5">
-        <SectionCard
-          icon={<MessageSquare size={13} color="var(--fan-icon-blue)" />}
-          title="Comentários da comunidade"
-        >
-          <div className="flex gap-2 mb-3">
-            <input
-              type="text"
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              placeholder="Deixe seu comentário sobre a obra..."
-              className="flex-1 rounded-[10px] px-3 py-2 text-sm"
-              style={{ background: "var(--fan-bg)", border: "1px solid var(--fan-border)", color: "var(--fan-text)" }}
-            />
-            <button
-              onClick={handlePostComment}
-              disabled={posting || !commentText.trim()}
-              className="px-3 py-2 rounded-[10px] text-sm font-bold shrink-0 disabled:opacity-50"
-              style={{ background: "var(--fan-pink)", color: "#1a0a12" }}
-            >
-              Enviar
-            </button>
-          </div>
-
-          {comments.length === 0 ? (
-            <EmptyValue text="Nenhum comentário ainda. Seja o primeiro!" />
-          ) : (
-            <div className="space-y-3">
-              {comments.map((c) => {
-                const canDelete = !!user && (user.uid === c.uid || isAdmin);
-                return (
-                  <div key={c.id} className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-semibold" style={{ color: "var(--fan-pink-light)" }}>
-                        @{c.username}
-                      </p>
-                      <p className="text-sm mt-0.5" style={{ color: "var(--fan-text-3)" }}>
-                        {c.text}
-                      </p>
-                    </div>
-                    {canDelete && (
-                      <button
-                        onClick={() => setConfirmDeleteComment(c.id)}
-                        disabled={deletingComment}
-                        aria-label="Apagar comentário"
-                        className="shrink-0 mt-1 disabled:opacity-50"
-                      >
-                        <Trash2 size={15} color="var(--fan-text-2)" />
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {hasMoreComments && (
-            <div className="mt-3 flex justify-center">
-              <button
-                onClick={loadMoreComments}
-                disabled={loadingMoreComments}
-                className="rounded-full px-5 py-2.5 text-sm font-bold"
-                style={{
-                  background: "var(--fan-bg-2)",
-                  border: "1px solid var(--fan-pink)",
-                  color: "var(--fan-pink-light)",
-                  opacity: loadingMoreComments ? 0.6 : 1,
-                }}
-              >
-                {loadingMoreComments ? "Carregando..." : "Carregar mais comentários"}
-              </button>
-            </div>
-          )}
-
-        </SectionCard>
-      </section>
-
       {/* Obras relacionadas */}
-      {/* Obras relacionadas */}
-      <section className="mt-3 px-5 pb-6">
+      <section className="mt-3 px-5">
         <SectionCard icon={<Users2 size={13} color="var(--fan-icon-blue)" />} title="Obras relacionadas">
           {related.length ? (
             <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
@@ -632,6 +631,153 @@ function RecDetail() {
           ) : (
             <EmptyValue text="Nenhuma obra relacionada informada" />
           )}
+        </SectionCard>
+      </section>
+
+      {/* Comentários da comunidade */}
+      <section className="mt-3 px-5 pb-6">
+        <SectionCard
+          icon={<MessageSquare size={13} color="var(--fan-icon-blue)" />}
+          title="Comentários da comunidade"
+        >
+          <div className="flex gap-2 mb-3">
+            <input
+              type="text"
+              value={commentText}
+              onChange={(e) => setCommentText(e.target.value)}
+              placeholder="Deixe seu comentário sobre a obra..."
+              className="flex-1 rounded-[10px] px-3 py-2 text-sm"
+              style={{ background: "var(--fan-bg)", border: "1px solid var(--fan-border)", color: "var(--fan-text)" }}
+            />
+            <button
+              onClick={handlePostComment}
+              disabled={posting || !commentText.trim()}
+              className="px-3 py-2 rounded-[10px] text-sm font-bold shrink-0 disabled:opacity-50"
+              style={{ background: "var(--fan-pink)", color: "#1a0a12" }}
+            >
+              Enviar
+            </button>
+          </div>
+
+          {topLevelComments.length === 0 ? (
+            <EmptyValue text="Nenhum comentário ainda. Seja o primeiro!" />
+          ) : (
+            <div className="space-y-4">
+              {topLevelComments.map((c) => {
+                const canDelete = !!user && (user.uid === c.uid || isAdmin);
+                const replies = repliesByParent[c.id] ?? [];
+                return (
+                  <div key={c.id}>
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-semibold" style={{ color: "var(--fan-pink-light)" }}>
+                          @{c.username}
+                        </p>
+                        <p className="text-sm mt-0.5" style={{ color: "var(--fan-text-3)" }}>
+                          {c.text}
+                        </p>
+                        {user && (
+                          <button
+                            onClick={() => {
+                              setReplyingTo(replyingTo === c.id ? null : c.id);
+                              setReplyText("");
+                            }}
+                            className="text-xs font-semibold mt-1"
+                            style={{ color: "var(--fan-text-2)" }}
+                          >
+                            {replyingTo === c.id ? "Cancelar" : "Responder"}
+                          </button>
+                        )}
+                      </div>
+                      {canDelete && (
+                        <button
+                          onClick={() => setConfirmDeleteComment(c.id)}
+                          disabled={deletingComment}
+                          aria-label="Apagar comentário"
+                          className="shrink-0 mt-1 disabled:opacity-50"
+                        >
+                          <Trash2 size={15} color="var(--fan-text-2)" />
+                        </button>
+                      )}
+                    </div>
+
+                    {replyingTo === c.id && (
+                      <div className="flex gap-2 mt-2 ml-4">
+                        <input
+                          type="text"
+                          value={replyText}
+                          onChange={(e) => setReplyText(e.target.value)}
+                          placeholder={`Responder @${c.username}...`}
+                          className="flex-1 rounded-[10px] px-3 py-2 text-sm"
+                          style={{ background: "var(--fan-bg)", border: "1px solid var(--fan-border)", color: "var(--fan-text)" }}
+                        />
+                        <button
+                          onClick={() => handlePostReply(c.id)}
+                          disabled={postingReply || !replyText.trim()}
+                          className="px-3 py-2 rounded-[10px] text-sm font-bold shrink-0 disabled:opacity-50"
+                          style={{ background: "var(--fan-pink)", color: "#1a0a12" }}
+                        >
+                          Enviar
+                        </button>
+                      </div>
+                    )}
+
+                    {replies.length > 0 && (
+                      <div
+                        className="mt-2 ml-4 space-y-2 pl-3"
+                        style={{ borderLeft: "2px solid var(--fan-border)" }}
+                      >
+                        {replies.map((r) => {
+                          const canDeleteReply = !!user && (user.uid === r.uid || isAdmin);
+                          return (
+                            <div key={r.id} className="flex items-start justify-between gap-2">
+                              <div>
+                                <p className="text-sm font-semibold" style={{ color: "var(--fan-pink-light)" }}>
+                                  @{r.username}
+                                </p>
+                                <p className="text-sm mt-0.5" style={{ color: "var(--fan-text-3)" }}>
+                                  {r.text}
+                                </p>
+                              </div>
+                              {canDeleteReply && (
+                                <button
+                                  onClick={() => setConfirmDeleteComment(r.id)}
+                                  disabled={deletingComment}
+                                  aria-label="Apagar resposta"
+                                  className="shrink-0 mt-1 disabled:opacity-50"
+                                >
+                                  <Trash2 size={13} color="var(--fan-text-2)" />
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {hasMoreComments && (
+            <div className="mt-3 flex justify-center">
+              <button
+                onClick={loadMoreComments}
+                disabled={loadingMoreComments}
+                className="rounded-full px-5 py-2.5 text-sm font-bold"
+                style={{
+                  background: "var(--fan-bg-2)",
+                  border: "1px solid var(--fan-pink)",
+                  color: "var(--fan-pink-light)",
+                  opacity: loadingMoreComments ? 0.6 : 1,
+                }}
+              >
+                {loadingMoreComments ? "Carregando..." : "Carregar mais comentários"}
+              </button>
+            </div>
+          )}
+
         </SectionCard>
       </section>
 
@@ -691,6 +837,7 @@ function RecDetail() {
     </AppShell>
   );
 }
+
 
 // ── Componentes de apoio ─────────────────────────────────────────────────────
 
