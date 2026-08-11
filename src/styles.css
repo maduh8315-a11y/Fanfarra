@@ -111,6 +111,16 @@
   --sar: var(--safe-area-inset-right, env(safe-area-inset-right, 0px));
   --font-display: "Unbounded", system-ui, sans-serif;
   --fan-icon-blue: #F5A623;
+  /* Cores fixas do tutorial guiado — de propósito NÃO existem dentro de
+     [data-theme="lunar"/"aurora"], só aqui e no modo claro logo abaixo.
+     Assim o tutorial nunca muda de cor por causa do tema custom do perfil. */
+  --fan-tour-bg: #150000;
+  --fan-tour-border: #3D0000;
+  --fan-tour-text: #FFF3F0;
+  --fan-tour-text-2: #E89490;
+  --fan-tour-accent: #FF0000;
+  --fan-tour-accent-text: #FFFFFF;
+  --fan-tour-chip: #0A0000;
 }
 
 [data-theme="lunar"] {
@@ -174,6 +184,13 @@
   --fan-pink-rgb: 225, 6, 0;
   --fan-pink-light-rgb: 255, 59, 48;
   --fan-icon-blue: #F5A623;
+  --fan-tour-bg: #FFFFFF;
+  --fan-tour-border: #EAEAEA;
+  --fan-tour-text: #171717;
+  --fan-tour-text-2: #B3241E;
+  --fan-tour-accent: #E10600;
+  --fan-tour-accent-text: #FFFFFF;
+  --fan-tour-chip: #F7F7F7;
 }
 
 [data-mode="light"][data-theme="lunar"] {

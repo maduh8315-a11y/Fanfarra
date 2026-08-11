@@ -115,7 +115,7 @@ export const sendChatMessageServer = createServerFn({ method: "POST" })
       tx.upsert(
         NOTIF_COLLECTION,
         `n_${now}_${randomId()}`,
-        { uid: data.otherUid, icon: "message-circle", text: `${data.myUsername}: ${preview}`, ts: now, read: false, pushed: false },
+        { uid: data.otherUid, icon: "message-circle", text: `${data.myUsername}: ${preview}`, fromUid: uid, fromUsername: data.myUsername, ts: now, read: false, pushed: false },
         writes,
       );
 

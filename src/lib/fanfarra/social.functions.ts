@@ -14,6 +14,8 @@ const inputSchema = z.object({
   toUids: z.array(z.string().min(1)).min(1).max(300),
   icon: z.enum(["user-plus", "users", "heart", "eye", "message-circle"]),
   text: z.string().min(1).max(300),
+  fromUsername: z.string().max(80).optional(),
+  recId: z.string().max(300).optional(),
 });
 
 export interface NotifyManyResult {
@@ -60,7 +62,7 @@ export const notifyManyServer = createServerFn({ method: "POST" })
         tx.upsert(
           NOTIF_COLLECTION,
           `n_${now}_${i}_${randomId()}`,
-          { uid: toUid, icon: data.icon, text: data.text, ts: now, read: false, pushed: false },
+         { uid: toUid, icon: data.icon, text: data.text, fromUid: uid, fromUsername: data.fromUsername, recId: data.recId, ts: now, read: false, pushed: false },
           writes,
         );
       });

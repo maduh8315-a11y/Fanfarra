@@ -135,6 +135,10 @@ export interface Notification {
   text: string;
   ts: number;
   read: boolean;
+  fromUid?: string;
+  fromUsername?: string;
+  badgeId?: string;
+  recId?: string;
 }
 
 const NOTIF_COLLECTION = "notifications";
@@ -173,6 +177,10 @@ onAuthStateChanged(auth, (user) => {
           text: data.text,
           ts: data.ts,
           read: !!data.read,
+          fromUid: data.fromUid,
+          fromUsername: data.fromUsername,
+          badgeId: data.badgeId,
+          recId: data.recId,
         } as Notification;
       })
       .sort((a, b) => b.ts - a.ts)
@@ -209,6 +217,24 @@ export async function markAllNotificationsRead() {
   await batch.commit();
 }
 
+export async function markNotificationRead(id: string) {
+  if (!notifCurrentUid) return;
+  try {
+    await updateDoc(doc(db, NOTIF_COLLECTION, id), { read: true });
+  } catch (err) {
+    console.error("Erro ao marcar notificação como lida:", err);
+  }
+}
+
+export async function deleteNotification(id: string) {
+  if (!notifCurrentUid) return;
+  try {
+    await deleteDoc(doc(db, NOTIF_COLLECTION, id));
+  } catch (err) {
+    console.error("Erro ao excluir notificação:", err);
+  }
+}
+
 export async function pushNotification(n: Omit<Notification, "id" | "ts" | "read">) {
   if (!notifCurrentUid) return;
 
@@ -226,6 +252,9 @@ export async function pushNotification(n: Omit<Notification, "id" | "ts" | "read
       uid: notifCurrentUid,
       icon: n.icon,
       text: n.text,
+      fromUid: n.fromUid,
+      fromUsername: n.fromUsername,
+      badgeId: n.badgeId,
       ts: Date.now(),
       read: false,
       pushed: false, // o cron (scripts/cron.mjs) usa essa flag pra saber o que ainda precisa virar push real
@@ -538,6 +567,7 @@ export function syncEarnedBadges(stats: BadgeStats): void {
       pushNotification({
         icon: "award",
         text: `Você ganhou o selo "${badge.name}"!`,
+        badgeId: id,
       });
     }
   });

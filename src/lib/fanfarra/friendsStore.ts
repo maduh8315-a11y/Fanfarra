@@ -171,7 +171,7 @@ export async function acceptFriendRequest(
     members: [uid, otherUid].sort(),
     createdAt: Date.now(),
   });
-  await notifyMany([otherUid], "users", `${myUsername} aceitou seu pedido de amizade! Agora vocês são amigos.`);
+  await notifyMany([otherUid], "users", `${myUsername} aceitou seu pedido de amizade! Agora vocês são amigos.`, myUsername);
 }
 
 export async function declineFriendRequest(requestId: string): Promise<void> {

@@ -81,7 +81,7 @@ export async function followUser(targetUid: string, targetUsername: string, myUs
     followingUsername: targetUsername,
     createdAt: Date.now(),
   });
-  await notifyMany([targetUid], "eye", `${myUsername} começou a seguir você.`);
+  await notifyMany([targetUid], "eye", `${myUsername} começou a seguir você.`, myUsername);
 }
 
 export async function unfollowUser(targetUid: string): Promise<void> {

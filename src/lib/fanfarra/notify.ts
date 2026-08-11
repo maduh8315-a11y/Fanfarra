@@ -6,12 +6,18 @@ import { notifyManyServer, notifyAllUsersServer } from "@/lib/fanfarra/social.fu
 
 export type SocialNotifIcon = "user-plus" | "users" | "heart" | "eye" | "message-circle";
 
-export async function notifyMany(toUids: string[], icon: SocialNotifIcon, text: string): Promise<void> {
+export async function notifyMany(
+  toUids: string[],
+  icon: SocialNotifIcon,
+  text: string,
+  fromUsername?: string,
+  recId?: string,
+): Promise<void> {
   const user = auth.currentUser;
   if (!user || toUids.length === 0) return;
   try {
     const idToken = await user.getIdToken();
-    await notifyManyServer({ data: { idToken, toUids, icon, text } });
+    await notifyManyServer({ data: { idToken, toUids, icon, text, fromUsername, recId } });
   } catch (err) {
     console.error("Erro ao enviar notificação social:", err);
   }

@@ -6,6 +6,9 @@ export interface TourStep {
   route: string;
   title: string;
   description: string;
+  // Quando true, esse passo mostra o item dentro do menu lateral (☰) aberto,
+  // em vez de navegar pra página que ele abre.
+  openDrawer?: boolean;
 }
 
 export const TOUR_STEPS: TourStep[] = [
@@ -19,7 +22,7 @@ export const TOUR_STEPS: TourStep[] = [
     id: "tour-menu",
     route: "/",
     title: "Menu",
-    description: "Esse ☰ aqui abre o resto do app. Mas relaxa, não precisa clicar em nada — eu já vou te levando direto em cada parte.",
+    description: "Esse ☰ aqui abre o resto do app. Relaxa, não precisa clicar em nada — eu vou abrir o menu e te mostrar cada opção direto por aqui.",
   },
   {
     id: "tour-library-modes",
@@ -52,52 +55,60 @@ export const TOUR_STEPS: TourStep[] = [
     description: "Recomendações puxadas pelo que você já avaliou e curtiu. Ótimo pra sair da bolha e achar coisa nova.",
   },
   {
-    id: "tour-search-input",
-    route: "/search",
+    id: "tour-search",
+    route: "/",
+    openDrawer: true,
     title: "Buscar",
-    description: "Aqui você caça obra ou perfil de outro usuário só digitando o nome.",
+    description: "Aqui no menu você caça obra ou perfil de outro usuário só digitando o nome.",
   },
   {
-    id: "tour-stats-title",
-    route: "/stats",
+    id: "tour-stats",
+    route: "/",
+    openDrawer: true,
     title: "Estatísticas Avançadas",
     description: "Gráficos sobre seus hábitos: gênero favorito, tempo total consumido, streak de dias ativos e mais.",
   },
   {
-    id: "tour-wrapped-content",
-    route: "/wrapped",
+    id: "tour-wrapped",
+    route: "/",
+    openDrawer: true,
     title: "Wrapped Anual",
     description: new Date().getMonth() === 11
-      ? "Um resumão animado do seu ano no Fanfarra: seus números, gêneros favoritos, streak de dias ativos e mais. Arrasta pros lados pra passar os slides."
-      : "Um resumão animado do seu ano no Fanfarra. Ele libera de verdade em dezembro — fora disso, é isso que você tá vendo agora: um aviso dizendo que ainda não chegou.",
+      ? "Um resumão animado do seu ano no Fanfarra: seus números, gêneros favoritos, streak de dias ativos e mais. Em dezembro é só abrir aqui e arrastar pros lados pra ver os slides."
+      : "Um resumão animado do seu ano no Fanfarra: seus números, gêneros favoritos, streak de dias ativos e mais. Ele libera de verdade em dezembro — fora disso, abrir aqui só mostra um aviso dizendo que ainda não chegou a hora.",
   },
   {
-    id: "tour-awards-title",
-    route: "/awards",
+    id: "tour-awards",
+    route: "/",
+    openDrawer: true,
     title: "Fanfarra Awards",
     description: "Prêmio votado pela própria comunidade nas obras favoritas do ano.",
   },
   {
-    id: "tour-challenges-title",
-    route: "/challenges",
+    id: "tour-challenges",
+    route: "/",
+    openDrawer: true,
     title: "Desafios Fandom",
     description: "Metas pra cumprir e se destacar, tipo maratonar ou ler X livros num prazo. Cumpriu, ganha selo.",
   },
   {
-    id: "tour-chat-title",
-    route: "/chat",
+    id: "tour-chat",
+    route: "/",
+    openDrawer: true,
     title: "Mensagens",
     description: "Bate-papo direto com seus amigos, tipo uma DM. Diferente das notificações, aqui rola conversa de verdade.",
   },
   {
-    id: "tour-friends-title",
-    route: "/friends",
+    id: "tour-friends",
+    route: "/",
+    openDrawer: true,
     title: "Amigos",
     description: "Manda pedido, aceita pedido e acompanha o que a galera tá consumindo.",
   },
   {
-    id: "tour-notifications-title",
-    route: "/notifications",
+    id: "tour-notifications",
+    route: "/",
+    openDrawer: true,
     title: "Notificações",
     description: "Avisos rápidos: curtida, novo seguidor, pedido de amizade aceito.",
   },
@@ -126,8 +137,9 @@ export const TOUR_STEPS: TourStep[] = [
     description: "Todo selo que você já desbloqueou fica exposto aqui, tipo troféu de conquista.",
   },
   {
-    id: "tour-settings-support",
-    route: "/settings",
+    id: "tour-settings",
+    route: "/",
+    openDrawer: true,
     title: "Configurações",
     description: "Aqui você ajusta conta, privacidade e tema. E é bem aqui, em Suporte, que você revê esse tutorial de novo quando quiser.",
   },
@@ -146,6 +158,39 @@ interface Rect {
 }
 
 export const CLOSE_DRAWER_EVENT = "fanfarra:close-drawer";
+export const OPEN_DRAWER_EVENT = "fanfarra:open-drawer";
+
+// Calcula o espaço reservado pela status bar/notch (topo) e pela barra
+// inferior fixa do app (embaixo), pra nunca desenhar o destaque nem o card
+// do tour por baixo delas — antes o tour ignorava essa margem e ficava
+// cortado/coberto, diferente do resto do app (que respeita esse respiro).
+function getTourSafeBounds() {
+  const topInset = parseFloat(
+    getComputedStyle(document.documentElement).getPropertyValue("--sat"),
+  ) || 0;
+  const nav = document.getElementById("fanfarra-bottom-nav");
+  const navHeight = nav ? nav.getBoundingClientRect().height : 0;
+  return {
+    top: topInset + 20,
+    bottom: navHeight + 12,
+  };
+}
+
+// Acha o ancestral com scroll próprio mais próximo do elemento (ex: o menu
+// lateral, que rola por dentro dele mesmo, separado da página). Sem isso, o
+// tour só rolava a janela e itens de menu mais pra baixo ficavam fora da
+// área visível, com o destaque desenhado longe do item real.
+function getScrollParent(node: HTMLElement | null): HTMLElement | null {
+  let el = node?.parentElement ?? null;
+  while (el && el !== document.body) {
+    const overflowY = getComputedStyle(el).overflowY;
+    if ((overflowY === "auto" || overflowY === "scroll") && el.scrollHeight > el.clientHeight) {
+      return el;
+    }
+    el = el.parentElement;
+  }
+  return null;
+}
 
 export function AppTour() {
   const nav = useNavigate();
@@ -192,13 +237,19 @@ export function AppTour() {
 
   const current = TOUR_STEPS[step];
 
-// Não usamos mais o menu lateral pra destacar nada — se estiver aberto,
-  // avisa o AppShell pra fechar. Agora é por evento porque o tour roda no
-  // layout raiz, fora do AppShell, então não tem mais acesso direto ao
-  // estado do drawer.
+// Passos que explicam itens de dentro do menu lateral (☰) pedem pro
+  // AppShell abrir o menu de verdade e destacam o item ali dentro, em vez de
+  // navegar pra página que ele abre. Nos demais passos, garante que o menu
+  // esteja fechado. É por evento porque o tour roda no layout raiz, fora do
+  // AppShell, então não tem acesso direto ao estado do drawer.
   useEffect(() => {
-    if (running) window.dispatchEvent(new Event(CLOSE_DRAWER_EVENT));
-  }, [running]);
+    if (!running || !current) return;
+    if (current.openDrawer && pathname === current.route) {
+      window.dispatchEvent(new Event(OPEN_DRAWER_EVENT));
+    } else {
+      window.dispatchEvent(new Event(CLOSE_DRAWER_EVENT));
+    }
+  }, [running, step, pathname, current]);
 
   // Navega pra página do passo atual, se ainda não estiver nela.
  const navigatedForStepRef = useRef<number | null>(null);
@@ -232,26 +283,49 @@ export function AppTour() {
     function measure() {
       const el = document.getElementById(current.id);
       if (el) {
+        const bounds = getTourSafeBounds();
         // Só rola a tela UMA vez por passo — rolar a cada frame travava
         // a tela quando o elemento era maior que a viewport (ex: o form inteiro).
-        if (scrolledForStepRef.current !== step) {
+       if (scrolledForStepRef.current !== step) {
           scrolledForStepRef.current = step;
-          el.scrollIntoView({ block: "start" });
+          // Se o item estiver dentro de um menu com rolagem própria (ex: o
+          // menu lateral), rola esse container primeiro — senão o item pode
+          // ficar fora da área visível dele mesmo com a página no lugar certo.
+          const scrollParent = getScrollParent(el);
+          if (scrollParent) {
+            const parentRect = scrollParent.getBoundingClientRect();
+            const elRect = el.getBoundingClientRect();
+            const innerTarget = scrollParent.scrollTop + (elRect.top - parentRect.top) - 16;
+            scrollParent.scrollTo({ top: Math.max(0, innerTarget), behavior: "auto" });
+          }
+          // Rola manualmente em vez de usar scrollIntoView("start"): esse
+          // método ignora a status bar/notch e cola o elemento bem no topo
+          // real da tela, ficando coberto por ela — diferente do resto do
+          // app, que sempre respeita essa margem.
+          const r0 = el.getBoundingClientRect();
+          const target = window.scrollY + r0.top - bounds.top;
+          window.scrollTo({ top: Math.max(0, target), behavior: "auto" });
         }
         const r = el.getBoundingClientRect();
-        // Limita a altura do recorte ao tamanho da tela — elementos maiores
-        // que a viewport (como o formulário completo) jogavam o card do
-        // tutorial pra fora da área visível.
-        const clampedHeight = Math.min(r.height, window.innerHeight - 32);
+        // Limita a altura do recorte ao espaço realmente visível entre a
+        // status bar e a barra inferior fixa — elementos maiores que isso
+        // (como o formulário completo) jogavam o card do tutorial pra fora
+        // da área visível ou por baixo do menu inferior.
+        const clampedHeight = Math.min(r.height, window.innerHeight - bounds.top - bounds.bottom);
         setRect({ top: r.top, left: r.left, width: r.width, height: clampedHeight });
       } else {
         setRect(null);
       }
       raf = requestAnimationFrame(measure);
     }
-    const delay = setTimeout(() => {
-      raf = requestAnimationFrame(measure);
-    }, 250);
+    // Passos que abrem o menu lateral precisam de mais tempo pra animação
+    // de abertura do drawer terminar antes de medir a posição do item.
+    const delay = setTimeout(
+      () => {
+        raf = requestAnimationFrame(measure);
+      },
+      current.openDrawer ? 380 : 250,
+    );
     return () => {
       clearTimeout(delay);
       if (raf) cancelAnimationFrame(raf);
@@ -285,29 +359,48 @@ export function AppTour() {
   if (!running || !current) return null;
 
   const pad = 8;
-  const highlightStyle: CSSProperties = rect
-    ? {
-        position: "fixed",
-        top: rect.top - pad,
-        left: rect.left - pad,
-        width: rect.width + pad * 2,
-        height: rect.height + pad * 2,
-        borderRadius: 14,
-        boxShadow: "0 0 0 9999px rgba(0,0,0,0.75)",
-        border: "2px solid var(--fan-pink)",
-        pointerEvents: "none",
-        zIndex: 200,
-        transition: "top 0.25s ease, left 0.25s ease, width 0.25s ease, height 0.25s ease",
-      }
-    : {
-        position: "fixed",
-        inset: 0,
-        background: "rgba(0,0,0,0.75)",
-        pointerEvents: "none",
-        zIndex: 200,
-      };
-
   const EDGE = 16;
+  const bounds = getTourSafeBounds();
+
+  // Trava o retângulo de destaque dentro da área visível — nunca por baixo
+  // da status bar/notch nem da barra inferior, e nunca vazando pros lados.
+  // Antes ele usava a posição bruta do elemento e podia estourar a tela em
+  // seções largas (Estatísticas) ou fora da área segura (menu, carrossel).
+  let highlightStyle: CSSProperties;
+  if (rect) {
+    const rawLeft = rect.left - pad;
+    const rawTop = rect.top - pad;
+    const rawRight = rect.left + rect.width + pad;
+    const rawBottom = rect.top + rect.height + pad;
+
+    const left = Math.max(4, rawLeft);
+    const top = Math.max(bounds.top, rawTop);
+    const right = Math.min(window.innerWidth - 4, rawRight);
+    const bottom = Math.min(window.innerHeight - bounds.bottom, rawBottom);
+
+    highlightStyle = {
+      position: "fixed",
+      top,
+      left,
+      width: Math.max(0, right - left),
+      height: Math.max(0, bottom - top),
+      borderRadius: 14,
+      boxShadow: "0 0 0 9999px rgba(0,0,0,0.75)",
+      border: "2px solid var(--fan-tour-accent)",
+      pointerEvents: "none",
+      zIndex: 200,
+      transition: "top 0.25s ease, left 0.25s ease, width 0.25s ease, height 0.25s ease",
+    };
+  } else {
+    highlightStyle = {
+      position: "fixed",
+      inset: 0,
+      background: "rgba(0,0,0,0.75)",
+      pointerEvents: "none",
+      zIndex: 200,
+    };
+  }
+
   const tooltipWidth = Math.min(280, window.innerWidth - EDGE * 2);
   const tooltipHeight = tooltipSize.height || 160;
 
@@ -315,8 +408,8 @@ export function AppTour() {
   let tooltipLeft: number;
 
   if (rect) {
-    const spaceBelow = window.innerHeight - (rect.top + rect.height);
-    const spaceAbove = rect.top;
+    const spaceBelow = window.innerHeight - bounds.bottom - (rect.top + rect.height);
+    const spaceAbove = rect.top - bounds.top;
     const preferBelow = spaceBelow >= tooltipHeight + EDGE * 2 || spaceBelow >= spaceAbove;
 
     tooltipTop = preferBelow ? rect.top + rect.height + EDGE : rect.top - tooltipHeight - EDGE;
@@ -326,9 +419,10 @@ export function AppTour() {
     tooltipLeft = window.innerWidth / 2 - tooltipWidth / 2;
   }
 
-  // Trava final: seja qual for a conta acima, o card nunca fica fora da
-  // área visível — crucial no celular, onde a tela é pequena.
-  tooltipTop = Math.min(Math.max(tooltipTop, EDGE), window.innerHeight - tooltipHeight - EDGE);
+  // Trava final: o card nunca fica por baixo da status bar (topo) nem por
+  // baixo da barra inferior fixa do app — antes ele podia ficar coberto por
+  // uma das duas, diferente do resto do app, que sempre respeita essa margem.
+  tooltipTop = Math.min(Math.max(tooltipTop, bounds.top), window.innerHeight - bounds.bottom - tooltipHeight);
   tooltipLeft = Math.min(Math.max(tooltipLeft, EDGE), window.innerWidth - tooltipWidth - EDGE);
 
   const tooltipStyle: CSSProperties = {
@@ -349,21 +443,21 @@ export function AppTour() {
         style={{
           ...tooltipStyle,
           width: tooltipWidth,
-          background: "var(--fan-bg-2)",
-          border: "0.5px solid var(--fan-border)",
+         background: "var(--fan-tour-bg)",
+          border: "0.5px solid var(--fan-tour-border)",
         }}
       >
-        <div className="text-xs mb-1" style={{ color: "var(--fan-text-2)" }}>
+        <div className="text-xs mb-1" style={{ color: "var(--fan-tour-text-2)" }}>
           {step + 1} de {TOUR_STEPS.length}
         </div>
-        <div className="text-sm font-bold mb-1" style={{ color: "var(--fan-text)" }}>
+        <div className="text-sm font-bold mb-1" style={{ color: "var(--fan-tour-text)" }}>
           {current.title}
         </div>
-        <p className="text-sm mb-3" style={{ color: "var(--fan-text-2)" }}>
+        <p className="text-sm mb-3" style={{ color: "var(--fan-tour-text-2)" }}>
           {current.description}
         </p>
         <div className="flex items-center justify-between gap-2">
-          <button onClick={finish} className="text-xs" style={{ color: "var(--fan-text-2)" }}>
+          <button onClick={finish} className="text-xs" style={{ color: "var(--fan-tour-text-2)" }}>
             Pular
           </button>
           <div className="flex items-center gap-2">
@@ -371,7 +465,7 @@ export function AppTour() {
               <button
                 onClick={prev}
                 className="px-3 py-1.5 rounded-full text-xs font-semibold"
-                style={{ background: "var(--fan-bg-3)", color: "var(--fan-text)" }}
+                style={{ background: "var(--fan-tour-chip)", color: "var(--fan-tour-text)" }}
               >
                 Voltar
               </button>
@@ -379,7 +473,7 @@ export function AppTour() {
             <button
               onClick={next}
               className="px-3 py-1.5 rounded-full text-xs font-semibold"
-              style={{ background: "var(--fan-pink)", color: "#fff" }}
+              style={{ background: "var(--fan-tour-accent)", color: "var(--fan-tour-accent-text)" }}
             >
               {step >= TOUR_STEPS.length - 1 ? "Concluir" : "Próximo"}
             </button>

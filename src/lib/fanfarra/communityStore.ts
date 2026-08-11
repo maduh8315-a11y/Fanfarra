@@ -8,6 +8,7 @@ import { notifyMany } from "./notify";
 import {
   collection,
   doc,
+  getDoc,
   setDoc,
   deleteDoc,
   getDocs,
@@ -94,6 +95,20 @@ export function loadMoreCommunity(): void {
   unsubscribeSnapshot = null;
   connect();
 }
+
+// Busca uma recomendação da comunidade direto no Firestore, pelo ID, sem
+// depender da lista paginada em tempo real. Serve de reforço pra tela de
+// detalhe: se o item não estiver entre os que já foram carregados (ex: é
+// mais antigo que as últimas recomendações, ou o link veio de fora), ainda
+// assim conseguimos achá-lo em vez de cravar "não encontrada" errado.
+export async function fetchCommunityRecommendationById(
+  id: string,
+): Promise<PostedRecommendation | null> {
+  const snap = await getDoc(doc(db, COLLECTION, id));
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...(snap.data() as Omit<PostedRecommendation, "id">) };
+}
+
 // Assina a coleção pública inteira (sem filtro de uid) sempre que houver um
 // usuário logado E alguma tela estiver de fato usando esse dado — é isso que
 // faz a recomendação aparecer para todo mundo, sem manter a conexão aberta
@@ -192,7 +207,7 @@ export function postWorkAsRecommendation(work: Work, username: string): void {
       updatedAt: now,
     }),
   )
-    .then(() => notifyFriendsAndFollowersOfNewRec(uid, username, work.title))
+    .then(() => notifyFriendsAndFollowersOfNewRec(uid, username, work.title, work.id))
     .catch((err) => {
       console.error("Erro ao publicar recomendação:", err);
       toast.error("Não foi possível publicar na comunidade. Tente de novo.");
@@ -217,7 +232,7 @@ export async function deleteAllRecommendationsForUser(uid: string): Promise<void
 
 // Avisa amigos e seguidores que uma nova recomendação foi publicada — é o
 // que faz o feed social parecer "vivo".
-async function notifyFriendsAndFollowersOfNewRec(uid: string, username: string, workTitle: string): Promise<void> {
+async function notifyFriendsAndFollowersOfNewRec(uid: string, username: string, workTitle: string, workId: string): Promise<void> {
   try {
     const [friendsSnap, followersSnap] = await Promise.all([
       getDocs(query(collection(db, "friendships"), where("members", "array-contains", uid))),
@@ -229,7 +244,7 @@ async function notifyFriendsAndFollowersOfNewRec(uid: string, username: string, 
     const followerUids = followersSnap.docs.map((d) => (d.data() as { followerUid: string }).followerUid);
     const targets = [...new Set([...friendUids, ...followerUids])];
     if (targets.length === 0) return;
-    await notifyMany(targets, "heart", `${username} recomendou "${workTitle}". Dá uma olhada!`);
+    await notifyMany(targets, "heart", `${username} recomendou "${workTitle}". Dá uma olhada!`, username, workId);
   } catch (err) {
     console.error("Erro ao notificar amigos/seguidores sobre nova recomendação:", err);
   }

@@ -173,6 +173,20 @@ function ProfilePage() {
     syncEarnedBadges(stats);
   }, [stats, dataReady]);
 
+  // Se o usuário chegou aqui clicando numa notificação de "selo conquistado",
+  // abre o selo correspondente e rola até a seção de selos.
+  useEffect(() => {
+    if (!dataReady || badges.length === 0) return;
+    const pendingId = sessionStorage.getItem("fanfarra_highlight_badge");
+    if (!pendingId) return;
+    sessionStorage.removeItem("fanfarra_highlight_badge");
+    const badge = badges.find((b) => b.id === pendingId && b.earned);
+    if (badge) {
+      setSelectedBadge(badge);
+      document.getElementById("tour-profile-badges")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [dataReady, badges]);
+
   const save = async () => {
     try {
       await updateProfile({

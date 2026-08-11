@@ -1,7 +1,7 @@
 import { useIsAdmin } from "@/lib/fanfarra/config";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import type { MediaType, DateParts } from "@/lib/fanfarra/types";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { getTypeColor, getTypeCardBg, getTypeCardBorder } from "@/lib/fanfarra/typeColors";
 import { ContentGate } from "@/components/fanfarra/ContentGate";
 import {
@@ -30,7 +30,12 @@ import {
   communityToRecommendationItem,
   type RecommendationItem,
 } from "@/lib/fanfarra/recommendations";
-import { usePublicRecommendations } from "@/lib/fanfarra/communityStore";
+import {
+  usePublicRecommendations,
+  usePublicRecommendationsLoading,
+  fetchCommunityRecommendationById,
+  type PostedRecommendation,
+} from "@/lib/fanfarra/communityStore";
 import { useRecReactionCounts, useMyRecReaction, reactToRecItem } from "@/lib/fanfarra/recReactions";
 import type { RelatedWork } from "@/lib/fanfarra/formConfig";
 import { useAuthUser } from "@/lib/fanfarra/auth";
@@ -177,16 +182,53 @@ function RecDetail() {
   const { id } = Route.useParams();
   const nav = useNavigate();
   const community = usePublicRecommendations();
+  const communityLoading = usePublicRecommendationsLoading();
 
+  // Fallback: se o item não estiver na lista paginada já carregada, busca
+  // ele direto no Firestore pelo ID (cobre link direto, itens mais antigos
+  // que a página atual, etc).
+  const [fallbackItem, setFallbackItem] = useState<PostedRecommendation | null>(null);
+  const [fallbackChecked, setFallbackChecked] = useState(false);
+
+ useEffect(() => {
+    if (!id.startsWith("community_")) return;
+    const originalId = id.replace("community_", "");
+    console.log("[DEBUG rec.$id] originalId procurado:", originalId, "ids na lista:", community.map((r) => r.id));
+    if (community.some((r) => r.id === originalId)) return; // já está na lista
+    if (communityLoading) return; // espera a lista carregar antes de tentar o fallback
+
+    let cancelled = false;
+    setFallbackChecked(false);
+    fetchCommunityRecommendationById(originalId)
+      .then((rec) => {
+        if (!cancelled) {
+          if (!rec) {
+            console.warn("[rec.$id] Fallback não achou o documento no Firestore:", originalId);
+          }
+          setFallbackItem(rec);
+        }
+      })
+      .catch((err) => {
+        console.error("[rec.$id] Erro no fallback ao buscar recomendação:", originalId, err);
+        if (!cancelled) setFallbackItem(null);
+      })
+      .finally(() => {
+        if (!cancelled) setFallbackChecked(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id, community, communityLoading]);
 
   const item: RecommendationItem | null = useMemo(() => {
     if (id.startsWith("community_")) {
       const originalId = id.replace("community_", "");
-      const rec = community.find((r) => r.id === originalId);
+      const rec = community.find((r) => r.id === originalId) ?? fallbackItem;
       return rec ? communityToRecommendationItem(rec) : null;
     }
     return CATALOG.find((c) => c.id === id) ?? null;
-  }, [id, community]);
+  }, [id, community, fallbackItem]);
 
   const reactionCounts = useRecReactionCounts(item?.id ?? "");
   const myReaction = useMyRecReaction(item?.id ?? "");
@@ -291,6 +333,18 @@ function RecDetail() {
   }, [item, community]);
 
   if (!item) {
+    // É uma recomendação da comunidade e ainda não terminamos de checar
+    // (lista carregando OU esperando o fallback direto no Firestore) —
+    // espera terminar em vez de já cravar "não encontrada".
+    if (id.startsWith("community_") && (communityLoading || !fallbackChecked)) {
+      return (
+        <AppShell>
+          <div className="p-10 text-center" style={{ color: "var(--fan-text-2)" }}>
+            Carregando...
+          </div>
+        </AppShell>
+      );
+    }
     return (
       <AppShell>
         <div className="p-10 text-center" style={{ color: "var(--fan-text-2)" }}>

@@ -34,7 +34,7 @@ import { useWorks } from "@/lib/fanfarra/store";
 import { buildTasteProfile } from "@/lib/fanfarra/tasteProfile";
 import { syncTasteProfile } from "@/lib/fanfarra/publicProfiles";
 import { useUnreadChatsCount, touchPresence } from "@/lib/fanfarra/chatStore";
-import { CLOSE_DRAWER_EVENT } from "./AppTour";
+import { CLOSE_DRAWER_EVENT, OPEN_DRAWER_EVENT, TOUR_STEPS } from "./AppTour";
 
 const TABS = [
   { to: "/", icon: Home, label: "Início", tourId: "tour-home" },
@@ -47,15 +47,33 @@ const TABS = [
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
-  const [drawerOpen, setDrawerOpen] = useState(false);
+const [drawerOpen, setDrawerOpen] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      const tourActive = sessionStorage.getItem("fanfarra:tour_active") === "1";
+      if (!tourActive) return false;
+      const savedStep = Number(sessionStorage.getItem("fanfarra:tour_step") ?? "0");
+      const tourStep = TOUR_STEPS[savedStep];
+      return !!(tourStep?.openDrawer && window.location.pathname === tourStep.route);
+    } catch {
+      return false;
+    }
+  });
 
-  // Escuta o pedido do tour pra fechar o menu lateral (ver AppTour.tsx).
+  // Escuta os pedidos do tour pra abrir/fechar o menu lateral (ver AppTour.tsx).
   useEffect(() => {
     function onCloseDrawer() {
       setDrawerOpen(false);
     }
+    function onOpenDrawer() {
+      setDrawerOpen(true);
+    }
     window.addEventListener(CLOSE_DRAWER_EVENT, onCloseDrawer);
-    return () => window.removeEventListener(CLOSE_DRAWER_EVENT, onCloseDrawer);
+    window.addEventListener(OPEN_DRAWER_EVENT, onOpenDrawer);
+    return () => {
+      window.removeEventListener(CLOSE_DRAWER_EVENT, onCloseDrawer);
+      window.removeEventListener(OPEN_DRAWER_EVENT, onOpenDrawer);
+    };
   }, []);
 
   const user = useAuthUser();
@@ -126,6 +144,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <main className="flex-1" style={{ paddingBottom: "calc(7rem + var(--sab))" }}>{children}</main>
 
       <nav
+        id="fanfarra-bottom-nav"
         className="fixed bottom-0 left-0 right-0 flex flex-row items-center justify-around px-0.5 pt-2 z-40"
         style={{
           background: "var(--fan-bg-3)",
