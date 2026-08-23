@@ -1,5 +1,6 @@
 import "./lib/error-capture";
 import { handleRevenueCatWebhook } from "./lib/api/revenuecatWebhook.server";
+import { handleSitemapRequest } from "./lib/sitemap.server";
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 
@@ -42,6 +43,9 @@ export default {
     const url = new URL(request.url);
     if (url.pathname === "/api/webhooks/revenuecat" && request.method === "POST") {
       return handleRevenueCatWebhook(request);
+    }
+    if (url.pathname === "/sitemap.xml" && request.method === "GET") {
+      return handleSitemapRequest(request);
     }
     try {
       const handler = await getServerEntry();

@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
+import { getPublicProfileSeoServer } from "@/lib/api/publicProfileSeo.functions";
 import { toast } from "sonner";
 import {
   ArrowLeft,
@@ -40,7 +41,42 @@ import { useFollowing, followUser, unfollowUser } from "@/lib/fanfarra/followSto
 import { usePublicRecommendations } from "@/lib/fanfarra/communityStore";
 
 export const Route = createFileRoute("/u/$username")({
-  head: () => ({ meta: [{ title: "Perfil — Fanfarra" }] }),
+  loader: async ({ params }) => {
+    try {
+      return await getPublicProfileSeoServer({ data: { username: params.username } });
+    } catch {
+      return null;
+    }
+  },
+  head: ({ loaderData }) => {
+    const profile = loaderData ?? null;
+
+    if (!profile) {
+      return { meta: [{ title: "Perfil não encontrado — Fanfarra" }] };
+    }
+    if (profile.isPrivate) {
+      return { meta: [{ title: `${profile.username} — Fanfarra` }] };
+    }
+
+    const title = `${profile.username} — Fanfarra`;
+    const description = profile.bio?.trim()
+      ? profile.bio.trim().slice(0, 160)
+      : `Veja o perfil de ${profile.username} no Fanfarra: animes, mangás, fanfics, livros, jogos e mais.`;
+
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "profile" },
+        ...(profile.avatar ? [{ property: "og:image", content: profile.avatar }] : []),
+        { name: "twitter:card", content: profile.avatar ? "summary_large_image" : "summary" },
+        { name: "twitter:title", content: title },
+        { name: "twitter:description", content: description },
+      ],
+    };
+  },
   component: PublicProfilePage,
 });
 

@@ -38,6 +38,7 @@ function SettingsPage() {
     setExporting(true);
     try {
       await exportMyData();
+      toast.success("Seus dados foram exportados com sucesso!");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Não foi possível exportar seus dados.");
     } finally {
