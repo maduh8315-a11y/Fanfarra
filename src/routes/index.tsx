@@ -36,6 +36,7 @@ import {
   Joystick,
   ScrollText,
   Headphones,
+  WifiOff,
 } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { TypeChips, type TypeFilter } from "@/components/fanfarra/Chips";
@@ -43,6 +44,8 @@ import { WorkCard } from "@/components/fanfarra/WorkCard";
 import { useWorks, useWorksLoading } from "@/lib/fanfarra/store";
 import { WorkGridSkeleton } from "@/components/fanfarra/WorkCardSkeleton";
 import { useAuthUser } from "@/lib/fanfarra/auth";
+import { useOnlineStatus } from "@/hooks/use-online-status";
+import { EmptyState } from "@/components/fanfarra/EmptyState";
 import { COMPLETED_STATUSES, IN_PROGRESS_STATUSES, WISHLIST_STATUSES } from "@/lib/fanfarra/types";
 import type { Work, MediaType } from "@/lib/fanfarra/types";
 import type { LibraryStatusGroup } from "@/routes/library";
@@ -526,6 +529,7 @@ function Shelf({
 function Index() {
   const works = useWorks();
   const worksLoading = useWorksLoading();
+  const isOnline = useOnlineStatus();
   const profile = useProfile();
   const settings = useSettings();
   const notifications = useNotifications();
@@ -608,6 +612,14 @@ function Index() {
       {worksLoading ? (
         <div className="px-4 mt-5">
           <WorkGridSkeleton />
+        </div>
+      ) : works.length === 0 && !isOnline ? (
+        <div className="px-4">
+          <EmptyState
+            icon={WifiOff}
+            title="Você está offline"
+            description="Não deu pra carregar sua biblioteca agora. Assim que a conexão voltar, ela aparece normalmente aqui."
+          />
         </div>
       ) : works.length === 0 ? (
         <EmptyHome worksCount={works.length} />

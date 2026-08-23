@@ -2,11 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState, useRef } from "react";
 import { EmptyState } from "@/components/fanfarra/EmptyState";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import { Filter, BookMarked, LayoutGrid } from "lucide-react";
+import { Filter, BookMarked, LayoutGrid, WifiOff } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
 import { ClientOnly } from "@/components/fanfarra/ClientOnly";
 import { TypeChips, type TypeFilter } from "@/components/fanfarra/Chips";
 import { useWorks, useWorksLoading, useWorksHasMore, useWorksLoadingMore, loadMoreWorks } from "@/lib/fanfarra/store";
+import { useOnlineStatus } from "@/hooks/use-online-status";
 import { WorkGridSkeleton } from "@/components/fanfarra/WorkCardSkeleton";
 import { AwardCrownBadge } from "@/components/fanfarra/AwardCrownBadge";
 import { useBookcases, addBookcase } from "@/lib/fanfarra/bookcaseStore";
@@ -71,6 +72,7 @@ function LibraryPage() {
   const { group } = Route.useSearch();
   const works = useWorks();
   const worksLoading = useWorksLoading();
+  const isOnline = useOnlineStatus();
   const hasMoreWorks = useWorksHasMore();
   const loadingMoreWorks = useWorksLoadingMore();
   const bookcases = useBookcases();
@@ -226,6 +228,12 @@ function LibraryPage() {
       <ClientOnly>
         {worksLoading ? (
           <WorkGridSkeleton />
+        ) : works.length === 0 && !isOnline ? (
+          <EmptyState
+            icon={WifiOff}
+            title="Você está offline"
+            description="Não deu pra carregar sua biblioteca agora. Assim que a conexão voltar, ela aparece normalmente aqui."
+          />
         ) : filtered.length === 0 ? (
           <EmptyState
             icon={BookMarked}

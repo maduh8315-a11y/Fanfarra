@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { AuthInput, FanfarraLogo, GoogleIcon } from "@/components/fanfarra/auth/AuthInput";
 import { signInWithEmail, signInWithGoogle, authErrorMessage } from "@/lib/fanfarra/auth";
+import { logEvent } from "@/lib/fanfarra/analytics";
 
 export const Route = createFileRoute("/login")({
   component: LoginPage,
@@ -27,6 +28,7 @@ function LoginPage() {
     try {
       await signInWithEmail(email, password);
       try { localStorage.setItem("fanfarra:onboarding_done", "1"); } catch { }
+      logEvent("login_concluido", { metodo: "email" });
       navigate({ to: "/" });
     } catch (err) {
       const code = (err as { code?: string })?.code ?? "";
@@ -41,6 +43,7 @@ function LoginPage() {
     try {
       await signInWithGoogle();
       try { localStorage.setItem("fanfarra:onboarding_done", "1"); } catch { }
+      logEvent("login_concluido", { metodo: "google" });
       navigate({ to: "/" });
     } catch (err) {
       const code = (err as { code?: string })?.code ?? "";

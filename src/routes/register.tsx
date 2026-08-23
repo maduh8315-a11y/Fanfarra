@@ -4,6 +4,7 @@ import { ArrowLeft, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { AuthInput, FanfarraLogo } from "@/components/fanfarra/auth/AuthInput";
 import { signUpWithEmail, authErrorMessage } from "@/lib/fanfarra/auth";
+import { logEvent } from "@/lib/fanfarra/analytics";
 import { calculateAge } from "@/lib/fanfarra/contentGate";
 
 export const Route = createFileRoute("/register")({
@@ -107,6 +108,7 @@ function RegisterPage() {
     try {
       await signUpWithEmail(email, password, username, birthDate, isMinor ? guardianEmail.trim() : undefined);
       try { localStorage.setItem("fanfarra:onboarding_done", "1"); } catch {}
+      logEvent("cadastro_concluido", { metodo: "email" });
       navigate({ to: "/verify-email", replace: true });
     } catch (err) {
       const code = (err as { code?: string })?.code ?? "";

@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { useNavigate, useRouterState } from "@tanstack/react-router";
+import { logEvent } from "@/lib/fanfarra/analytics";
 
 export interface TourStep {
   id: string;
@@ -218,6 +219,7 @@ export function AppTour() {
         sessionStorage.setItem(TOUR_STEP_KEY, "0");
         setStep(0);
         setRunning(true);
+        logEvent("tutorial_iniciado", { total_passos: TOUR_STEPS.length });
       }, 900);
       return () => clearTimeout(t);
     }
@@ -332,7 +334,11 @@ export function AppTour() {
     };
   }, [running, step, pathname]);
 
-  function finish() {
+  function finish(reason: "concluido" | "pulado") {
+    logEvent(reason === "concluido" ? "tutorial_concluido" : "tutorial_pulado", {
+      passo_final: step + 1,
+      total_passos: TOUR_STEPS.length,
+    });
     localStorage.setItem(TOUR_DONE_KEY, "1");
     sessionStorage.removeItem(TOUR_ACTIVE_KEY);
     sessionStorage.removeItem(TOUR_STEP_KEY);
@@ -342,7 +348,7 @@ export function AppTour() {
 
   function next() {
     if (step >= TOUR_STEPS.length - 1) {
-      finish();
+      finish("concluido");
       return;
     }
     const n = step + 1;
@@ -457,7 +463,7 @@ export function AppTour() {
           {current.description}
         </p>
         <div className="flex items-center justify-between gap-2">
-          <button onClick={finish} className="text-xs" style={{ color: "var(--fan-tour-text-2)" }}>
+          <button onClick={() => finish("pulado")} className="text-xs" style={{ color: "var(--fan-tour-text-2)" }}>
             Pular
           </button>
           <div className="flex items-center gap-2">
