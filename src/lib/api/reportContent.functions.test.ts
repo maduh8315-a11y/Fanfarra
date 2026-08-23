@@ -49,3 +49,4 @@ describe("validação da denúncia (reportContentServer)", () => {
     expect(result.success).toBe(false);
   });
 });
+

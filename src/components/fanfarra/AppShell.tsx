@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { useAuthUser, signOut } from "@/lib/fanfarra/auth";
+import { useEnforceBanStatus } from "@/lib/fanfarra/banEnforcement";
 import { useIsAdmin } from "@/lib/fanfarra/config";
 import { useIsAwardsVotingOpen } from "@/lib/fanfarra/awardsStore";
 import { useNotifications, useProfile } from "@/lib/fanfarra/extras";
@@ -77,6 +78,7 @@ const [drawerOpen, setDrawerOpen] = useState(() => {
   }, []);
 
   const user = useAuthUser();
+  useEnforceBanStatus(user?.uid);
   useEffect(() => {
     if (!user) return;
     return listenForegroundPush((title, body) => toast(title, { description: body }));

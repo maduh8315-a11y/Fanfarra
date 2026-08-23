@@ -1,7 +1,7 @@
 // src/lib/fanfarra/moderationStore.ts
 // Junta as denúncias das duas coleções (content_reports e reports) numa
 // lista só, pra alimentar a fila de moderação no painel admin.
-import { collection, doc, onSnapshot, updateDoc } from "firebase/firestore";
+import { collection, onSnapshot } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { db } from "./firebase";
 
@@ -12,19 +12,23 @@ export type ReportStatus = "pending" | "resolved" | "dismissed";
 
 export interface ModerationReport {
   id: string;
-  // De qual coleção do Firestore essa denúncia veio — precisa pra saber
-  // onde escrever de volta quando o admin resolve/descarta.
   collection: typeof CONTENT_REPORTS_COLLECTION | typeof PROFILE_REPORTS_COLLECTION;
-  // Rótulo amigável do tipo de conteúdo denunciado.
   kindLabel: string;
-  // O que foi denunciado — @username do perfil, ou o id da recomendação/comentário.
   targetLabel: string;
-  targetUsername?: string; // só quando dá pra linkar pro perfil público
+  targetUsername?: string;
   reason: string;
   details?: string;
   reportedByUid: string;
   status: ReportStatus;
   createdAt: number;
+  // UID de quem AUTOROU o conteúdo denunciado (não é quem denunciou) —
+  // usado pros botões de suspender/banir.
+  targetAuthorUid?: string;
+  contentType?: "recommendation" | "comment" | "profile";
+  contentId?: string;
+  // Título e tipo (Filme/Livro/Anime/Série...) da obra denunciada.
+  targetTitle?: string;
+  targetWorkType?: string;
 }
 
 function kindLabelFor(contentType?: string): string {
@@ -40,9 +44,15 @@ function kindLabelFor(contentType?: string): string {
   }
 }
 
-// Escuta as duas coleções em tempo real e devolve tudo junto, mais recente
-// primeiro. Use só dentro do painel admin — a leitura precisa estar
-// restrita a admins nas regras do Firestore (veja aviso no fim do arquivo).
+// Rota da obra denunciada (pra dar um "Ver obra" no painel), ou null
+// quando a denúncia não é sobre uma obra (ex.: perfil).
+export function reportContentLink(r: ModerationReport): string | null {
+  if (r.contentType === "recommendation" && r.contentId) {
+    return `/rec/${r.contentId}`;
+  }
+  return null;
+}
+
 export function useModerationReports(): ModerationReport[] {
   const [contentReports, setContentReports] = useState<ModerationReport[]>([]);
   const [profileReports, setProfileReports] = useState<ModerationReport[]>([]);
@@ -56,12 +66,18 @@ export function useModerationReports(): ModerationReport[] {
             id: d.id,
             collection: CONTENT_REPORTS_COLLECTION,
             kindLabel: kindLabelFor(data.contentType),
-            targetLabel: data.contentId ?? "—",
+            targetLabel: data.targetTitle || data.contentId || "—",
+            targetUsername: data.targetAuthorUsername || undefined,
             reason: data.reason ?? "",
             details: data.details || undefined,
             reportedByUid: data.reportedByUid ?? "",
             status: (data.status as ReportStatus) ?? "pending",
             createdAt: data.createdAt ?? 0,
+            targetAuthorUid: data.targetAuthorUid || undefined,
+            contentType: data.contentType,
+            contentId: data.contentId,
+            targetTitle: data.targetTitle || undefined,
+            targetWorkType: data.targetWorkType || undefined,
           } satisfies ModerationReport;
         }),
       );
@@ -84,6 +100,8 @@ export function useModerationReports(): ModerationReport[] {
             reportedByUid: data.reporterUid ?? "",
             status: (data.status as ReportStatus) ?? "pending",
             createdAt: data.createdAt ?? 0,
+            targetAuthorUid: data.targetUid || undefined,
+            contentType: "profile",
           } satisfies ModerationReport;
         }),
       );
@@ -94,18 +112,20 @@ export function useModerationReports(): ModerationReport[] {
   return [...contentReports, ...profileReports].sort((a, b) => b.createdAt - a.createdAt);
 }
 
-export async function setReportStatus(report: ModerationReport, status: ReportStatus): Promise<void> {
-  await updateDoc(doc(db, report.collection, report.id), { status });
+
+// Quantas denúncias (pendentes ou não) existem sobre o MESMO alvo — mesmo
+// conteúdo (contentId) ou mesmo autor (targetAuthorUid). Ajuda o admin a
+// perceber se é um padrão (autor problemático / conteúdo real) ou uma
+// denúncia isolada/possível perseguição.
+export function countSimilarReports(report: ModerationReport, allReports: ModerationReport[]): number {
+  return allReports.filter((r) => {
+    if (r.id === report.id) return false;
+    if (report.contentId && r.contentId === report.contentId) return true;
+    if (report.targetAuthorUid && r.targetAuthorUid === report.targetAuthorUid) return true;
+    return false;
+  }).length;
 }
 
 // ⚠️ IMPORTANTE: as regras do Firestore (firestore.rules) precisam
 // restringir leitura E escrita das coleções "content_reports" e "reports"
-// só pra UIDs admin — senão qualquer usuário logado conseguiria ler ou
-// alterar denúncias direto pelo console do navegador. Ex.:
-//
-// match /content_reports/{id} {
-//   allow read, write: if request.auth.uid in ["SEU_UID_ADMIN_AQUI"];
-// }
-// match /reports/{id} {
-//   allow read, write: if request.auth.uid in ["SEU_UID_ADMIN_AQUI"];
-// }
+// só pra UIDs admin.

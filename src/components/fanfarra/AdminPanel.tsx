@@ -18,9 +18,15 @@ import { useEffect } from "react";
 import { getImportHealthServer } from "@/lib/api/importHealth.functions";
 import { auth } from "@/lib/fanfarra/firebase";
 import { CheckCircle2, XCircle } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { AlertTriangle } from "lucide-react";
-import { useModerationReports, setReportStatus, type ModerationReport } from "@/lib/fanfarra/moderationStore";
+import {
+  useModerationReports,
+  countSimilarReports,
+  reportContentLink,
+  type ModerationReport,
+} from "@/lib/fanfarra/moderationStore";
+import { banUser, suspendUser, removeReportedContent, setReportStatus } from "@/lib/fanfarra/moderationActions";
 
 interface ImportHealthEntry {
   source: string;
@@ -33,6 +39,7 @@ interface ImportHealthEntry {
 // ===== Painel admin (só visível pro UID em ADMIN_UIDS) =====
 export function AdminPanel() {
   const user = useAuthUser();
+  const nav = useNavigate();
   const categories = useAwardCategories();
   const config = useAwardsConfig();
   const [broadcastText, setBroadcastText] = useState("");
@@ -57,7 +64,7 @@ export function AdminPanel() {
   const handleReportAction = async (report: ModerationReport, status: "resolved" | "dismissed") => {
     setResolvingId(report.id);
     try {
-      await setReportStatus(report, status);
+      await setReportStatus(report.collection, report.id, status);
       toast.success(status === "resolved" ? "Denúncia marcada como resolvida." : "Denúncia descartada.");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Não foi possível atualizar a denúncia.");
@@ -65,6 +72,44 @@ export function AdminPanel() {
       setResolvingId(null);
     }
   };
+
+  const handleRemoveContent = async (report: ModerationReport) => {
+    if (!report.contentId || !report.contentType || report.contentType === "profile") return;
+    if (!confirm("Remover esse conteúdo definitivamente? Isso não pode ser desfeito.")) return;
+    setResolvingId(report.id);
+    try {
+      await removeReportedContent(report.contentType, report.contentId, report.reason, report.collection, report.id);
+      toast.success("Conteúdo removido e denúncia marcada como resolvida.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Não foi possível remover o conteúdo.");
+    } finally {
+      setResolvingId(null);
+    }
+  };
+
+  const handleSuspendAuthor = (report: ModerationReport) => {
+    if (!report.targetAuthorUid) return;
+    nav({
+      to: "/admin/suspend/$uid",
+      params: { uid: report.targetAuthorUid },
+      search: { username: report.targetUsername, back: "/admin" },
+    });
+  };
+
+  const handleBanAuthor = async (report: ModerationReport) => {
+    if (!report.targetAuthorUid) return;
+    if (!confirm("Banir esse usuário permanentemente? Ele não vai mais conseguir postar, comentar ou usar a conta logada.")) return;
+    setResolvingId(report.id);
+    try {
+      await banUser(report.targetAuthorUid, report.reason);
+      toast.success("Usuário banido.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Não foi possível banir o usuário.");
+    } finally {
+      setResolvingId(null);
+    }
+  };
+
 
   useEffect(() => {
     if (!user) return;
@@ -407,6 +452,22 @@ const isAdmin = useIsAdmin(user?.uid);
 
       <div className="mt-3 pt-3" style={{ borderTop: "1px dashed var(--fan-pink)" }}>
         <p className="text-sm font-bold mb-2" style={{ color: "var(--fan-pink-light)" }}>
+          Usuários banidos/suspensos
+        </p>
+        <p className="text-[11px] mb-2" style={{ color: "var(--fan-text-2)" }}>
+          Lista de todo mundo banido ou suspenso agora, com data, motivo e botão pra reverter — mesmo se a denúncia já tiver sido resolvida.
+        </p>
+        <Link
+          to="/admin/banned-users"
+          className="inline-block text-[11px] px-2 py-1 rounded-full"
+          style={{ border: "1px solid var(--fan-pink)", color: "var(--fan-pink-light)" }}
+        >
+          Ver lista →
+        </Link>
+      </div>
+
+      <div className="mt-3 pt-3" style={{ borderTop: "1px dashed var(--fan-pink)" }}>
+        <p className="text-sm font-bold mb-2" style={{ color: "var(--fan-pink-light)" }}>
           Saúde dos importadores
         </p>
         <p className="text-[11px] mb-2" style={{ color: "var(--fan-text-2)" }}>
@@ -490,16 +551,29 @@ const isAdmin = useIsAdmin(user?.uid);
                   </span>
                 </div>
 
+                {r.targetTitle && (
+                  <div style={{ color: "var(--fan-text)" }}>
+                    Obra: <span className="font-bold">{r.targetTitle}</span>
+                    {r.targetWorkType && <span style={{ color: "var(--fan-text-3)" }}> ({r.targetWorkType})</span>}
+                  </div>
+                )}
+
                 <div style={{ color: "var(--fan-text-2)" }}>
-                  Alvo:{" "}
+                  Autor:{" "}
                   {r.targetUsername ? (
                     <Link to="/u/$username" params={{ username: r.targetUsername }} className="underline">
-                      {r.targetLabel}
+                      @{r.targetUsername}
                     </Link>
                   ) : (
                     r.targetLabel
                   )}
                 </div>
+
+                {reportContentLink(r) && (
+                  <Link to={reportContentLink(r)!} className="underline" style={{ color: "var(--fan-pink-light)" }}>
+                    Ver obra denunciada →
+                  </Link>
+                )}
                 {r.details && (
                   <div className="mt-1" style={{ color: "var(--fan-text-2)" }}>
                     "{r.details}"
@@ -508,9 +582,14 @@ const isAdmin = useIsAdmin(user?.uid);
                 <div className="mt-1" style={{ color: "var(--fan-text-3)" }}>
                   Status: {r.status}
                 </div>
+                {countSimilarReports(r, reports) > 0 && (
+                  <div className="mt-1 font-bold" style={{ color: "var(--fan-pink-light)" }}>
+                    ⚠ +{countSimilarReports(r, reports)} denúncia(s) sobre o mesmo alvo
+                  </div>
+                )}
 
                 {r.status === "pending" && (
-                  <div className="flex gap-2 mt-2">
+                  <div className="flex flex-wrap gap-2 mt-2">
                     <button
                       onClick={() => handleReportAction(r, "resolved")}
                       disabled={resolvingId === r.id}
@@ -527,6 +606,36 @@ const isAdmin = useIsAdmin(user?.uid);
                     >
                       <XCircle size={12} /> Descartar
                     </button>
+                    {r.contentId && r.contentType !== "profile" && (
+                      <button
+                        onClick={() => handleRemoveContent(r)}
+                        disabled={resolvingId === r.id}
+                        className="flex-1 py-1.5 rounded-lg text-[11px] font-bold"
+                        style={{ background: "#5a0018", color: "#fff" }}
+                      >
+                        Remover conteúdo
+                      </button>
+                    )}
+                    {r.targetAuthorUid && (
+                      <>
+                        <button
+                          onClick={() => handleSuspendAuthor(r)}
+                          disabled={resolvingId === r.id}
+                          className="flex-1 py-1.5 rounded-lg text-[11px] font-bold"
+                          style={{ background: "transparent", color: "#f5a623", border: "0.5px solid #f5a623" }}
+                        >
+                          Suspender autor
+                        </button>
+                        <button
+                          onClick={() => handleBanAuthor(r)}
+                          disabled={resolvingId === r.id}
+                          className="flex-1 py-1.5 rounded-lg text-[11px] font-bold"
+                          style={{ background: "#8b0000", color: "#fff" }}
+                        >
+                          Banir autor
+                        </button>
+                      </>
+                    )}
                   </div>
                 )}
               </div>

@@ -43,8 +43,10 @@ import { Route as WorkIdRouteImport } from './routes/work.$id'
 import { Route as UUsernameRouteImport } from './routes/u.$username'
 import { Route as RecIdRouteImport } from './routes/rec.$id'
 import { Route as ChatUidRouteImport } from './routes/chat_.$uid'
+import { Route as AdminBannedUsersRouteImport } from './routes/admin_.banned-users'
 import { Route as AddTypeRouteImport } from './routes/add.$type'
 import { Route as WorkIdEditRouteImport } from './routes/work_.$id.edit'
+import { Route as AdminSuspendUidRouteImport } from './routes/admin_.suspend.$uid'
 
 const WrappedRoute = WrappedRouteImport.update({
   id: '/wrapped',
@@ -216,6 +218,11 @@ const ChatUidRoute = ChatUidRouteImport.update({
   path: '/chat/$uid',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminBannedUsersRoute = AdminBannedUsersRouteImport.update({
+  id: '/admin_/banned-users',
+  path: '/admin/banned-users',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AddTypeRoute = AddTypeRouteImport.update({
   id: '/$type',
   path: '/$type',
@@ -224,6 +231,11 @@ const AddTypeRoute = AddTypeRouteImport.update({
 const WorkIdEditRoute = WorkIdEditRouteImport.update({
   id: '/work_/$id/edit',
   path: '/work/$id/edit',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminSuspendUidRoute = AdminSuspendUidRouteImport.update({
+  id: '/admin_/suspend/$uid',
+  path: '/admin/suspend/$uid',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -258,11 +270,13 @@ export interface FileRoutesByFullPath {
   '/verify-email': typeof VerifyEmailRoute
   '/wrapped': typeof WrappedRoute
   '/add/$type': typeof AddTypeRoute
+  '/admin/banned-users': typeof AdminBannedUsersRoute
   '/chat/$uid': typeof ChatUidRoute
   '/rec/$id': typeof RecIdRoute
   '/u/$username': typeof UUsernameRoute
   '/work/$id': typeof WorkIdRoute
   '/add/': typeof AddIndexRoute
+  '/admin/suspend/$uid': typeof AdminSuspendUidRoute
   '/work/$id/edit': typeof WorkIdEditRoute
 }
 export interface FileRoutesByTo {
@@ -295,11 +309,13 @@ export interface FileRoutesByTo {
   '/verify-email': typeof VerifyEmailRoute
   '/wrapped': typeof WrappedRoute
   '/add/$type': typeof AddTypeRoute
+  '/admin/banned-users': typeof AdminBannedUsersRoute
   '/chat/$uid': typeof ChatUidRoute
   '/rec/$id': typeof RecIdRoute
   '/u/$username': typeof UUsernameRoute
   '/work/$id': typeof WorkIdRoute
   '/add': typeof AddIndexRoute
+  '/admin/suspend/$uid': typeof AdminSuspendUidRoute
   '/work/$id/edit': typeof WorkIdEditRoute
 }
 export interface FileRoutesById {
@@ -334,11 +350,13 @@ export interface FileRoutesById {
   '/verify-email': typeof VerifyEmailRoute
   '/wrapped': typeof WrappedRoute
   '/add/$type': typeof AddTypeRoute
+  '/admin_/banned-users': typeof AdminBannedUsersRoute
   '/chat_/$uid': typeof ChatUidRoute
   '/rec/$id': typeof RecIdRoute
   '/u/$username': typeof UUsernameRoute
   '/work/$id': typeof WorkIdRoute
   '/add/': typeof AddIndexRoute
+  '/admin_/suspend/$uid': typeof AdminSuspendUidRoute
   '/work_/$id/edit': typeof WorkIdEditRoute
 }
 export interface FileRouteTypes {
@@ -374,11 +392,13 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/wrapped'
     | '/add/$type'
+    | '/admin/banned-users'
     | '/chat/$uid'
     | '/rec/$id'
     | '/u/$username'
     | '/work/$id'
     | '/add/'
+    | '/admin/suspend/$uid'
     | '/work/$id/edit'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -411,11 +431,13 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/wrapped'
     | '/add/$type'
+    | '/admin/banned-users'
     | '/chat/$uid'
     | '/rec/$id'
     | '/u/$username'
     | '/work/$id'
     | '/add'
+    | '/admin/suspend/$uid'
     | '/work/$id/edit'
   id:
     | '__root__'
@@ -449,11 +471,13 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/wrapped'
     | '/add/$type'
+    | '/admin_/banned-users'
     | '/chat_/$uid'
     | '/rec/$id'
     | '/u/$username'
     | '/work/$id'
     | '/add/'
+    | '/admin_/suspend/$uid'
     | '/work_/$id/edit'
   fileRoutesById: FileRoutesById
 }
@@ -487,10 +511,12 @@ export interface RootRouteChildren {
   UpdatesRoute: typeof UpdatesRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
   WrappedRoute: typeof WrappedRoute
+  AdminBannedUsersRoute: typeof AdminBannedUsersRoute
   ChatUidRoute: typeof ChatUidRoute
   RecIdRoute: typeof RecIdRoute
   UUsernameRoute: typeof UUsernameRoute
   WorkIdRoute: typeof WorkIdRoute
+  AdminSuspendUidRoute: typeof AdminSuspendUidRoute
   WorkIdEditRoute: typeof WorkIdEditRoute
 }
 
@@ -734,6 +760,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatUidRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/banned-users': {
+      id: '/admin_/banned-users'
+      path: '/admin/banned-users'
+      fullPath: '/admin/banned-users'
+      preLoaderRoute: typeof AdminBannedUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/add/$type': {
       id: '/add/$type'
       path: '/$type'
@@ -746,6 +779,13 @@ declare module '@tanstack/react-router' {
       path: '/work/$id/edit'
       fullPath: '/work/$id/edit'
       preLoaderRoute: typeof WorkIdEditRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin_/suspend/$uid': {
+      id: '/admin_/suspend/$uid'
+      path: '/admin/suspend/$uid'
+      fullPath: '/admin/suspend/$uid'
+      preLoaderRoute: typeof AdminSuspendUidRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -793,10 +833,12 @@ const rootRouteChildren: RootRouteChildren = {
   UpdatesRoute: UpdatesRoute,
   VerifyEmailRoute: VerifyEmailRoute,
   WrappedRoute: WrappedRoute,
+  AdminBannedUsersRoute: AdminBannedUsersRoute,
   ChatUidRoute: ChatUidRoute,
   RecIdRoute: RecIdRoute,
   UUsernameRoute: UUsernameRoute,
   WorkIdRoute: WorkIdRoute,
+  AdminSuspendUidRoute: AdminSuspendUidRoute,
   WorkIdEditRoute: WorkIdEditRoute,
 }
 export const routeTree = rootRouteImport

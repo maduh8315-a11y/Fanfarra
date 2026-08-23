@@ -193,6 +193,41 @@ export class FirestoreTransaction {
     return (data as any[]).filter((r) => r.document).length;
   }
 
+  // Consulta genérica com filtros/ordenação/limite — usada pra telas como a
+  // de "usuários banidos/suspensos", que não dá pra montar só com
+  // countWhereEquals (precisa de ">" e de orderBy).
+  async query<T extends Record<string, any>>(
+    collectionName: string,
+    opts: {
+      where?: { field: string; op: "EQUAL" | "GREATER_THAN" | "LESS_THAN" | "GREATER_THAN_OR_EQUAL"; value: unknown }[];
+      orderBy?: { field: string; direction?: "ASCENDING" | "DESCENDING" }[];
+      limit?: number;
+    } = {},
+  ): Promise<{ id: string; data: T }[]> {
+    const structuredQuery: any = { from: [{ collectionId: collectionName }] };
+    if (opts.where && opts.where.length > 0) {
+      const filters = opts.where.map((w) => ({
+        fieldFilter: { field: { fieldPath: w.field }, op: w.op, value: toValue(w.value) },
+      }));
+      structuredQuery.where = filters.length === 1 ? filters[0] : { compositeFilter: { op: "AND", filters } };
+    }
+    if (opts.orderBy) {
+      structuredQuery.orderBy = opts.orderBy.map((o) => ({
+        field: { fieldPath: o.field },
+        direction: o.direction ?? "ASCENDING",
+      }));
+    }
+    if (opts.limit) structuredQuery.limit = opts.limit;
+
+    const data = await callFirestore(":runQuery", { structuredQuery, transaction: this.id });
+    return (data as any[])
+      .filter((r) => r.document)
+      .map((r) => ({
+        id: (r.document.name as string).split("/").pop() as string,
+        data: fromFields(r.document.fields) as T,
+      }));
+  }
+
   async listAll<T extends Record<string, any>>(collectionName: string, limit = 5000): Promise<{ id: string; data: T }[]> {
     const data = await callFirestore(":runQuery", {
       structuredQuery: { from: [{ collectionId: collectionName }], limit },
@@ -297,4 +332,56 @@ export async function deleteDocsBatch(paths: string[]): Promise<void> {
     });
     if (!res.ok) throw new Error(`Firestore commit error: ${await res.text()}`);
   }
+}
+
+// ── Checagem de admin no SERVIDOR (bypassa as regras do Firestore, que
+// exigem request.auth != null — inexistente aqui dentro do Worker) ────────
+
+// Marca (ou desmarca) authorBanned em todo o conteúdo público já publicado
+// por um usuário (works, communityRecs, rec_comments) — assim as regras do
+// Firestore só precisam olhar um campo no próprio documento sendo lido,
+// sem nenhum get()/exists() extra. Isso evita o limite de 20 chamadas de
+// get()/exists() por consulta de lista, que uma checagem via "join" nas
+// regras estourava fácil em listas com vários autores diferentes.
+const AUTHOR_BANNED_COLLECTIONS = ["works", "communityRecs", "rec_comments"];
+
+export async function setContentAuthorBannedFlag(uid: string, banned: boolean): Promise<void> {
+  const token = await getAccessToken();
+  for (const collectionId of AUTHOR_BANNED_COLLECTIONS) {
+    const paths = await queryDocPaths(collectionId, { field: "uid", op: "EQUAL", value: uid });
+    for (let i = 0; i < paths.length; i += 400) {
+      const chunk = paths.slice(i, i + 400);
+      const res = await fetch(`${docsBase()}:commit`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          writes: chunk.map((name) => ({
+            update: { name, fields: { authorBanned: { booleanValue: banned } } },
+            updateMask: { fieldPaths: ["authorBanned"] },
+          })),
+        }),
+      });
+      if (!res.ok) throw new Error(`Firestore commit error (${collectionId}): ${await res.text()}`);
+    }
+  }
+}
+
+let cachedAdminUidsServer: string[] | null = null;
+
+export async function isAdminUidServer(uid: string): Promise<boolean> {
+  if (!cachedAdminUidsServer) {
+    const token = await getAccessToken();
+    const res = await fetch(`${docsBase()}/app_config/admins`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.status === 404) {
+      cachedAdminUidsServer = [];
+    } else if (!res.ok) {
+      throw new Error(`Firestore REST error (get app_config/admins): ${await res.text()}`);
+    } else {
+      const doc = await res.json();
+      cachedAdminUidsServer = (fromFields(doc.fields).uids as string[]) ?? [];
+    }
+  }
+  return cachedAdminUidsServer.includes(uid);
 }

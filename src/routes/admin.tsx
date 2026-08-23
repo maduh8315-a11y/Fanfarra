@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { ArrowLeft, ShieldAlert } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
@@ -13,6 +13,7 @@ export const Route = createFileRoute("/admin")({
 
 function AdminPage() {
   const nav = useNavigate();
+  const router = useRouter();
   const user = useAuthUser();
   const authReady = useAuthReady();
   const isAdmin = useIsAdmin(user?.uid);
@@ -20,11 +21,19 @@ function AdminPage() {
   // Espera o Firebase confirmar a sessão antes de decidir se expulsa o
   // usuário — sem isso, ele seria chutado pra "/" por uma fração de
   // segundo mesmo sendo admin, enquanto o auth ainda está carregando.
+  // Também espera o router terminar qualquer transição em andamento:
+  // redirecionar no meio de uma navegação é o que causava o erro
+  // "Could not find match for matchId" e travava o app.
   useEffect(() => {
-    if (authReady && !isAdmin) {
-      nav({ to: "/" });
+    if (!authReady) return;
+    const decide = () => {
+      if (!isAdmin) nav({ to: "/" });
+    };
+    if (router.state.status === "pending") {
+      return router.subscribe("onResolved", () => decide());
     }
-  }, [authReady, isAdmin, nav]);
+    decide();
+  }, [authReady, isAdmin, nav, router]);
 
   if (!authReady || !isAdmin) {
     return (

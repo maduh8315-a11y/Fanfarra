@@ -24,6 +24,14 @@ export interface ReportContentResult {
   error?: string;
 }
 
+// O ID que a TELA usa pra recomendações postadas pela comunidade vem com
+// o prefixo "community_" na frente (ex.: "community_abc123"), mas o
+// documento no Firestore, dentro de "communityRecs", é salvo só como
+// "abc123". Precisamos tirar o prefixo antes de procurar o documento.
+function stripCommunityPrefix(id: string): string {
+  return id.startsWith("community_") ? id.slice("community_".length) : id;
+}
+
 export const reportContentServer = createServerFn({ method: "POST" })
   .inputValidator(inputSchema)
   .handler(async ({ data }): Promise<ReportContentResult> => {
@@ -41,6 +49,33 @@ export const reportContentServer = createServerFn({ method: "POST" })
 
     const tx = await FirestoreTransaction.begin();
     try {
+      // Busca dados do conteúdo denunciado — autor, título e tipo da obra —
+      // pra guardar junto da denúncia. Assim o painel admin mostra tudo
+      // sem precisar de mais consultas depois.
+      let targetAuthorUid: string | undefined;
+      let targetAuthorUsername: string | undefined;
+      let targetTitle: string | undefined;
+      let targetWorkType: string | undefined;
+
+      if (data.contentType === "recommendation") {
+        const rawId = stripCommunityPrefix(data.contentId);
+        const rec = await tx.get<{ uid?: string; username?: string; title?: string; type?: string }>(
+          "communityRecs",
+          rawId,
+        );
+        targetAuthorUid = rec.data.uid;
+        targetAuthorUsername = rec.data.username;
+        targetTitle = rec.data.title;
+        targetWorkType = rec.data.type;
+      } else if (data.contentType === "comment") {
+        const comment = await tx.get<{ uid?: string; username?: string; text?: string }>(
+          "rec_comments",
+          data.contentId,
+        );
+        targetAuthorUid = comment.data.uid;
+        targetAuthorUsername = comment.data.username;
+      }
+
       const reportId = `${data.contentType}_${data.contentId}_${uid}_${Date.now()}`;
       const writes: any[] = [];
       tx.upsert(
@@ -52,6 +87,10 @@ export const reportContentServer = createServerFn({ method: "POST" })
           reason: data.reason,
           details: data.details ?? "",
           reportedByUid: uid,
+          targetAuthorUid: targetAuthorUid ?? "",
+          targetAuthorUsername: targetAuthorUsername ?? "",
+          targetTitle: targetTitle ?? "",
+          targetWorkType: targetWorkType ?? "",
           status: "pending",
           createdAt: Date.now(),
         },

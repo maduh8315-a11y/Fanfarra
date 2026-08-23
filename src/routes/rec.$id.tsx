@@ -193,7 +193,6 @@ function RecDetail() {
  useEffect(() => {
     if (!id.startsWith("community_")) return;
     const originalId = id.replace("community_", "");
-    console.log("[DEBUG rec.$id] originalId procurado:", originalId, "ids na lista:", community.map((r) => r.id));
     if (community.some((r) => r.id === originalId)) return; // já está na lista
     if (communityLoading) return; // espera a lista carregar antes de tentar o fallback
 

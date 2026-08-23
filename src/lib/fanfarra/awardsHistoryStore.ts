@@ -59,7 +59,10 @@ function connect() {
         notify();
       },
       (err) => {
-        console.error("Erro ao carregar histórico de premiações:", err);
+        // Se não há mais usuário logado (ex: acabou de ser deslogado por
+        // suspensão/banimento), esse erro é esperado — não precisa poluir
+        // o console.
+        if (auth.currentUser) console.error("Erro ao carregar histórico de premiações:", err);
         unsub = null; // libera pra tentar de novo assim que o login terminar
       },
     );
