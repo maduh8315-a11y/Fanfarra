@@ -57,7 +57,7 @@ self.addEventListener("notificationclick", (event) => {
 });
 // ── fim do bloco FCM ─────────────────────────────────────────────────────
 
-const CACHE_VERSION = "fanfarra-v4"; // ← subi de v2 pra v3 pra forçar clientes antigos a atualizar
+const CACHE_VERSION = "fanfarra-v5"; // ← subi de v4 pra v5 pra forçar clientes antigos a atualizar
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const PAGES_CACHE = `${CACHE_VERSION}-pages`;
 
