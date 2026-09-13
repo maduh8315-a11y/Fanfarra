@@ -21,8 +21,7 @@ import {
   Megaphone,
   PartyPopper,
   Sparkles,
-  ThumbsUp,
-  ThumbsDown,
+  HeartCrack,
   Skull,
   type LucideIcon,
 } from "lucide-react";
@@ -297,7 +296,7 @@ function RecommendationPhase({ config }: { config: AwardsConfig }) {
         <p className="text-sm" style={{ color: "var(--fan-text-2)" }}>
           As indicações não são mais sugeridas manualmente aqui — elas vêm direto das recomendações que
           a galera posta na tela{" "}
-          <span style={{ color: "var(--fan-text)", fontWeight: 700 }}>Para você</span>, ao longo do ano. <ThumbsUp size={13} className="inline" /> e <ThumbsDown size={13} className="inline" />
+          <span style={{ color: "var(--fan-text)", fontWeight: 700 }}>Para você</span>, ao longo do ano. <Heart size={13} className="inline" /> e <HeartCrack size={13} className="inline" />
           contam pra valer!
         </p>
         {notOpenYet && (
@@ -598,8 +597,8 @@ function VotingPhase({
                           {nominee.title}
                         </p>
                         <p className="text-sm flex items-center gap-2" style={{ color: "var(--fan-text-2)" }}>
-                          <span className="flex items-center gap-1"><ThumbsUp size={13} /> {nominee.likes}</span>
-                          <span className="flex items-center gap-1"><ThumbsDown size={13} /> {nominee.boos}</span>
+                          <span className="flex items-center gap-1"><Heart size={13} /> {nominee.likes}</span>
+                          <span className="flex items-center gap-1"><HeartCrack size={13} /> {nominee.boos}</span>
                         </p>
                       </div>
 

@@ -475,7 +475,7 @@ function RecDetail() {
               : `Venceu ${awardWins.length} vezes o Fanfarra Awards`}
           </div>
         )}
-        <div className="relative flex items-center justify-center gap-8 mt-4">
+        <div className="flex items-center justify-center gap-8 mt-4">
           <button
             onClick={() => handleReact("like")}
             className="flex flex-col items-center gap-1"
@@ -487,25 +487,10 @@ function RecDetail() {
               fill={myReaction === "like" ? "var(--fan-pink)" : "transparent"}
             />
             <span className="text-sm font-semibold" style={{ color: "var(--fan-text-2)" }}>
-              {reactionCounts.boos}
+              {reactionCounts.likes}
             </span>
           </button>
 
-          {/* Últimas atualizações — canto direito da linha do aplaudir/vaiar */}
-          <div
-            className="absolute right-0 top-0 flex flex-col items-end gap-0.5"
-            style={{ color: "var(--fan-text-2)" }}
-          >
-            <span className="flex items-center gap-1 text-[10px]">
-              <Clock size={10} />
-              Obra: {formatDate(item.lastUpdate) ?? "—"}
-            </span>
-            <span className="flex items-center gap-1 text-[10px]">
-              <Clock size={10} />
-              Autor: {item.postUpdatedAt ? new Date(item.postUpdatedAt).toLocaleDateString("pt-BR") : "—"}
-            </span>
-          </div>
-      
           <button
             onClick={() => handleReact("boo")}
             className="flex flex-col items-center gap-1"
@@ -520,13 +505,20 @@ function RecDetail() {
               {reactionCounts.boos}
             </span>
           </button>
+        </div>
 
-          {/* Resumo + últimas atualizações — canto direito da linha do aplaudir/vaiar */}
-          <div
-            className="absolute right-0 top-0 flex flex-col items-end gap-0.5"
-            style={{ color: "var(--fan-text-2)" }}
-          >
-          </div>
+        <div
+          className="flex items-center justify-center gap-4 mt-2 flex-wrap"
+          style={{ color: "var(--fan-text-2)" }}
+        >
+          <span className="flex items-center gap-1 text-[10px]">
+            <Clock size={10} />
+            Obra: {formatDate(item.lastUpdate) ?? "—"}
+          </span>
+          <span className="flex items-center gap-1 text-[10px]">
+            <Clock size={10} />
+            Autor: {item.postUpdatedAt ? new Date(item.postUpdatedAt).toLocaleDateString("pt-BR") : "—"}
+          </span>
         </div>
       </div>
 
