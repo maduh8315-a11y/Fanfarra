@@ -106,6 +106,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
       { name: "apple-mobile-web-app-title", content: "Fanfarra" },
       { name: "application-name", content: "Fanfarra" },
+      { name: "referrer", content: "no-referrer" },
       { title: "Fanfarra — Seu universo fandom" },
       {
         name: "description",

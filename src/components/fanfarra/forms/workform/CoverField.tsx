@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
-import { Image as ImageIcon } from "lucide-react";
+import { Image as ImageIcon, Loader2 } from "lucide-react";
 import { uploadCoverImage } from "@/lib/fanfarra/uploadImage";
+import { SafeImage } from "@/components/fanfarra/SafeImage";
 
 export function CoverField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const fileRef = useRef<HTMLInputElement>(null);
@@ -38,11 +39,23 @@ export function CoverField({ value, onChange }: { value: string; onChange: (v: s
           onClick={() => !uploading && fileRef.current?.click()}
         >
           {uploading ? (
-            <span className="text-sm">⏳</span>
-          ) : value ? (
-            <img src={value} alt="Capa" className="w-full h-full object-cover" />
+            <Loader2 size={20} className="animate-spin" color="var(--fan-pink-light)" />
           ) : (
-            <ImageIcon size={24} color="var(--fan-text-2)" />
+            <SafeImage
+              src={value}
+              alt="Capa"
+              className="w-full h-full object-cover"
+              fallback={
+                <div className="flex flex-col items-center gap-1 px-1 text-center">
+                  <ImageIcon size={20} color="var(--fan-text-2)" />
+                  {value && (
+                    <span className="text-[10px] leading-tight" style={{ color: "var(--fan-text-2)" }}>
+                      Não carregou
+                    </span>
+                  )}
+                </div>
+              }
+            />
           )}
         </div>
         <div className="flex-1 flex flex-col gap-2">
@@ -60,6 +73,7 @@ export function CoverField({ value, onChange }: { value: string; onChange: (v: s
             value={isFile ? "" : value}
             onChange={(e) => onChange(e.target.value)}
             placeholder="ou cole uma URL..."
+            maxLength={500}
             className="w-full px-3 py-2.5 rounded-[10px] text-sm outline-none"
             style={{
               background: "var(--fan-bg-2)",

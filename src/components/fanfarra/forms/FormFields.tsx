@@ -37,11 +37,13 @@ export function TextInput({
   onChange,
   placeholder,
   type = "text",
+  maxLength = 300,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   type?: "text" | "number" | "url";
+  maxLength?: number;
 }) {
   return (
     <input
@@ -50,6 +52,7 @@ export function TextInput({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
+      maxLength={type === "text" ? maxLength : undefined}
       className="w-full rounded-[10px] px-3 py-3 text-sm outline-none"
       style={INPUT_STYLE}
     />
@@ -75,6 +78,7 @@ export function UrlInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder ?? "https://"}
+        maxLength={500}
         className="flex-1 rounded-[10px] px-3 py-3 text-sm outline-none"
         style={INPUT_STYLE}
       />
@@ -157,27 +161,103 @@ export function ChipsField({
   onChange: (v: string | string[]) => void;
   multi?: boolean;
 }) {
-  const isActive = (o: string) => (multi ? Array.isArray(value) && value.includes(o) : value === o);
+  // Sempre que "Outro" estiver nas opções, ele abre um campo de texto livre
+  // assim que for selecionado — funciona tanto em seleção única quanto em
+  // múltipla (idioma, plataforma, país etc.).
+  const hasOtherOption = options.includes("Outro");
+  const presetOptions = options.filter((o) => o !== "Outro");
+
+  // seleção única
+  const isCustomValue =
+    !multi && typeof value === "string" && value !== "" && !presetOptions.includes(value);
+
+  // seleção múltipla — qualquer item do array que não é uma opção fixa é
+  // o valor digitado no campo "Outro"
+  const arrValue = multi && Array.isArray(value) ? value : [];
+  const customEntry = arrValue.find((v) => !presetOptions.includes(v));
+
+  const isActive = (o: string) => {
+    if (multi) {
+      if (o === "Outro" && hasOtherOption) return customEntry !== undefined;
+      return arrValue.includes(o);
+    }
+    if (o === "Outro" && hasOtherOption) return isCustomValue;
+    return value === o;
+  };
+
   const toggle = (o: string) => {
     if (multi) {
-      const arr = Array.isArray(value) ? value : [];
-      onChange(arr.includes(o) ? arr.filter((x) => x !== o) : [...arr, o]);
-    } else {
-      onChange(value === o ? "" : o);
+      if (o === "Outro" && hasOtherOption) {
+        onChange(
+          customEntry !== undefined
+            ? arrValue.filter((v) => v !== customEntry)
+            : [...arrValue, "Outro"],
+        );
+        return;
+      }
+      onChange(arrValue.includes(o) ? arrValue.filter((x) => x !== o) : [...arrValue, o]);
+      return;
     }
+    if (o === "Outro" && hasOtherOption) {
+      onChange(isCustomValue ? "" : "Outro");
+      return;
+    }
+    onChange(value === o ? "" : o);
   };
+
+  const showSingleOtherInput = !multi && hasOtherOption && isCustomValue;
+  const showMultiOtherInput = multi && hasOtherOption && customEntry !== undefined;
+
   return (
-    <div className="flex flex-wrap gap-2">
-      {options.map((o) => (
-        <button
-          key={o}
-          type="button"
-          onClick={() => toggle(o)}
-          className={`fan-chip ${isActive(o) ? "fan-chip-active" : ""}`}
-        >
-          {o}
-        </button>
-      ))}
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap gap-2">
+        {options.map((o) => (
+          <button
+            key={o}
+            type="button"
+            onClick={() => toggle(o)}
+            className={`fan-chip ${isActive(o) ? "fan-chip-active" : ""}`}
+          >
+            {o}
+          </button>
+        ))}
+      </div>
+      {showSingleOtherInput && (
+        <input
+          type="text"
+          autoFocus
+          maxLength={300}
+          value={value === "Outro" ? "" : (value as string)}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Qual?"
+          className="w-full px-3 py-2.5 rounded-[10px] text-sm outline-none"
+          style={{
+            background: "var(--fan-bg-2)",
+            border: "0.5px solid var(--fan-rose-mid)",
+            color: "var(--fan-text)",
+          }}
+        />
+      )}
+      {showMultiOtherInput && (
+        <input
+          type="text"
+          autoFocus
+          maxLength={300}
+          value={customEntry === "Outro" ? "" : (customEntry as string)}
+          onChange={(e) => {
+            const text = e.target.value;
+            const rest = arrValue.filter((v) => v !== customEntry);
+            onChange([...rest, text === "" ? "Outro" : text]);
+          }}
+          placeholder="Qual?"
+          className="w-full px-3 py-2.5 rounded-[10px] text-sm outline-none"
+          style={{
+            background: "var(--fan-bg-2)",
+            border: "0.5px solid var(--fan-rose-mid)",
+            color: "var(--fan-text)",
+          }}
+        />
+      )}
     </div>
   );
 }

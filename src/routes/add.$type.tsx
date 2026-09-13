@@ -10,10 +10,25 @@ import { ClientOnly } from "@/components/fanfarra/ClientOnly";
 
 export const Route = createFileRoute("/add/$type")({
   head: () => ({ meta: [{ title: "Adicionar obra — Fanfarra" }] }),
-  validateSearch: (search: Record<string, unknown>): { title?: string } => {
-    return typeof search.title === "string" && search.title.trim()
-      ? { title: search.title }
-      : {};
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): {
+    title?: string;
+    cover?: string;
+    author?: string;
+    synopsis?: string;
+    link?: string;
+    genres?: string;
+  } => {
+    if (typeof search.title !== "string" || !search.title.trim()) return {};
+    return {
+      title: search.title,
+      cover: typeof search.cover === "string" ? search.cover : undefined,
+      author: typeof search.author === "string" ? search.author : undefined,
+      synopsis: typeof search.synopsis === "string" ? search.synopsis : undefined,
+      link: typeof search.link === "string" ? search.link : undefined,
+      genres: typeof search.genres === "string" ? search.genres : undefined,
+    };
   },
   component: AddTypePage,
 });
@@ -25,25 +40,53 @@ const VIDEO_PAGES: { type: MediaType; label: string }[] = [
   { type: "Gacha Videos", label: "Gacha Videos" },
 ];
 
-// Monta os valores iniciais do formulário já com o título vindo da busca,
-// evitando que o usuário precise digitar o nome da obra de novo.
-function buildInitialFromTitle(type: MediaType, title?: string) {
-  if (!title) return undefined;
+// Monta os valores iniciais do formulário já com os dados vindos da
+// recomendação (ou da busca), evitando que o usuário precise preencher tudo
+// de novo na mão.
+function buildInitialFromRec(
+  type: MediaType,
+  rec: {
+    title?: string;
+    cover?: string;
+    author?: string;
+    synopsis?: string;
+    link?: string;
+    genres?: string;
+  },
+) {
+  if (!rec.title) return undefined;
+
+  let genres: string[] = [];
+  if (rec.genres) {
+    try {
+      const parsed = JSON.parse(rec.genres);
+      if (Array.isArray(parsed)) {
+        genres = parsed.filter((g): g is string => typeof g === "string");
+      }
+    } catch {
+      // ignora se vier malformado — melhor sem gêneros do que quebrar a tela
+    }
+  }
+
   return {
-    title,
+    title: rec.title,
     status: DEFAULT_STATUS_FOR_TYPE(type),
-    cover: "",
+    cover: rec.cover ?? "",
     rating: 0,
     notes: "",
-    genres: [],
-    details: {},
+    genres,
+    details: {
+      ...(rec.author ? { author: rec.author } : {}),
+      ...(rec.synopsis ? { synopsis: rec.synopsis } : {}),
+      ...(rec.link ? { link: rec.link } : {}),
+    },
     shelfEntries: [],
   };
 }
 
 function AddTypePage() {
   const { type } = Route.useParams();
-  const { title } = Route.useSearch();
+  const search = Route.useSearch();
   const nav = useNavigate();
   const valid = (MEDIA_TYPES as readonly string[]).includes(type);
 
@@ -79,7 +122,7 @@ function AddTypePage() {
       <ClientOnly>
         <WorkForm
           type={mediaType}
-          initial={buildInitialFromTitle(mediaType, title)}
+          initial={buildInitialFromRec(mediaType, search)}
           submitLabel="Salvar obra"
           onSubmit={(v) => {
             const w = addWork(formValuesToWork(mediaType, v));
@@ -98,7 +141,7 @@ function AddTypePage() {
 
 function VideosAddPager({ initialType }: { initialType: MediaType }) {
   const nav = useNavigate();
-  const { title } = Route.useSearch();
+  const search = Route.useSearch();
   const [idx, setIdx] = useState(() => {
     const found = VIDEO_PAGES.findIndex((p) => p.type === initialType);
     return found === -1 ? 0 : found;
@@ -131,34 +174,38 @@ function VideosAddPager({ initialType }: { initialType: MediaType }) {
         <span className="w-6" />
       </header>
 
-      {/* Indicador de página (bolinhas, tipo carrossel) */}
-      <div className="flex justify-center items-center gap-1.5 pb-1">
-        {VIDEO_PAGES.map((p, i) => (
-          <button
-            key={p.type}
-            onClick={() => go(i)}
-            aria-label={`Ir para ${p.label}`}
-            className="rounded-full transition-all"
-            style={{
-              width: i === idx ? 18 : 6,
-              height: 6,
-              background: i === idx ? "var(--fan-pink)" : "var(--fan-rose-mid)",
-            }}
-          />
-        ))}
+      {/* Indicador de página (bolinhas, tipo carrossel) — só essa faixa
+          detecta o arrastar de dedo pra trocar de aba, pra não brigar com
+          a rolagem do formulário lá embaixo. */}
+      <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ touchAction: "pan-y" }}>
+        <div className="flex justify-center items-center gap-1.5 pb-1">
+          {VIDEO_PAGES.map((p, i) => (
+            <button
+              key={p.type}
+              onClick={() => go(i)}
+              aria-label={`Ir para ${p.label}`}
+              className="rounded-full transition-all"
+              style={{
+                width: i === idx ? 18 : 6,
+                height: 6,
+                background: i === idx ? "var(--fan-pink)" : "var(--fan-rose-mid)",
+              }}
+            />
+          ))}
+        </div>
+        {idx === 0 && (
+          <p className="text-center text-sm pb-2" style={{ color: "var(--fan-text-2)" }}>
+            ◀ Deslize aqui em cima pra ver Gacha Videos
+          </p>
+        )}
       </div>
-      {idx === 0 && (
-        <p className="text-center text-sm pb-2" style={{ color: "var(--fan-text-2)" }}>
-          ◀ Deslize para o lado pra ver Gacha Videos
-        </p>
-      )}
 
-      <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      <div>
         <ClientOnly>
           <WorkForm
             key={current.type}
             type={current.type}
-            initial={buildInitialFromTitle(current.type, title)}
+            initial={buildInitialFromRec(current.type, search)}
             submitLabel="Salvar obra"
             onSubmit={(v) => {
               const w = addWork(formValuesToWork(current.type, v));

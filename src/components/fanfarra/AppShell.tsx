@@ -6,7 +6,6 @@ import {
   Home,
   Library,
   Plus,
-  Search,
   Menu,
   X,
   Trophy,
@@ -266,9 +265,6 @@ const [drawerOpen, setDrawerOpen] = useState(() => {
           </div>
           <div className="h-px mx-5" style={{ background: "var(--fan-rose-mid)" }} />
           <nav className="p-3 space-y-1" onClick={() => setDrawerOpen(false)}>
-            <DrawerSection label="Principal" />
-            <DrawerLink id="tour-search" to="/search" icon={Search} label="Buscar" />
-
             <DrawerSection label="Descobrir" />
             <DrawerLink id="tour-stats" to="/stats" icon={BarChart3} label="Estatísticas Avançadas" iconColor="var(--fan-icon-blue)" pro={isPro ? undefined : "full"} />
             <DrawerLink id="tour-wrapped" to="/wrapped" icon={Sparkles} label="Wrapped Anual" pro={isPro ? undefined : true} />

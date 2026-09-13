@@ -1,7 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { getTypeColor } from "@/lib/fanfarra/typeColors";
+import { getTypeColor, getTypeCardBg, getTypeCardBorder } from "@/lib/fanfarra/typeColors";
+import { SafeImage } from "@/components/fanfarra/SafeImage";
+import { splitReaction } from "@/lib/fanfarra/icons";
 import {
   ArrowLeft,
   Pencil,
@@ -119,16 +121,19 @@ function InfoRow({
 }) {
   return (
     <div
-      className="flex items-center justify-between px-4 py-3"
+      className="flex items-start justify-between gap-3 px-4 py-3"
       style={{ borderBottom: last ? "none" : "0.5px solid rgba(77,0,37,0.4)" }}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 shrink-0">
         <span style={{ color: "var(--fan-pink-light)" }}>{icon}</span>
         <span className="text-sm" style={{ color: "var(--fan-text-2)" }}>
           {label}
         </span>
       </div>
-      <span className="text-sm font-medium" style={{ color: "var(--fan-text)" }}>
+      <span
+        className="text-sm font-medium text-right break-words"
+        style={{ color: "var(--fan-text)", maxWidth: "60%", minWidth: 0 }}
+      >
         {value}
       </span>
     </div>
@@ -220,6 +225,12 @@ function WorkDetail() {
     if (!work) return;
     setDeleting(true);
     try {
+      // Se a obra estava marcada como recomendação pública, precisa remover
+      // o post da comunidade também — senão ele fica órfão pra sempre em
+      // "Da comunidade" mesmo depois da obra ser apagada.
+      if (work.isPublicRec) {
+        removeRecommendationPost(work.id);
+      }
       await deleteWork(work.id);
       nav({ to: "/library" });
       return;
@@ -253,7 +264,10 @@ function WorkDetail() {
         />
 
         {/* Top actions */}
-        <div className="relative flex items-center justify-between px-4 pt-4">
+        <div
+          className="relative flex items-center justify-between px-4"
+          style={{ paddingTop: "calc(1rem + var(--sat))" }}
+        >
           <button
             onClick={() => nav({ to: "/" })}
             className="p-2 rounded-full"
@@ -296,13 +310,16 @@ function WorkDetail() {
             }}
           >
             <AwardCrownBadge title={work.title} />
-            {work.cover ? (
-              <img src={work.cover} alt={work.title} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center" style={{ background: "var(--fan-bg-2)" }}>
-                <MediaIcon type={work.type} size={36} />
-              </div>
-            )}
+            <SafeImage
+              src={work.cover}
+              alt={work.title}
+              className="w-full h-full object-cover"
+              fallback={
+                <div className="w-full h-full flex items-center justify-center" style={{ background: "var(--fan-bg-2)" }}>
+                  <MediaIcon type={work.type} size={36} />
+                </div>
+              }
+            />
           </div>
 
           <div className="min-w-0 flex-1 flex flex-col justify-end">
@@ -711,33 +728,79 @@ function WorkDetail() {
         <h2 className="text-xs uppercase tracking-wider mb-2 px-1" style={{ color: "var(--fan-text-2)" }}>
           Obras relacionadas
         </h2>
-        <div style={cardStyle}>
-          {related.length > 0 ? (
-            related.map((r, i) => (
-              <div
-                key={`${r.title}-${i}`}
-                className="flex items-center justify-between px-4 py-3"
-                style={{ borderBottom: i === related.length - 1 ? "none" : "0.5px solid rgba(77,0,37,0.4)" }}
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <BookOpen size={16} color="var(--fan-pink-light)" />
-                  <div className="min-w-0">
-                    <div className="text-sm font-medium truncate" style={{ color: "var(--fan-text)" }}>
-                      {r.title}
-                    </div>
-                    <div className="text-xs" style={{ color: "var(--fan-text-2)" }}>
-                      {r.relation} · {r.type}
-                    </div>
+        {related.length > 0 ? (
+          <div className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+            {related.map((r, i) => {
+              const card = (
+                <>
+                  <div
+                    className="relative w-full rounded-[8px] flex items-center justify-center overflow-hidden"
+                    style={
+                      r.cover
+                        ? {
+                            aspectRatio: "2/3",
+                            boxShadow: `0 0 0 1px color-mix(in srgb, ${getTypeColor(r.type)} 55%, transparent), 0 0 14px 0 color-mix(in srgb, ${getTypeColor(r.type)} 40%, transparent)`,
+                          }
+                        : {
+                            aspectRatio: "2/3",
+                            background: getTypeCardBg(r.type),
+                            border: `0.5px solid ${getTypeCardBorder(r.type)}`,
+                          }
+                    }
+                  >
+                    <AwardCrownBadge title={r.title} />
+                    {r.cover ? (
+                      <img
+                        src={r.cover}
+                        alt={r.title}
+                        referrerPolicy="no-referrer"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <MediaIcon type={r.type} size={20} />
+                    )}
                   </div>
+                  <p
+                    className="mt-1 text-sm font-semibold line-clamp-2 leading-tight"
+                    style={{ color: "var(--fan-text)" }}
+                  >
+                    {r.title}
+                  </p>
+                  <p className="text-sm font-medium" style={{ color: "var(--fan-text-2)" }}>
+                    {r.relation}
+                  </p>
+                </>
+              );
+              return r.id && r.source === "library" ? (
+                <Link
+                  key={`${r.title}-${i}`}
+                  to="/work/$id"
+                  params={{ id: r.id }}
+                  className="w-20 shrink-0 block"
+                >
+                  {card}
+                </Link>
+              ) : r.id && r.source === "recommendations" ? (
+                <Link
+                  key={`${r.title}-${i}`}
+                  to="/rec/$id"
+                  params={{ id: r.id }}
+                  className="w-20 shrink-0 block"
+                >
+                  {card}
+                </Link>
+              ) : (
+                <div key={`${r.title}-${i}`} className="w-20 shrink-0">
+                  {card}
                 </div>
-              </div>
-            ))
-          ) : (
-            <div className="px-4 py-6 text-center text-sm" style={{ color: "var(--fan-text-2)" }}>
-              Nenhuma obra relacionada
-            </div>
-          )}
-        </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div style={cardStyle} className="px-4 py-6 text-center text-sm">
+            <span style={{ color: "var(--fan-text-2)" }}>Nenhuma obra relacionada</span>
+          </div>
+        )}
       </motion.section>
 
       {/* REAÇÕES */}
@@ -752,7 +815,15 @@ function WorkDetail() {
         </h2>
         <div style={cardStyle} className="p-4 flex flex-wrap gap-2">
           {reactionsList.length > 0 ? (
-            reactionsList.map((r) => <Chip key={r}>{r}</Chip>)
+            reactionsList.map((r) => {
+              const { Icon, label } = splitReaction(r);
+              return (
+                <Chip key={r}>
+                  <Icon size={12} />
+                  {label}
+                </Chip>
+              );
+            })
           ) : (
             <span className="text-sm" style={{ color: "var(--fan-text-2)" }}>
               Nenhuma reação marcada

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState, type ChangeEvent } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { ArrowLeft, ChevronRight, PanelBottomOpen, Sun, Moon } from "lucide-react";
 import { AppShell } from "@/components/fanfarra/AppShell";
@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { signOut } from "@/lib/fanfarra/auth";
 import { enablePushNotifications } from "@/lib/fanfarra/pushNotifications";
 import { exportMyData } from "@/lib/fanfarra/dataExport";
+import { importMyData } from "@/lib/fanfarra/dataImport";
 import {
   ChangeEmailModal,
   ChangePasswordModal,
@@ -33,6 +34,8 @@ function SettingsPage() {
   const [modal, setModal] = useState<"email" | "password" | "delete" | null>(null);
 
   const [exporting, setExporting] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const importInputRef = useRef<HTMLInputElement>(null);
 
   const handleExportData = async () => {
     setExporting(true);
@@ -43,6 +46,23 @@ function SettingsPage() {
       toast.error(err instanceof Error ? err.message : "Não foi possível exportar seus dados.");
     } finally {
       setExporting(false);
+    }
+  };
+
+  const handleImportFile = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ""; // permite escolher o mesmo arquivo de novo depois
+    if (!file) return;
+    setImporting(true);
+    try {
+      const summary = await importMyData(file);
+      toast.success(
+        `Dados restaurados! ${summary.biblioteca} obras, ${summary.metasPessoais} metas e ${summary.estantes} estantes.`,
+      );
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Não foi possível importar esse arquivo.");
+    } finally {
+      setImporting(false);
     }
   };
 
@@ -69,6 +89,18 @@ function SettingsPage() {
             label={exporting ? "Preparando arquivo..." : "Baixar meus dados"}
             variant="modal"
             onClick={exporting ? undefined : handleExportData}
+          />
+          <input
+            ref={importInputRef}
+            type="file"
+            accept="application/json"
+            className="hidden"
+            onChange={handleImportFile}
+          />
+          <Item
+            label={importing ? "Restaurando..." : "Importar backup"}
+            variant="modal"
+            onClick={importing ? undefined : () => importInputRef.current?.click()}
           />
           <Item
             label="Excluir conta"
@@ -160,7 +192,10 @@ function SettingsPage() {
         </Group>
 
         <Group title="Assinatura">
-          <Item label={s.pro ? "Fanfarra PRO ativo ✦" : "Plano Gratuito"} />
+          <Item
+            label={s.pro ? "Fanfarra PRO ativo" : "Plano Gratuito"}
+            onClick={() => nav({ to: "/pro" })}
+          />
           <Item
             label={s.pro ? "Gerenciar assinatura" : "Conhecer o Fanfarra PRO"}
             variant="navigate"

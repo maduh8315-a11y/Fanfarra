@@ -270,7 +270,8 @@ export function WorkForm({
       return {
         ...s,
         details: nextDetails,
-        status: on ? COMPLETED_STATUS_FOR_TYPE(type) : s.status,
+        // status do usuário (lendo/assistindo/etc.) não muda sozinho —
+        // "obra completa" só diz que a obra em si terminou de ser lançada.
       };
     });
   };
@@ -326,6 +327,7 @@ export function WorkForm({
             value={values.title}
             onChange={(e) => setValues((s) => ({ ...s, title: e.target.value }))}
             placeholder="Ex: Attack on Titan"
+            maxLength={300}
             className="w-full rounded-[10px] px-3 py-3 text-sm outline-none"
             style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-rose-mid)", color: "var(--fan-text)" }}
           />
@@ -513,6 +515,7 @@ export function WorkForm({
         currentType={type}
         value={(values.details.related as RelatedWork[] | undefined) ?? []}
         onChange={(next) => setDetail("related", next)}
+        workId={workId}
       />
 
       <Field label="Gêneros">

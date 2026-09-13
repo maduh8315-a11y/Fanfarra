@@ -61,8 +61,12 @@ return (
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md max-h-[85vh] overflow-y-auto rounded-t-2xl p-5 animate-in slide-in-from-bottom duration-300"
-        style={{ background: "var(--fan-bg)", border: "0.5px solid var(--fan-rose-mid)" }}
+        className="w-full max-w-md max-h-[85vh] overflow-y-auto rounded-t-2xl px-5 pt-5 animate-in slide-in-from-bottom duration-300"
+        style={{
+          background: "var(--fan-bg)",
+          border: "0.5px solid var(--fan-rose-mid)",
+          paddingBottom: "calc(1.25rem + var(--sab))",
+        }}
       >
         <div className="flex justify-center mb-3">
           <span className="block w-8 h-1 rounded-full" style={{ background: "var(--fan-rose-mid)" }} />

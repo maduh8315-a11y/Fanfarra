@@ -88,7 +88,7 @@ service cloud.firestore {
       allow read: if request.auth != null && request.auth.uid == uid;
 
       allow create: if request.auth != null && request.auth.uid == uid
-        && request.resource.data.pro == false;
+        && (!("pro" in request.resource.data) || request.resource.data.pro == false);
 
       // Ninguém consegue mudar `pro` pelo client, exceto o admin (o toggle
       // [DEV] em /settings, que já só aparece pra admin). Pra qualquer
@@ -287,6 +287,8 @@ match /rec_reaction_counts/{itemId} {
         id == request.resource.data.followerUid + '_' + request.resource.data.followingUid &&
         (!exists(/databases/$(database)/documents/public_profiles/$(request.resource.data.followingUid)) ||
          get(/databases/$(database)/documents/public_profiles/$(request.resource.data.followingUid)).data.whoCanFollow != 'nobody');
+      allow delete: if request.auth != null &&
+        request.auth.uid == resource.data.followerUid;
     }
 
    match /chats/{chatId} {

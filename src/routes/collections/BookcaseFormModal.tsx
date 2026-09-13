@@ -62,8 +62,59 @@ export function BookcaseFormModal({
           style={inputStyle}
         />
 
-        <label style={{ ...labelStyle, marginTop: 16 }}>Capa (opcional)</label>
-        <CoverField value={cover} onChange={setCover} />
+        <div
+          onClick={() => {
+            if (!isPro) nav({ to: "/pro" });
+          }}
+        >
+          <label
+            style={{
+              ...labelStyle,
+              marginTop: 16,
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            Capa (opcional)
+            {!isPro && <Lock size={11} style={{ display: "inline", verticalAlign: "middle" }} />}
+            {!isPro && (
+              <span
+                style={{
+                  fontSize: 10,
+                  fontWeight: 700,
+                  padding: "2px 7px",
+                  borderRadius: 999,
+                  background: "var(--fan-border)",
+                  color: "var(--fan-pink-light)",
+                  marginLeft: "auto",
+                }}
+              >
+                PRO
+              </span>
+            )}
+          </label>
+          {isPro ? (
+            <CoverField value={cover} onChange={setCover} />
+          ) : (
+            <div
+              style={{
+                ...cardBase,
+                padding: 14,
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                cursor: "pointer",
+                opacity: 0.7,
+              }}
+            >
+              <Lock size={16} color="var(--fan-pink-light)" />
+              <span style={{ fontSize: 13, color: C.muted }}>
+                Capas personalizadas de estante são um recurso PRO
+              </span>
+            </div>
+          )}
+        </div>
 
         <label style={{ ...labelStyle, marginTop: 16 }}>Emoji</label>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 8 }}>

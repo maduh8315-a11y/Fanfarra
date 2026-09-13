@@ -640,7 +640,10 @@ function SummaryCard({ label, value }: { label: string; value: number }) {
       className="flex-1 rounded-[12px] p-3 min-w-0"
       style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
     >
-      <p className="text-xs font-bold uppercase tracking-wide mb-1" style={{ color: "var(--fan-text-2)" }}>
+      <p
+        className="text-xs font-bold uppercase tracking-wide mb-1 leading-tight break-words"
+        style={{ color: "var(--fan-text-2)" }}
+      >
         {label}
       </p>
       <p className="text-[18px] font-bold" style={{ color: "var(--fan-text)" }}>
@@ -862,7 +865,7 @@ function StatsPage() {
         </div>
       ) : (
         <div className="px-4 pb-8">
-          <div className="grid grid-cols-4 gap-2 mb-5">
+          <div className="grid grid-cols-2 gap-3 mb-5">
             <SummaryCard label="Total" value={total} />
             <SummaryCard label="Concluídas" value={completed} />
             <SummaryCard label={IN_PROGRESS_LABEL[mode]} value={inProgress} />

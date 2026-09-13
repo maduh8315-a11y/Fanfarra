@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Image as ImageIconLucide } from "lucide-react";
+import { Image as ImageIconLucide, Loader2 } from "lucide-react";
 import { uploadCoverImage } from "@/lib/fanfarra/uploadImage";
 import { C, btnGhost } from "./styles";
 
@@ -45,11 +45,12 @@ export function CoverField({ value, onChange }: { value: string; onChange: (v: s
           onClick={() => !uploading && fileRef.current?.click()}
         >
           {uploading ? (
-            <span style={{ fontSize: 11 }}>⏳</span>
+            <Loader2 size={18} className="animate-spin" color={C.muted} />
           ) : value ? (
             <img
               src={value}
               alt="Capa"
+              referrerPolicy="no-referrer"
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           ) : (

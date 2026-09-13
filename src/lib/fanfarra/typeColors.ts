@@ -21,7 +21,7 @@ export const TYPE_COLORS: Record<MediaType, string> = {
   Anime: "#0BB0D5",
   Filme: "#166BF3",
   Vídeos: "#4539EF",
-  "Gacha Videos": "#4539EF",
+  "Gacha Videos": "#C026D3",
   Dorama: "#8F2FEE",
   // Isolados
   Jogo: "#90C610",

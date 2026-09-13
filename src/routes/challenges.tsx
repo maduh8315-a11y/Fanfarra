@@ -183,7 +183,7 @@ function ChallengesPage() {
                         }}
                       >
                         <div className="flex items-start gap-3">
-                          <div className="text-2xl">{g.emoji}</div>
+                          <Target size={22} color="var(--fan-pink-light)" />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
                               <h3 className="text-[14px] font-bold" style={{ color: "var(--fan-text)" }}>
@@ -262,7 +262,7 @@ function ChallengesPage() {
                       }}
                     >
                       <div className="flex items-start gap-3">
-                        <div className="text-2xl">{c.emoji}</div>
+                        <Target size={22} color="var(--fan-pink-light)" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
                             <h3 className="text-[14px] font-bold" style={{ color: "var(--fan-text)" }}>

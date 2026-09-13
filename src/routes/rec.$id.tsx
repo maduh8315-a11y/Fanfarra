@@ -4,6 +4,7 @@ import type { MediaType, DateParts } from "@/lib/fanfarra/types";
 import { useEffect, useMemo, useState } from "react";
 import { getTypeColor, getTypeCardBg, getTypeCardBorder } from "@/lib/fanfarra/typeColors";
 import { ContentGate } from "@/components/fanfarra/ContentGate";
+import { splitReaction } from "@/lib/fanfarra/icons";
 import {
   ArrowLeft,
   Star,
@@ -839,7 +840,14 @@ function RecDetail() {
         <Link
           to="/add/$type"
           params={{ type: item.type }}
-          search={{ title: item.title }}
+          search={{
+            title: item.title,
+            cover: item.cover,
+            author: item.author || item.studio,
+            synopsis: item.synopsis,
+            link: item.link,
+            genres: item.genres?.length ? JSON.stringify(item.genres) : undefined,
+          }}
           className="block w-full py-3 rounded-[14px] text-center text-sm font-bold text-white"
           style={{ background: "linear-gradient(90deg, var(--fan-pink), var(--fan-pink-light))" }}
         >
@@ -856,7 +864,11 @@ function RecDetail() {
         >
           <div
             className="w-full max-w-sm rounded-t-[20px] p-5"
-            style={{ background: "var(--fan-bg-2)", border: "1px solid var(--fan-border)" }}
+            style={{
+              background: "var(--fan-bg-2)",
+              border: "1px solid var(--fan-border)",
+              paddingBottom: "calc(1.25rem + var(--sab))",
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-base font-bold" style={{ color: "var(--fan-text)" }}>
@@ -942,15 +954,19 @@ function ChipList({ items, emptyText }: { items?: string[]; emptyText: string })
   if (!items || items.length === 0) return <EmptyValue text={emptyText} />;
   return (
     <div className="flex flex-wrap gap-1.5">
-      {items.map((g) => (
-        <span
-          key={g}
-          className="text-[11px] px-2 py-0.5 rounded-full"
-          style={{ background: "var(--fan-bg-2)", color: "var(--fan-text-2)", border: "1px solid var(--fan-border)" }}
-        >
-          {g}
-        </span>
-      ))}
+      {items.map((g) => {
+        const { Icon, label } = splitReaction(g);
+        return (
+          <span
+            key={g}
+            className="text-[11px] px-2 py-0.5 rounded-full inline-flex items-center gap-1"
+            style={{ background: "var(--fan-bg-2)", color: "var(--fan-text-2)", border: "1px solid var(--fan-border)" }}
+          >
+            <Icon size={11} />
+            {label}
+          </span>
+        );
+      })}
     </div>
   );
 }

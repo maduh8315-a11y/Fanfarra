@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { SafeImage } from "@/components/fanfarra/SafeImage";
 import {
   ArrowLeft,
   Camera,
@@ -237,16 +238,18 @@ function ProfilePage() {
     <AppShell>
       {/* ---------- CAPA ---------- */}
       <div className="relative w-full">
-        <div
-          className="relative h-40 w-full sm:h-52"
-          style={{
-            backgroundImage: profile.coverImage
-              ? `url(${profile.coverImage})`
-              : "linear-gradient(160deg, var(--fan-bg-2) 0%, var(--fan-red-dark) 100%)",
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-        >
+        <div className="relative h-40 w-full sm:h-52">
+          <SafeImage
+            src={profile.coverImage}
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+            fallback={
+              <div
+                className="absolute inset-0"
+                style={{ background: "linear-gradient(160deg, var(--fan-bg-2) 0%, var(--fan-red-dark) 100%)" }}
+              />
+            }
+          />
           <div
             className="absolute inset-0"
             style={{ background: "linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.6) 100%)" }}
@@ -295,13 +298,16 @@ function ProfilePage() {
                 backgroundColor: "var(--fan-bg-3)",
               }}
             >
-              {profile.avatar ? (
-                <img src={profile.avatar} alt="Avatar" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-3xl font-bold" style={{ color: "var(--fan-pink-light)" }}>
-                  {profile.username.charAt(0).toUpperCase()}
-                </span>
-              )}
+              <SafeImage
+                src={profile.avatar}
+                alt="Avatar"
+                className="w-full h-full object-cover"
+                fallback={
+                  <span className="text-3xl font-bold" style={{ color: "var(--fan-pink-light)" }}>
+                    {profile.username.charAt(0).toUpperCase()}
+                  </span>
+                }
+              />
             </div>
 
             <button

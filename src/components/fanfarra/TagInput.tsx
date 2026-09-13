@@ -58,14 +58,20 @@ export function TagInput({
     if (!trimmed) return;
     if (value.includes(trimmed)) return;
     if (maxTags && value.length >= maxTags) return;
-
+    
     // Salva globalmente e adiciona à obra
     saveTag(trimmed);
     onChange([...value, trimmed]);
     setInput("");
     setSuggestions([]);
     setShowSuggestions(false);
-    inputRef.current?.focus();
+
+    // Adia o refoco pro próximo tick. Se disparasse na hora, o evento de
+    // foco chamava o "onFocus" ainda com a versão antiga do input/da lista
+    // (de antes dessa atualização) e reabria a caixa de sugestões mostrando
+    // a MESMA tag que acabou de ser adicionada — travando ali em cima do
+    // teclado e impedindo continuar digitando.
+    setTimeout(() => inputRef.current?.focus(), 0);
   }
 
   function removeTag(tag: string) {
@@ -130,7 +136,7 @@ export function TagInput({
               onKeyDown={handleKeyDown}
               onFocus={() => updateSuggestions(input)}
               placeholder={value.length === 0 ? placeholder : ""}
-              className="flex-1 bg-transparent outline-none text-sm"
+              className="flex-1 min-w-0 bg-transparent outline-none text-sm"
               style={{
                 color: "var(--fan-text)",
                 caretColor: "var(--fan-pink-light)",

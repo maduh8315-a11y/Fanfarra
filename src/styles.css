@@ -247,6 +247,7 @@ html,
     -webkit-user-select: none;
     user-select: none;
     overscroll-behavior: none;
+    overflow-x: hidden;
   }
 
   button,
@@ -366,4 +367,10 @@ svg {
 
 .onboarding-screen svg {
   color: var(--icon-color) !important;
+}
+
+/* Garante que os modais "bottom sheet" nunca fiquem colados/escondidos
+   atrás da barra de navegação do celular (gestos ou botões). */
+.fixed.inset-0.flex.items-end > * {
+  padding-bottom: calc(1rem + var(--sab));
 }

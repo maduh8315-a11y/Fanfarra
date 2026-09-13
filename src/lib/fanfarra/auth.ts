@@ -164,11 +164,12 @@ export async function signUpWithEmail(
       whoCanFriendRequest: needsParentalSupervision ? "nobody" : "everyone",
       isChildAccount: needsParentalSupervision,
     });
-    await firebaseSendEmailVerification(cred.user);
+       await firebaseSendEmailVerification(cred.user);
     return toAuthUser(cred.user);
   } catch (err) {
-    setSkipNextProfileAutoSeed(false);
     throw err;
+  } finally {
+    setSkipNextProfileAutoSeed(false);
   }
 }
 

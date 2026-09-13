@@ -30,6 +30,13 @@ export async function fetchWattpad(url: string): Promise<ImportedWorkData | null
             try {
                 const partRes = await fetch(
                     `https://www.wattpad.com/api/v3/story_parts/${partMatch[1]}?fields=group(id)`,
+                    {
+                        headers: {
+                            "User-Agent":
+                                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+                            Accept: "application/json",
+                        },
+                    },
                 );
                 if (partRes.ok) {
                     const partJson: WattpadPartResponse = await partRes.json();
@@ -46,6 +53,13 @@ export async function fetchWattpad(url: string): Promise<ImportedWorkData | null
     try {
         const res = await fetch(
             `https://www.wattpad.com/api/v3/stories/${storyId}?fields=title,description,cover,user(name),numParts,tags,language(name),completed,mature`,
+            {
+                headers: {
+                    "User-Agent":
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+                    Accept: "application/json",
+                },
+            },
         );
         if (!res.ok) return null;
         const json: WattpadStoryResponse = await res.json();

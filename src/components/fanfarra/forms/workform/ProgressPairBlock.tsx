@@ -18,12 +18,18 @@ export function ProgressPairBlock({
   values: WorkFormValues;
   setDetail: (k: string, v: unknown) => void;
 }) {
+  // Alguns tipos (ex: Música) só têm um campo de progresso "solto", sem um
+  // "total" que faça sentido (não existe "total de escutas"). Nesses casos
+  // `pair.totalKey` vem vazio e a gente nem desenha a segunda coluna —
+  // evita a caixinha órfã e evita salvar um campo com nome vazio.
+  const hasTotal = !!pair.totalKey;
+
   const cur = values.details[pair.currentKey];
-  const tot = values.details[pair.totalKey];
+  const tot = hasTotal ? values.details[pair.totalKey] : undefined;
   const curNum = Number(cur) || 0;
   const totStr = tot == null ? "" : String(tot);
   const totNum = totStr === "?" || totStr === "" ? null : Number(totStr);
-  const validTotal = totNum != null && !Number.isNaN(totNum) && totNum > 0;
+  const validTotal = hasTotal && totNum != null && !Number.isNaN(totNum) && totNum > 0;
   const pct = validTotal
     ? Math.min(100, Math.max(0, pair.totalIsPercent ? curNum : (curNum / totNum!) * 100))
     : 0;
@@ -31,9 +37,12 @@ export function ProgressPairBlock({
 
   return (
     <div className="space-y-2">
-      <div className="grid grid-cols-2 gap-3">
+      <div className={hasTotal ? "grid grid-cols-2 gap-3" : ""}>
         <div>
-          <label className="block text-sm mb-1 text-center" style={{ color: "var(--fan-text-2)" }}>
+          <label
+            className="flex items-end justify-center text-center text-sm mb-1 min-h-[2.25rem] leading-tight"
+            style={{ color: "var(--fan-text-2)" }}
+          >
             {pair.currentLabel}
           </label>
           <input
@@ -47,27 +56,29 @@ export function ProgressPairBlock({
             style={PAIR_BOX_STYLE}
           />
         </div>
-        <div>
-          <label className="block text-sm mb-1 text-center" style={{ color: "var(--fan-text-2)" }}>
-            {pair.totalLabel}
-          </label>
-          <input
-            type="text"
-            inputMode="numeric"
-            value={totStr}
-            placeholder={pair.totalIsPercent ? "0-100" : "número ou ?"}
-            onChange={(e) => setDetail(pair.totalKey, e.target.value)}
-            className="w-full px-3 py-3 text-sm outline-none"
-            style={PAIR_BOX_STYLE}
-          />
-        </div>
+        {hasTotal && (
+          <div>
+            <label
+              className="flex items-end justify-center text-center text-sm mb-1 min-h-[2.25rem] leading-tight"
+              style={{ color: "var(--fan-text-2)" }}
+            >
+              {pair.totalLabel}
+            </label>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={totStr}
+              placeholder={pair.totalIsPercent ? "0-100" : "número ou ?"}
+              onChange={(e) => setDetail(pair.totalKey, e.target.value)}
+              className="w-full px-3 py-3 text-sm outline-none"
+              style={PAIR_BOX_STYLE}
+            />
+          </div>
+        )}
       </div>
       {validTotal && (
         <div className="space-y-1">
-          <div
-            className="w-full h-1.5 rounded-full overflow-hidden"
-            style={{ background: "var(--fan-border)" }}
-          >
+          <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ background: "var(--fan-border)" }}>
             <div
               className="h-full rounded-full"
               style={{

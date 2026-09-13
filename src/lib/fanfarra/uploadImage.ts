@@ -45,13 +45,29 @@ function compressImage(file: File, maxDimension = 1200, quality = 0.8): Promise<
     const url = URL.createObjectURL(file);
     img.onload = () => {
       URL.revokeObjectURL(url);
+
+      // Se a imagem não carregou de verdade (formato não suportado pelo
+      // navegador, arquivo corrompido etc.), o onload dispara mesmo assim,
+      // mas com dimensões zeradas — sem essa checagem isso virava uma foto
+      // totalmente preta em vez de um erro claro pro usuário.
+      if (!img.naturalWidth || !img.naturalHeight) {
+        return reject(new Error("Não foi possível ler essa imagem. Tente outro arquivo."));
+      }
+
       const scale = Math.min(1, maxDimension / Math.max(img.width, img.height));
       const canvas = document.createElement("canvas");
       canvas.width = img.width * scale;
       canvas.height = img.height * scale;
       const ctx = canvas.getContext("2d");
       if (!ctx) return reject(new Error("Canvas não suportado."));
+
+      // Preenche o fundo de branco ANTES de desenhar a imagem. Sem isso,
+      // fotos com transparência (PNG) viram um retângulo preto ao serem
+      // convertidas pra JPEG, porque JPEG não tem canal alfa.
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
       canvas.toBlob(
         (blob) => {
           if (!blob) return reject(new Error("Falha ao comprimir imagem."));
@@ -86,7 +102,7 @@ export async function uploadCoverImage(
   const base64 = await fileToBase64(compressed);
 
   const result = await uploadCoverImageServer({
-    data: { base64, mimeType: file.type },
+    data: { base64, mimeType: compressed.type },
   });
 
   if (!result.ok || !result.url) {

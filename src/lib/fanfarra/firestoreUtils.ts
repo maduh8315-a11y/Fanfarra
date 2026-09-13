@@ -10,6 +10,7 @@ export function stripUndefined<T>(value: T): T {
     const result: Record<string, unknown> = {};
     for (const [key, val] of Object.entries(value as Record<string, unknown>)) {
       if (val === undefined) continue;
+      if (key === "") continue; // nomes de campo vazios quebram o Firestore
       result[key] = stripUndefined(val);
     }
     return result as T;

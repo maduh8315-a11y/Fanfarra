@@ -445,23 +445,9 @@ function EmptyHome({ worksCount }: { worksCount: number }) {
         </Link>
       </div>
 
-      <div
-        className="mt-4 rounded-[14px] p-4 flex items-start gap-3"
-        style={{
-          background: "color-mix(in srgb, var(--fan-pink) 6%, transparent)",
-          border: "0.5px solid color-mix(in srgb, var(--fan-pink) 20%, transparent)",
-        }}
-      >
-        <Sparkles size={14} color="var(--fan-icon-blue)" className="mt-0.5 shrink-0" />
-        <p className="text-sm leading-relaxed" style={{ color: "var(--fan-text-2)" }}>
-          <span className="font-bold" style={{ color: "var(--fan-pink-light)" }}>
-            Dica:{" "}
-          </span>
-          Você pode registrar seu progresso, dar notas, anotar pensamentos e acompanhar tudo em um
-          só lugar.
-        </p>
+            <div className="mt-6">
+        <PopularShelves />
       </div>
-      <PopularShelves />
     </div>
   );
 }

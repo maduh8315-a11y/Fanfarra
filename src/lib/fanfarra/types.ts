@@ -192,6 +192,7 @@ export type FieldDef =
       label: string;
       options: readonly string[];
       multi?: boolean;
+      allowOther?: boolean;
     }
   | { kind: "date"; key: string; label: string };
 
@@ -216,7 +217,6 @@ export const TYPE_FIELDS: Record<MediaType, FieldDef[]> = {
     { kind: "text", key: "totalChapters", label: "Total de capítulos (número ou ?)" },
     { kind: "number", key: "volume", label: "Volume atual" },
     { kind: "text", key: "totalVolumes", label: "Total de volumes (número ou ?)" },
-    { kind: "text", key: "serialization", label: "Serialização (opcional)" },
     { kind: "text", key: "author", label: "Autor (opcional)" },
     { kind: "url", key: "link", label: "Link MAL/MangaDex (opcional)" },
     { kind: "date", key: "lastUpdate", label: "Última atualização (opcional)" },
@@ -229,6 +229,7 @@ export const TYPE_FIELDS: Record<MediaType, FieldDef[]> = {
       key: "platform",
       label: "Plataforma",
       options: ["Webtoon", "Kakao", "Naver", "Outro"],
+      allowOther: true,
     },
     { kind: "text", key: "author", label: "Autor (opcional)" },
     { kind: "url", key: "link", label: "Link da plataforma (opcional)" },
@@ -237,7 +238,13 @@ export const TYPE_FIELDS: Record<MediaType, FieldDef[]> = {
   Manhua: [
     { kind: "number", key: "chapter", label: "Capítulo atual" },
     { kind: "text", key: "totalChapters", label: "Total de capítulos (número ou ?)" },
-    { kind: "text", key: "platform", label: "Plataforma (opcional)" },
+      {
+      kind: "chips",
+      key: "platform",
+      label: "Plataforma",
+      options: ["Webtoon", "Tapas", "MangaToon", "Outro"],
+      allowOther: true,
+    },
     { kind: "text", key: "author", label: "Autor (opcional)" },
     { kind: "url", key: "link", label: "Link da plataforma (opcional)" },
     { kind: "date", key: "lastUpdate", label: "Última atualização (opcional)" },
@@ -251,6 +258,7 @@ export const TYPE_FIELDS: Record<MediaType, FieldDef[]> = {
       key: "platform",
       label: "Plataforma",
       options: ["AO3", "Wattpad", "Fanfiction.net", "Spirit Fanfics", "Outro"],
+      allowOther: true,
     },
     {
       kind: "chips",
@@ -342,7 +350,13 @@ export const TYPE_FIELDS: Record<MediaType, FieldDef[]> = {
   Webtoon: [
     { kind: "number", key: "episode", label: "Episódio atual" },
     { kind: "text", key: "totalEpisodes", label: "Total de episódios (número ou ?)" },
-    { kind: "chips", key: "platform", label: "Plataforma", options: ["Webtoon", "Tapas", "Outro"] },
+    {
+      kind: "chips",
+      key: "platform",
+      label: "Plataforma",
+      options: ["Webtoon", "Tapas", "Outro"],
+      allowOther: true,
+    },
     { kind: "text", key: "author", label: "Autor (opcional)" },
     { kind: "url", key: "link", label: "Link da plataforma (opcional)" },
     { kind: "date", key: "lastUpdate", label: "Última atualização (opcional)" },

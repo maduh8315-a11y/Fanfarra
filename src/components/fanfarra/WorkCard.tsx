@@ -1,11 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
 import type { Work } from "@/lib/fanfarra/types";
 import { MediaIcon } from "./MediaIcon";
+import { SafeImage } from "./SafeImage";
 import { getTypeColor, getTypeCardBg, getTypeCardBorder } from "@/lib/fanfarra/typeColors";
 
 export function WorkCard({ work }: { work: Work }) {
-  const [imgLoaded, setImgLoaded] = useState(false);
   const pct =
     work.total > 0
       ? Math.min(100, (work.current / work.total) * 100)
@@ -26,7 +25,9 @@ export function WorkCard({ work }: { work: Work }) {
             : "Não assistido"
           : work.type === "Música"
             ? `${work.current} escutas`
-            : `Cap ${work.current}${work.total ? `/${work.total}` : ""}`;
+            : work.type === "Vídeos" || work.type === "Gacha Videos"
+              ? `Parte ${work.current}${work.total ? `/${work.total}` : ""}`
+              : `Cap ${work.current}${work.total ? `/${work.total}` : ""}`;
   const hasCover = !!work.cover;
   const typeColor = getTypeColor(work.type);
   return (
@@ -54,22 +55,12 @@ export function WorkCard({ work }: { work: Work }) {
           className="w-full aspect-[3/4] flex items-center justify-center relative"
           style={{ background: hasCover ? "var(--fan-border)" : "transparent" }}
         >
-          {work.cover ? (
-            <img
-              src={work.cover}
-              alt={work.title}
-              loading="lazy"
-              decoding="async"
-              onLoad={() => setImgLoaded(true)}
-              className="w-full h-full object-cover"
-              style={{
-                opacity: imgLoaded ? 1 : 0,
-                transition: "opacity 250ms ease",
-              }}
-            />
-          ) : (
-            <MediaIcon type={work.type} size={28} className="opacity-80" />
-          )}
+          <SafeImage
+            src={work.cover}
+            alt={work.title}
+            className="w-full h-full object-cover"
+            fallback={<MediaIcon type={work.type} size={28} className="opacity-80" />}
+          />
         </div>
         <div className="p-2">
           <div className="text-sm font-bold truncate" style={{ color: "var(--fan-text-3)" }}>

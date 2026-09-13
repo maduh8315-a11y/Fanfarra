@@ -33,7 +33,7 @@ const UPDATES: UpdateEntry[] = [
   {
     version: "1.0.0",
     date: "Lançamento",
-    changes: [{ type: "new", text: "Primeira versão do Fanfarra 🎉" }],
+    changes: [{ type: "new", text: "Primeira versão do Fanfarra"}],
   },
 ];
 

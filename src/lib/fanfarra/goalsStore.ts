@@ -43,7 +43,7 @@ export function useGoals(): Goal[] {
   return list;
 }
 
-export async function addGoal(title: string, target: number, emoji: string = "🎯"): Promise<void> {
+export async function addGoal(title: string, target: number, emoji: string = ""): Promise<void> {
   const uid = auth.currentUser?.uid;
   if (!uid) throw new Error("Você precisa estar logado.");
   const cleanTitle = title.trim();

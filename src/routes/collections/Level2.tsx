@@ -4,7 +4,7 @@ import type { CSSProperties } from "react";
 import type { Bookcase } from "@/lib/fanfarra/bookcaseStore";
 import { InnerHeader } from "./InnerHeader";
 import { BookcaseFormModal } from "./BookcaseFormModal";
-import { C, cardBase, grid2, badge, iconBtn, btnGhost, btnPrimary, overlay, menuStyle, menuItem } from "./styles"
+import { C, cardBase, grid2, badge, iconBtn, btnGhost, btnPrimary, overlay, menuStyle, menuItem,labelStyle, inputStyle, } from "./styles"
 import { toast } from "sonner";;
 
 // ─── Nível 2 ──────────────────────────────────────────────────────────────────
@@ -29,6 +29,7 @@ export function Level2({
 }) {
     const [adding, setAdding] = useState(false);
     const [menuId, setMenuId] = useState<string | null>(null);
+    const [renaming, setRenaming] = useState<{ id: string; name: string } | null>(null);
 
     const [showDeleteBookcase, setShowDeleteBookcase] = useState(false);
 
@@ -149,8 +150,7 @@ export function Level2({
                                 <button
                                     style={menuItem}
                                     onClick={() => {
-                                        const name = window.prompt("Novo nome da prateleira", s.name);
-                                        if (name && name.trim()) onRename(s.id, name.trim());
+                                        setRenaming({ id: s.id, name: s.name });
                                         setMenuId(null);
                                     }}
                                 >
@@ -188,6 +188,45 @@ export function Level2({
                             </button>
                             <button style={{ ...btnPrimary, background: "#CC0022" }} onClick={onDeleteBookcase}>
                                 Excluir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Renomear prateleira — no estilo do app, sem alerta nativo */}
+            {renaming && (
+                <div style={overlay} onClick={() => setRenaming(null)}>
+                    <div
+                        style={{ ...cardBase, padding: 20, width: "100%", maxWidth: 320 }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <h2 style={{ margin: "0 0 12px", fontSize: 17 }}>Renomear prateleira</h2>
+                        <label style={labelStyle}>Nome</label>
+                        <input
+                            autoFocus
+                            value={renaming.name}
+                            onChange={(e) => setRenaming({ ...renaming, name: e.target.value })}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter" && renaming.name.trim()) {
+                                    onRename(renaming.id, renaming.name.trim());
+                                    setRenaming(null);
+                                }
+                            }}
+                            style={inputStyle}
+                        />
+                        <div style={{ display: "flex", gap: 8, marginTop: 20 }}>
+                            <button style={btnGhost} onClick={() => setRenaming(null)}>
+                                Cancelar
+                            </button>
+                            <button
+                                style={btnPrimary}
+                                onClick={() => {
+                                    if (renaming.name.trim()) onRename(renaming.id, renaming.name.trim());
+                                    setRenaming(null);
+                                }}
+                            >
+                                Salvar
                             </button>
                         </div>
                     </div>

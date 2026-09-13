@@ -111,9 +111,11 @@ export async function updateSettings(patch: Partial<Settings>) {
   if (!settingsCurrentUid) return;
   settingsCache = { ...settingsCache, ...patch };
   notifySettingsListeners();
-  await setDoc(doc(db, SETTINGS_COLLECTION, settingsCurrentUid), stripUndefined(patch), {
-    merge: true,
-  });
+  await setDoc(
+    doc(db, SETTINGS_COLLECTION, settingsCurrentUid),
+    stripUndefined({ pro: settingsCache.pro ?? false, ...patch }),
+    { merge: true },
+  );
 }
 
 // ===== Notifications =====
@@ -376,10 +378,8 @@ onAuthStateChanged(auth, async (user) => {
   if (!user) return;
 
   const ref = doc(db, PROFILES_COLLECTION, user.uid);
-  const skipSeed = skipNextProfileAutoSeed;
-  skipNextProfileAutoSeed = false;
 
-  if (!skipSeed) {
+  if (!skipNextProfileAutoSeed) {
     const existing = await getDoc(ref);
     if (!existing.exists()) {
       const seed: Profile = {

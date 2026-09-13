@@ -376,8 +376,12 @@ export function RecFilterSheet({
 
         {/* Footer */}
         <div
-          className="sticky bottom-0 px-5 py-4"
-          style={{ background: "var(--fan-bg)", borderTop: "1px solid var(--fan-border)" }}
+          className="sticky bottom-0 px-5 pt-4"
+          style={{
+            background: "var(--fan-bg)",
+            borderTop: "1px solid var(--fan-border)",
+            paddingBottom: "calc(1rem + var(--sab))",
+          }}
         >
           <button
             onClick={() => {

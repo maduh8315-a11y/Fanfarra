@@ -56,13 +56,6 @@ export const TOUR_STEPS: TourStep[] = [
     description: "Recomendações puxadas pelo que você já avaliou e curtiu. Ótimo pra sair da bolha e achar coisa nova.",
   },
   {
-    id: "tour-search",
-    route: "/",
-    openDrawer: true,
-    title: "Buscar",
-    description: "Aqui no menu você caça obra ou perfil de outro usuário só digitando o nome.",
-  },
-  {
     id: "tour-stats",
     route: "/",
     openDrawer: true,
