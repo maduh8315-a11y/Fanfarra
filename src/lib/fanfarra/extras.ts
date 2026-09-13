@@ -111,11 +111,15 @@ export async function updateSettings(patch: Partial<Settings>) {
   if (!settingsCurrentUid) return;
   settingsCache = { ...settingsCache, ...patch };
   notifySettingsListeners();
-  await setDoc(
-    doc(db, SETTINGS_COLLECTION, settingsCurrentUid),
-    stripUndefined({ pro: settingsCache.pro ?? false, ...patch }),
-    { merge: true },
-  );
+  try {
+    await setDoc(
+      doc(db, SETTINGS_COLLECTION, settingsCurrentUid),
+      stripUndefined(patch),
+      { merge: true },
+    );
+  } catch (err) {
+    console.error("Erro ao salvar configurações:", err);
+  }
 }
 
 // ===== Notifications =====

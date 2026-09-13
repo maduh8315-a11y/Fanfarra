@@ -193,10 +193,6 @@ function SettingsPage() {
 
         <Group title="Assinatura">
           <Item
-            label={s.pro ? "Fanfarra PRO ativo" : "Plano Gratuito"}
-            onClick={() => nav({ to: "/pro" })}
-          />
-          <Item
             label={s.pro ? "Gerenciar assinatura" : "Conhecer o Fanfarra PRO"}
             variant="navigate"
             onClick={() => nav({ to: "/pro" })}
