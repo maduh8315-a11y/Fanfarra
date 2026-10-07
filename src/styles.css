@@ -241,13 +241,12 @@
     box-sizing: border-box;
   }
 
-html,
+  html,
   body {
     touch-action: manipulation;
     -webkit-user-select: none;
     user-select: none;
     overscroll-behavior: none;
-    overflow-x: hidden;
   }
 
   button,

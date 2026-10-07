@@ -362,7 +362,7 @@ export function CatalogCard({ item, grid = false }: { item: RecommendationItem; 
       >
         <AwardCrownBadge title={item.title} />
         {item.cover ? (
-          <img src={item.cover} alt={item.title} className="w-full h-full object-cover" />
+         <img src={item.cover} alt={item.title} className="w-full h-full object-cover" loading="lazy" decoding="async" />
         ) : (
           <>
             <MediaIcon type={item.type as MediaType} size={28} />
