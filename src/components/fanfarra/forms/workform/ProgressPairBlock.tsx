@@ -40,7 +40,7 @@ export function ProgressPairBlock({
       <div className={hasTotal ? "grid grid-cols-2 gap-3" : ""}>
         <div>
           <label
-            className="flex items-end justify-center text-center text-sm mb-1 min-h-[2.25rem] leading-tight"
+                        className={`flex items-end text-sm mb-1 leading-tight ${hasTotal ? "justify-center text-center min-h-[2.25rem]" : "justify-start text-left"}`}
             style={{ color: "var(--fan-text-2)" }}
           >
             {pair.currentLabel}

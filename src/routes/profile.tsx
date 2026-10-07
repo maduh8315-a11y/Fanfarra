@@ -430,7 +430,7 @@ function ProfilePage() {
                 type="email"
                 value={profile.email}
                 readOnly
-                className="flex-1 px-3 py-2.5 rounded-lg text-sm outline-none cursor-not-allowed"
+                className="flex-1 min-w-0 px-3 rounded-lg text-sm outline-none cursor-not-allowed"
                 style={{
                   backgroundColor: "var(--fan-bg-3)",
                   border: "1px solid var(--fan-border)",
@@ -439,7 +439,7 @@ function ProfilePage() {
               />
               <button
                 onClick={() => nav({ to: "/settings" })}
-                className="px-3 py-2.5 rounded-lg text-xs font-semibold transition hover:brightness-110 active:scale-95 flex items-center gap-1"
+                className="px-3 py-2.5 rounded-lg text-xs font-semibold transition hover:brightness-110 active:scale-95 flex items-center gap-1 shrink-0"
                 style={{
                   backgroundColor: "var(--fan-active-chip)",
                   color: "var(--fan-pink-light)",
@@ -537,7 +537,7 @@ function ProfilePage() {
                   }
                 }}
                 placeholder="Ex: Suspense, Terror, Cult..."
-                className="flex-1 px-3 py-2.5 rounded-lg text-sm outline-none transition"
+                className="flex-1 min-w-0 px-3rounded-lg text-sm outline-none transition"
                 style={{
                   backgroundColor: "var(--fan-bg-3)",
                   border: "1px solid var(--fan-border)",
@@ -546,7 +546,7 @@ function ProfilePage() {
               />
               <button
                 onClick={addTag}
-                className="px-3 py-2.5 rounded-lg text-xs font-semibold transition hover:brightness-110 active:scale-95 flex items-center gap-1"
+                className="px-3 py-2.5 rounded-lg text-xs font-semibold transition hover:brightness-110 active:scale-95 flex items-center gap-1 shrink-0"
                 style={{
                   backgroundColor: "var(--fan-active-chip)",
                   color: "var(--fan-pink-light)",

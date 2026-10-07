@@ -223,6 +223,16 @@ export function removeRecommendationPost(workId: string): void {
   });
 }
 
+// Remove o post da comunidade de uma obra apagada, sem mostrar erro se o post
+// nunca existiu (apagar a obra não depende de ela ter sido publicada).
+export async function removeRecommendationPostQuiet(workId: string): Promise<void> {
+  try {
+    await deleteDoc(doc(db, COLLECTION, workId));
+  } catch {
+    // sem post ou sem permissão: segue em frente
+  }
+}
+
 // Remove todas as recomendações públicas de um usuário (usado ao excluir a conta).
 export async function deleteAllRecommendationsForUser(uid: string): Promise<void> {
   const q = query(collection(db, COLLECTION), where("uid", "==", uid));

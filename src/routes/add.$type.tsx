@@ -19,6 +19,7 @@ export const Route = createFileRoute("/add/$type")({
     synopsis?: string;
     link?: string;
     genres?: string;
+    extra?: string;
   } => {
     if (typeof search.title !== "string" || !search.title.trim()) return {};
     return {
@@ -28,6 +29,7 @@ export const Route = createFileRoute("/add/$type")({
       synopsis: typeof search.synopsis === "string" ? search.synopsis : undefined,
       link: typeof search.link === "string" ? search.link : undefined,
       genres: typeof search.genres === "string" ? search.genres : undefined,
+      extra: typeof search.extra === "string" ? search.extra : undefined,
     };
   },
   component: AddTypePage,
@@ -52,6 +54,7 @@ function buildInitialFromRec(
     synopsis?: string;
     link?: string;
     genres?: string;
+    extra?: string;
   },
 ) {
   if (!rec.title) return undefined;
@@ -67,6 +70,16 @@ function buildInitialFromRec(
       // ignora se vier malformado — melhor sem gêneros do que quebrar a tela
     }
   }
+  let extra: Record<string, unknown> = {};
+  if (rec.extra) {
+    try {
+      const parsed = JSON.parse(rec.extra);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) extra = parsed;
+    } catch {
+      // ignora se vier malformado
+    }
+  }
+  const { year, ...extraDetails } = extra as { year?: number } & Record<string, unknown>;
 
   return {
     title: rec.title,
@@ -76,10 +89,12 @@ function buildInitialFromRec(
     notes: "",
     genres,
     details: {
+      ...extraDetails,
       ...(rec.author ? { author: rec.author } : {}),
       ...(rec.synopsis ? { synopsis: rec.synopsis } : {}),
       ...(rec.link ? { link: rec.link } : {}),
     },
+     ...(type === "Música" && typeof year === "number" && year > 0 ? { startDate: { y: year } } : {}),
     shelfEntries: [],
   };
 }

@@ -249,7 +249,7 @@ const [drawerOpen, setDrawerOpen] = useState(() => {
                 )}
                 <div>
                   <div className="text-sm font-bold" style={{ color: "var(--fan-text)" }}>
-                    {user.displayName || "Fã Anônimo"}
+                    {profile.username || user.displayName || "Fã Anônimo"}
                   </div>
                   <div className="text-[11px]" style={{ color: "var(--fan-text-2)" }}>
                     {user.email}

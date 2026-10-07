@@ -510,7 +510,7 @@ export function WorkForm({
       )}
 
       {step === 2 && (
-      <div className="animate-in fade-in slide-in-from-right-4 duration-300">
+      <div className="animate-in fade-in slide-in-from-right-4 duration-300 space-y-5">
       <RelatedWorksSection
         currentType={type}
         value={(values.details.related as RelatedWork[] | undefined) ?? []}

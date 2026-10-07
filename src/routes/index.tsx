@@ -296,7 +296,9 @@ function StatsSection({ works }: { works: Work[] }) {
 }
 function EmptyHome({ worksCount }: { worksCount: number }) {
   const user = useAuthUser();
-  const name = user?.displayName?.split(" ")[0] ?? "fã";
+  const profile = useProfile();
+  const profileName = profile.username && profile.username !== "fan_user" ? profile.username : "";
+  const name = profileName || user?.displayName?.split(" ")[0] || "fã";
   const remaining = Math.max(0, 3 - worksCount);
 
   const heading =
@@ -402,10 +404,10 @@ function EmptyHome({ worksCount }: { worksCount: number }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 mb-4">
         <Link
           to="/library"
-          className="rounded-[14px] p-4 flex items-center gap-3"
+          className="rounded-[14px] p-3 flex flex-col items-start gap-2"
           style={{ background: "var(--fan-bg-2)", border: "0.5px solid var(--fan-rose-mid)" }}
         >
           <div
@@ -425,7 +427,7 @@ function EmptyHome({ worksCount }: { worksCount: number }) {
         </Link>
         <Link
           to="/recommendations"
-          className="rounded-[14px] p-4 flex items-center gap-3"
+          className="rounded-[14px] p-3 flex flex-col items-start gap-2"
           style={{ background: "var(--fan-bg-2)", border: "0.5px solid var(--fan-rose-mid)" }}
         >
           <div
@@ -444,8 +446,7 @@ function EmptyHome({ worksCount }: { worksCount: number }) {
           </div>
         </Link>
       </div>
-
-            <div className="mt-6">
+           <div className="mt-8">
         <PopularShelves />
       </div>
     </div>
@@ -497,13 +498,13 @@ function Shelf({
 }) {
   if (items.length === 0) return null;
   return (
-    <section className="px-5">
-      <h2 className="text-sm font-bold mb-3 flex items-center gap-1.5" style={{ color: "var(--fan-text-3)" }}>
+        <section className="-mx-4">
+      <h2 className="text-sm font-bold mb-3 px-5 flex items-center gap-1.5" style={{ color: "var(--fan-text-3)" }}>
         {Icon && <Icon size={14} />}
         {mediaType && <MediaIcon type={mediaType} size={14} />}
         {title}
       </h2>
-      <div className="flex gap-3.5 overflow-x-auto px-1 py-2 fan-hscroll" style={{ scrollbarWidth: "none" }}>
+      <div className="flex gap-3.5 overflow-x-auto px-5 py-2 fan-hscroll" style={{ scrollbarWidth: "none" }}>
         {items.map((item) => (
           <CatalogCard key={item.id} item={item} />
         ))}

@@ -371,5 +371,5 @@ svg {
 /* Garante que os modais "bottom sheet" nunca fiquem colados/escondidos
    atrás da barra de navegação do celular (gestos ou botões). */
 .fixed.inset-0.flex.items-end > * {
-  padding-bottom: calc(1rem + var(--sab));
+  padding-bottom: calc(1rem + max(var(--sab), 2.5rem));
 }

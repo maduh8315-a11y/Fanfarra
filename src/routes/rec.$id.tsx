@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { getTypeColor, getTypeCardBg, getTypeCardBorder } from "@/lib/fanfarra/typeColors";
 import { ContentGate } from "@/components/fanfarra/ContentGate";
 import { splitReaction } from "@/lib/fanfarra/icons";
+import { useProfile } from "@/lib/fanfarra/extras";
 import {
   ArrowLeft,
   Star,
@@ -234,7 +235,7 @@ function RecDetail() {
   const myReaction = useMyRecReaction(item?.id ?? "");
   const awardWins = useAwardWins(item?.title);
 
-  const user = useAuthUser();
+  const myProfile = useProfile();
   const isAdmin = useIsAdmin(user?.uid);
   const { comments, hasMore: hasMoreComments, loadingMore: loadingMoreComments, loadMore: loadMoreComments } =
     useRecComments(item?.id ?? "");
@@ -245,7 +246,7 @@ function RecDetail() {
     if (!item) return;
     setPosting(true);
     try {
-      await postRecComment(item.id, user?.displayName || "Usuário", commentText);
+      await postRecComment(item.id, myProfile.username || user?.displayName || "Usuário", commentText);
       setCommentText("");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Não foi possível comentar.");
@@ -275,7 +276,7 @@ function RecDetail() {
     if (!item) return;
     setPostingReply(true);
     try {
-      await postRecComment(item.id, user?.displayName || "Usuário", replyText, parentId);
+      await postRecComment(item.id, myProfile.username || user?.displayName || "Usuário", replyText, parentId);
       setReplyText("");
       setReplyingTo(null);
     } catch (err) {
@@ -839,6 +840,19 @@ function RecDetail() {
             synopsis: item.synopsis,
             link: item.link,
             genres: item.genres?.length ? JSON.stringify(item.genres) : undefined,
+              extra: JSON.stringify({
+              studio: item.studio,
+              platform: item.platform,
+              totalEpisodes: item.episodes,
+              totalChapters: item.chapters,
+              totalVolumes: item.volumes,
+              totalIssues: item.issues,
+              totalPages: item.pages,
+              totalSeasons: item.seasons,
+              tags: item.tags,
+              contentWarnings: item.contentWarnings,
+              year: item.year,
+            }),
           }}
           className="block w-full py-3 rounded-[14px] text-center text-sm font-bold text-white"
           style={{ background: "linear-gradient(90deg, var(--fan-pink), var(--fan-pink-light))" }}
@@ -859,7 +873,7 @@ function RecDetail() {
             style={{
               background: "var(--fan-bg-2)",
               border: "1px solid var(--fan-border)",
-              paddingBottom: "calc(1.25rem + var(--sab))",
+              paddingBottom: "calc(1.25rem + max(var(--sab), 2.5rem))",
             }}
             onClick={(e) => e.stopPropagation()}
           >

@@ -30,7 +30,7 @@ import { AppShell } from "@/components/fanfarra/AppShell";
 import { MediaIcon } from "@/components/fanfarra/MediaIcon";
 import { AwardCrownBadge } from "@/components/fanfarra/AwardCrownBadge";
 import { deleteWork, updateWork, useWork } from "@/lib/fanfarra/store";
-import { postWorkAsRecommendation, removeRecommendationPost } from "@/lib/fanfarra/communityStore";
+import { postWorkAsRecommendation, removeRecommendationPost,removeRecommendationPostQuiet } from "@/lib/fanfarra/communityStore";
 import { useProfile } from "@/lib/fanfarra/extras";
 import { STATUS_COLORS, TYPE_FIELDS, type FieldDef, type DateParts } from "@/lib/fanfarra/types";
 import {
@@ -228,9 +228,7 @@ function WorkDetail() {
       // Se a obra estava marcada como recomendação pública, precisa remover
       // o post da comunidade também — senão ele fica órfão pra sempre em
       // "Da comunidade" mesmo depois da obra ser apagada.
-      if (work.isPublicRec) {
-        removeRecommendationPost(work.id);
-      }
+      await removeRecommendationPostQuiet(work.id);
       await deleteWork(work.id);
       nav({ to: "/library" });
       return;
@@ -916,6 +914,7 @@ function WorkDetail() {
               borderTop: "0.5px solid var(--fan-rose-mid)",
               borderTopLeftRadius: 20,
               borderTopRightRadius: 20,
+              paddingBottom: "calc(1.25rem + max(var(--sab), 2.5rem))",
             }}
           >
             <div className="w-10 h-1 rounded-full mx-auto mb-4" style={{ background: "var(--fan-rose-mid)" }} />
