@@ -416,7 +416,7 @@ function EmptyHome({ worksCount }: { worksCount: number }) {
           >
             <Library size={18} color="var(--fan-icon-blue)" />
           </div>
-          <div>
+          <div className="min-w-0 w-full">
             <p className="text-sm font-bold" style={{ color: "var(--fan-text)" }}>
               Biblioteca
             </p>
@@ -436,7 +436,7 @@ function EmptyHome({ worksCount }: { worksCount: number }) {
           >
             <Wand2 size={18} color="var(--fan-icon-blue)" />
           </div>
-          <div>
+          <div className="min-w-0 w-full">
             <p className="text-sm font-bold" style={{ color: "var(--fan-text)" }}>
               Para você
             </p>

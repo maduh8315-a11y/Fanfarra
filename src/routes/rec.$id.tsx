@@ -235,6 +235,7 @@ function RecDetail() {
   const myReaction = useMyRecReaction(item?.id ?? "");
   const awardWins = useAwardWins(item?.title);
 
+  const user = useAuthUser();
   const myProfile = useProfile();
   const isAdmin = useIsAdmin(user?.uid);
   const { comments, hasMore: hasMoreComments, loadingMore: loadingMoreComments, loadMore: loadMoreComments } =
