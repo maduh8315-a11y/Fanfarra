@@ -13,16 +13,24 @@ let configured = false;
 
 export async function initPurchases(uid: string) {
   if (!isNativePurchasesAvailable()) return;
-  const { Purchases, LOG_LEVEL } = await import("@revenuecat/purchases-capacitor");
-  if (!configured) {
-    await Purchases.setLogLevel({ level: LOG_LEVEL.WARN });
-    await Purchases.configure({
-      apiKey: import.meta.env.VITE_REVENUECAT_API_KEY_ANDROID,
-      appUserID: uid, // usa o UID do Firebase — assim o webhook casa direto com o Firestore
-    });
-    configured = true;
-  } else {
-    await Purchases.logIn({ appUserID: uid });
+  // Sem chave real do RevenueCat (começa com "goog_"), não inicia o SDK:
+  // uma chave inválida derruba o app no Android.
+  const apiKey = import.meta.env.VITE_REVENUECAT_API_KEY_ANDROID as string | undefined;
+  if (!apiKey || !apiKey.startsWith("goog_")) return;
+  try {
+    const { Purchases, LOG_LEVEL } = await import("@revenuecat/purchases-capacitor");
+    if (!configured) {
+      await Purchases.setLogLevel({ level: LOG_LEVEL.WARN });
+      await Purchases.configure({
+        apiKey,
+        appUserID: uid, // usa o UID do Firebase — assim o webhook casa direto com o Firestore
+      });
+      configured = true;
+    } else {
+      await Purchases.logIn({ appUserID: uid });
+    }
+  } catch (e) {
+    console.warn("RevenueCat não iniciou:", e);
   }
 }
 
@@ -33,7 +41,7 @@ export async function logOutPurchases() {
 }
 
 export async function getProOfferings() {
-  if (!isNativePurchasesAvailable()) return null;
+    if (!isNativePurchasesAvailable() || !configured) return null;
   const { Purchases } = await import("@revenuecat/purchases-capacitor");
   const offerings = await Purchases.getOfferings();
   return offerings.current; // .monthly / .annual — confira os nomes reais no log se der erro
