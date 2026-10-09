@@ -430,7 +430,7 @@ function ProfilePage() {
                 type="email"
                 value={profile.email}
                 readOnly
-                className="flex-1 min-w-0 px-3 rounded-lg text-sm outline-none cursor-not-allowed"
+                className="flex-1 min-w-0 px-3 py-2.5 rounded-lg text-sm outline-none cursor-not-allowed"
                 style={{
                   backgroundColor: "var(--fan-bg-3)",
                   border: "1px solid var(--fan-border)",
@@ -537,7 +537,7 @@ function ProfilePage() {
                   }
                 }}
                 placeholder="Ex: Suspense, Terror, Cult..."
-                className="flex-1 min-w-0 px-3rounded-lg text-sm outline-none transition"
+                className="flex-1 min-w-0 px-3 py-2.5 rounded-lg text-sm outline-none transition"
                 style={{
                   backgroundColor: "var(--fan-bg-3)",
                   border: "1px solid var(--fan-border)",

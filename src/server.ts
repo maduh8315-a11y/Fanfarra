@@ -38,7 +38,7 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   });
 }
 
-export default {
+const app = {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     const url = new URL(request.url);
     if (url.pathname === "/api/webhooks/revenuecat" && request.method === "POST") {
@@ -61,5 +61,40 @@ export default {
         headers: { "content-type": "text/html; charset=utf-8" },
       });
     }
+  },
+};
+
+// O app Android abre a partir de https://localhost; sem estes cabeçalhos o
+// navegador interno bloqueia as chamadas às funções do servidor.
+const ALLOWED_APP_ORIGINS = new Set([
+  "https://localhost",
+  "http://localhost",
+  "capacitor://localhost",
+]);
+
+function corsHeadersFor(request: Request): Record<string, string> | null {
+  const origin = request.headers.get("Origin");
+  if (!origin || !ALLOWED_APP_ORIGINS.has(origin)) return null;
+  return {
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": request.headers.get("Access-Control-Request-Headers") ?? "*",
+    "Access-Control-Expose-Headers": "*",
+    "Access-Control-Max-Age": "86400",
+    Vary: "Origin",
+  };
+}
+
+export default {
+  async fetch(request: Request, env: unknown, ctx: unknown) {
+    const cors = corsHeadersFor(request);
+    if (cors && request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: cors });
+    }
+    const response = await app.fetch(request, env, ctx);
+    if (!cors) return response;
+    const headers = new Headers(response.headers);
+    for (const [key, value] of Object.entries(cors)) headers.set(key, value);
+    return new Response(response.body, { status: response.status, headers });
   },
 };

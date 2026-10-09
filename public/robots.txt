@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://fanfarra-backend.fanfarra.workers.dev/sitemap.xml
+Sitemap: https://https://fanfarra-backend.fanfarra-oficial-app.workers.dev/sitemap.xml

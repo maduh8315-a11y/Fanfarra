@@ -4,7 +4,7 @@ import { Capacitor } from "@capacitor/core";
 // Só é usada dentro do app Android instalado — no navegador (dev local ou
 // o link da Cloudflare) nada muda, pois lá o app e o backend já estão no
 // mesmo domínio.
-const BACKEND_URL = "https://fanfarra-backend.fanfarra.workers.dev";
+const BACKEND_URL = "https://fanfarra-backend.fanfarra-oficial-app.workers.dev";
 
 export function patchServerFnBaseUrl() {
   if (typeof window === "undefined") return;

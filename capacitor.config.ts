@@ -3,11 +3,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 const config: CapacitorConfig = {
   appId: "com.fanfarra.app",
   appName: "Fanfarra",
-  webDir: "dist/client", // continua obrigatório pro cap sync não reclamar, mas não é usado em runtime
-  server: {
-    url: `https://fanfarra-backend.fanfarra.workers.dev/?v=${Date.now()}`,
-    cleartext: false,
-  },
+  webDir: "dist/client", // agora é daqui que o app carrega os arquivos, de dentro do APK
   android: {
     allowMixedContent: true,
   },
