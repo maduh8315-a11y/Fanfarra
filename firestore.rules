@@ -35,7 +35,7 @@ service cloud.firestore {
       allow write: if false; // só editável pelo Console / Admin SDK — nunca pelo client
     }
 
-    match /works/{workId} {
+        match /works/{workId} {
       allow read: if request.auth != null &&
         (
           resource.data.uid == request.auth.uid ||
@@ -43,7 +43,8 @@ service cloud.firestore {
           (resource.data.isPublicRec == true && resource.data.get('authorBanned', false) != true)
         );
       allow create: if request.auth != null &&
-        request.resource.data.uid == request.auth.uid;
+        request.resource.data.uid == request.auth.uid &&
+        !isBanned();
       allow update, delete: if request.auth != null &&
         resource.data.uid == request.auth.uid;
     }
@@ -267,12 +268,18 @@ match /rec_reaction_counts/{itemId} {
       allow read, update, delete: if isAdmin();
       allow create: if request.auth != null &&
         request.auth.uid == request.resource.data.reporterUid &&
-        request.resource.data.targetUid != request.resource.data.reporterUid;
+        request.resource.data.targetUid != request.resource.data.reporterUid &&
+        request.resource.data.keys().hasOnly(['reporterUid', 'targetUid', 'targetUsername', 'reason', 'status', 'createdAt']) &&
+        request.resource.data.reason is string &&
+        request.resource.data.reason.size() <= 500 &&
+        request.resource.data.get('status', 'pending') == 'pending';
     }
 
     match /content_reports/{id} {
       allow read, update, delete: if isAdmin();
-      allow create: if request.auth != null;
+      // Denúncias só entram pelo servidor (reportContentServer), que valida
+      // os campos e limita a quantidade por usuário. O cliente nunca grava aqui.
+      allow create: if false;
     }
 
     match /moderation_actions/{id} {

@@ -35,6 +35,7 @@ import { buildTasteProfile } from "@/lib/fanfarra/tasteProfile";
 import { syncTasteProfile } from "@/lib/fanfarra/publicProfiles";
 import { useUnreadChatsCount, touchPresence } from "@/lib/fanfarra/chatStore";
 import { CLOSE_DRAWER_EVENT, OPEN_DRAWER_EVENT, TOUR_STEPS } from "./AppTour";
+import { AgeGate } from "./AgeGate";
 
 const TABS = [
   { to: "/", icon: Home, label: "Início", tourId: "tour-home" },
@@ -130,6 +131,7 @@ const [drawerOpen, setDrawerOpen] = useState(() => {
 
   return (
     <div className="flex flex-col" style={{ minHeight: "100vh", background: "var(--fan-bg)" }}>
+      <AgeGate />
       {!isOnline && (
         <div
           className="fixed top-0 left-0 right-0 z-50 px-4 py-2 text-center text-[12px] font-medium"
