@@ -1,5 +1,8 @@
 import { useState } from "react";
 import { toast } from "sonner";
+import { Calendar } from "@/components/ui/calendar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ptBR } from "react-day-picker/locale";
 import { useIsAdmin } from "@/lib/fanfarra/config";
 import { useAuthUser } from "@/lib/fanfarra/auth";
 import { notifyAllUsers } from "@/lib/fanfarra/notify";
@@ -34,6 +37,122 @@ interface ImportHealthEntry {
   failCount?: number;
   lastFailAt?: number;
   lastFailUrl?: string;
+}
+
+// ===== Campo de data + hora que funciona no celular =====
+function DateTimeField({
+  value,
+  onChange,
+  className = "flex-1",
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  className?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [day, setDay] = useState<Date | undefined>(undefined);
+  const [hour, setHour] = useState(12);
+  const [minute, setMinute] = useState(0);
+
+  const parse = (v: string): Date | undefined => {
+    if (!v) return undefined;
+    const d = new Date(v);
+    return Number.isNaN(d.getTime()) ? undefined : d;
+  };
+  const pad = (n: number) => String(n).padStart(2, "0");
+
+  const current = parse(value);
+  const label = current
+    ? current.toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })
+    : "Toque para escolher data e hora";
+
+  const openPicker = () => {
+    const c = parse(value);
+    setDay(c);
+    setHour(c ? c.getHours() : 12);
+    setMinute(c ? c.getMinutes() : 0);
+    setOpen(true);
+  };
+
+  const confirmPick = () => {
+    if (!day) {
+      toast.error("Escolha o dia no calendário.");
+      return;
+    }
+    onChange(
+      `${day.getFullYear()}-${pad(day.getMonth() + 1)}-${pad(day.getDate())}T${pad(hour)}:${pad(minute)}`,
+    );
+    setOpen(false);
+  };
+
+  const selectClass = "rounded-md border bg-background text-foreground px-3 py-2 text-base";
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={openPicker}
+        className={`${className} rounded-[8px] px-3 py-2 text-sm text-left`}
+        style={{ border: "1px solid var(--fan-rose-mid)", color: "var(--fan-text)", minHeight: 44 }}
+      >
+        {label}
+      </button>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-[360px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Escolher data e hora</DialogTitle>
+          </DialogHeader>
+
+          <div className="flex justify-center">
+            <Calendar mode="single" locale={ptBR} selected={day} onSelect={setDay} defaultMonth={day} />
+          </div>
+
+          <div className="flex items-center justify-center gap-2">
+            <select
+              aria-label="Hora"
+              value={hour}
+              onChange={(e) => setHour(Number(e.target.value))}
+              className={selectClass}
+            >
+              {Array.from({ length: 24 }, (_, h) => (
+                <option key={h} value={h}>
+                  {pad(h)}
+                </option>
+              ))}
+            </select>
+            <span className="text-lg font-bold">:</span>
+            <select
+              aria-label="Minuto"
+              value={minute}
+              onChange={(e) => setMinute(Number(e.target.value))}
+              className={selectClass}
+            >
+              {Array.from({ length: 60 }, (_, m) => (
+                <option key={m} value={m}>
+                  {pad(m)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <button type="button" onClick={() => setOpen(false)} className="rounded-md border px-4 py-2 text-sm">
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={confirmPick}
+              className="rounded-md px-4 py-2 text-sm font-bold"
+              style={{ background: "var(--fan-pink)", color: "#fff" }}
+            >
+              Confirmar
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
 }
 
 // ===== Painel admin (só visível pro UID em ADMIN_UIDS) =====
@@ -307,12 +426,9 @@ const isAdmin = useIsAdmin(user?.uid);
             {row.openTs ? ` (atual: ${new Date(row.openTs).toLocaleString("pt-BR")})` : " (sem data definida)"}
           </label>
           <div className="flex items-center gap-2 mb-2">
-            <input
-              type="datetime-local"
+            <DateTimeField
               value={row.openValue || toLocalInputValue(row.openTs)}
-              onChange={(e) => row.setOpenValue(e.target.value)}
-              className="flex-1 rounded-[8px] px-2 py-1 text-sm bg-transparent"
-              style={{ border: "1px solid var(--fan-rose-mid)", color: "var(--fan-text)" }}
+              onChange={row.setOpenValue}
             />
             <button
               onClick={() => handleSaveOpen(row.key, row.openValue || toLocalInputValue(row.openTs))}
@@ -329,12 +445,9 @@ const isAdmin = useIsAdmin(user?.uid);
             {row.closeTs ? ` (atual: ${new Date(row.closeTs).toLocaleString("pt-BR")})` : " (sem prazo definido)"}
           </label>
           <div className="flex items-center gap-2">
-            <input
-              type="datetime-local"
+            <DateTimeField
               value={row.closeValue || toLocalInputValue(row.closeTs)}
-              onChange={(e) => row.setCloseValue(e.target.value)}
-              className="flex-1 rounded-[8px] px-2 py-1 text-sm bg-transparent"
-              style={{ border: "1px solid var(--fan-rose-mid)", color: "var(--fan-text)" }}
+              onChange={row.setCloseValue}
             />
             <button
               onClick={() => handleSaveDeadline(row.key, row.closeValue || toLocalInputValue(row.closeTs))}
@@ -395,13 +508,7 @@ const isAdmin = useIsAdmin(user?.uid);
         <label className="text-[11px] block mb-1" style={{ color: "var(--fan-text-2)" }}>
           Fecha as recomendações em
         </label>
-        <input
-          type="datetime-local"
-          value={novaEdicaoInput}
-          onChange={(e) => setNovaEdicaoInput(e.target.value)}
-          className="w-full rounded-[8px] px-2 py-1 text-sm bg-transparent mb-2"
-          style={{ border: "1px solid var(--fan-rose-mid)", color: "var(--fan-text)" }}
-        />
+        <DateTimeField value={novaEdicaoInput} onChange={setNovaEdicaoInput} className="w-full mb-2 block" />
         <button
           onClick={handleStartNewCycle}
           disabled={saving === "novaEdicao"}

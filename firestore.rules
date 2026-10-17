@@ -96,7 +96,7 @@ service cloud.firestore {
       // (googleFirestoreRest.server.ts, que usa service account e não
       // passa por essas regras).
       allow update: if request.auth != null && request.auth.uid == uid
-        && (request.resource.data.pro == resource.data.pro || isAdmin());
+        && (request.resource.data.get('pro', false) == resource.data.get('pro', false) || isAdmin());
     }
 
     match /profiles/{uid} {
